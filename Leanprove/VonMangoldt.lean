@@ -245,7 +245,33 @@ theorem mertens_abel_identity (x : ℝ) (hx : 1 ≤ x) : ∑ n ∈ Finset.Icc 0 
 
 /-- Abel 求和恒等式 (已证明) -/
 theorem psi_integral_sub_log_isBigO : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
-  sorry
+  have h_psi_bound : (fun x : ℝ ↦ ψ x / x) =O[atTop] (fun _ : ℝ ↦ (1 : ℝ)) := by
+    refine Asymptotics.isBigO_of_le_atTop (λ x hx => ?_)
+    have hx_nonneg : 0 ≤ x := by linarith
+    have hbd : |ψ x| ≤ (Real.log 4 + 4) * x := psi_bounded x hx_nonneg
+    have hpos : 0 ≤ ψ x := Chebyshev.psi_nonneg x
+    have hx_pos : x > 0 := by by_contra! h; have : x ≤ 0 := h; linarith
+    calc
+      |ψ x / x| = |ψ x| / |x| := by rw [abs_div]
+      _ = |ψ x| / x := by simp [hx_pos.le]
+      _ ≤ ((Real.log 4 + 4) * x) / x := (div_le_div_right (by exact_mod_cast (by positivity : 0 < x))).mpr (by
+        rw [abs_of_nonneg hpos, abs_of_nonneg hx_pos.le]; exact hbd)
+      _ = Real.log 4 + 4 := by field_simp [hx_pos.ne'']
+    _ = (Real.log 4 + 4) * (1 : ℝ) := by ring
+  -- 由 mertens_first_theorem + mertens_abel_identity 推出
+  have h_diff : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) =O[atTop]
+      (fun x : ℝ ↦ (∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x) - ψ x / x) := by
+    refine (Asymptotics.isBigO_of_eventually_eq ?_ ?_).trans (Asymptotics.isBigO.sub ?_ ?_)
+    · refine Filter.eventually_atTop.mpr ⟨1, λ x hx => ?_⟩
+      calc
+        ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x
+            = (ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t) - ψ x / x) - Real.log x := by ring
+        _ = (∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - ψ x / x) - Real.log x := by rw [mertens_abel_identity x hx]
+        _ = (∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x) - ψ x / x := by ring
+    · exact mertens_first_theorem
+    · exact h_psi_bound
+  refine h_diff.trans ?_
+  simp
 
 /-- Mertens 第一定理的初等证明需要 Stirling 公式和卷积恒等式,
     当前为待定状态. -/
@@ -353,29 +379,113 @@ lemma sum_log_stirling (N : ℕ) (hN : N ≥ 1) : |∑ n ∈ Icc 1 N, Real.log (
   rw [abs_le]; constructor <;> nlinarith
 
 theorem mertens_first_theorem : (fun x : ℝ ↦ ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
-  have h_psi_bound : (fun x : ℝ ↦ ψ x / x) =O[atTop] (fun _ : ℝ ↦ (1 : ℝ)) := by
-    refine Asymptotics.isBigO_of_le_atTop (λ x hx => ?_)
-    have hx_nonneg : 0 ≤ x := by linarith
-    have hbd : |ψ x| ≤ (Real.log 4 + 4) * x := psi_bounded x hx_nonneg
-    have hpos : 0 ≤ ψ x := Chebyshev.psi_nonneg x
-    have hx_pos : x > 0 := by by_contra! h; have : x ≤ 0 := h; linarith
-    calc
-      |ψ x / x| = |ψ x| / |x| := by rw [abs_div]
-      _ = |ψ x| / x := by simp [hx_pos.le]
-      _ ≤ ((Real.log 4 + 4) * x) / x := (div_le_div_right (by exact_mod_cast (by positivity : 0 < x))).mpr (by
-        rw [abs_of_nonneg hpos, abs_of_nonneg hx_pos.le]; exact hbd)
-      _ = Real.log 4 + 4 := by field_simp [hx_pos.ne']
-    _ = (Real.log 4 + 4) * (1 : ℝ) := by ring
-  have h_mertens_abel : ∀ x ≥ 1, ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) = ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t) :=
-    mertens_abel_identity
+  set C := Real.log 4 + 7 with hC_def
+  refine ⟨C, ?_⟩
+  refine Filter.eventually_atTop.mpr ⟨1, λ x hx => ?_⟩
+  let N := ⌊x⌋₊
+  have hN : N ≥ 1 := by
+    have : 1 ≤ x := hx; have : (1 : ℕ) ≤ ⌊x⌋₊ := by exact_mod_cast (Nat.floor_mono this)
+    omega
+  -- 把 Icc 0 N 换成 Icc 1 N (Λ(0) = 0 所以不影响)
+  have h_sum_shift : ∑ n ∈ Finset.Icc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) = ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) / (n : ℝ) := by
+    simp [Finset.Icc_insert 0 N, Finset.Icc_eq_empty_of_gt (by omega)]
+  rw [show ⌊x⌋₊ = N from rfl, h_sum_shift]
   
-  -- 由 mertens_abel_identity: ∑ Λ/n = ψ/x + ∫ ψ/t² dt
-  -- 所以: ∑ Λ/n - log x = ψ/x + (∫ ψ/t² dt - log x)
-  -- 需要: ∫ ψ/t² dt - log x = O(1), 这等价于素数定理.
-  -- 目前为待定: 需要 ∫_1^∞ (ψ(t) - t)/t² dt 收敛
-  sorry
-
-/-- Mertens 第一定理 (有界差版本) -/
+  -- 整数版本的核心不等式
+  have h_int_main : |∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log (N : ℝ)| ≤ Real.log 4 + 5 := by
+    have h_conv : ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ) = ∑ k ∈ Icc 1 N, Real.log (k : ℝ) := by
+      simpa using congrArg (λ (t : ℕ) => (t : ℝ)) (convolution_identity N hN)
+    have h_stirling : |∑ k ∈ Icc 1 N, Real.log (k : ℝ) - ((N : ℝ) * Real.log (N : ℝ) - (N : ℝ))| ≤ Real.log (N : ℝ) + 1 :=
+      sum_log_stirling N hN
+    
+    -- 关键代数变换: (N / n : ℕ) : ℝ = (N:ℝ)/(n:ℝ) - ((N%n:ℕ):ℝ)/(n:ℝ)
+    have h_div_rem (n : ℕ) (hn : n ≥ 1) : ((N / n : ℕ) : ℝ) = ((N : ℝ) / (n : ℝ)) - (((N % n : ℕ) : ℝ) / (n : ℝ)) := by
+      have h_eq : (N : ℝ) = ((N / n : ℕ) : ℝ) * (n : ℝ) + ((N % n : ℕ) : ℝ) := by exact_mod_cast (Nat.div_add_mod N n)
+      have hnpos : (n : ℝ) ≠ 0 := by exact_mod_cast (Nat.pos_of_ne_zero (by omega)).ne'
+      field_simp [hnpos]; nlinarith
+    
+    have h_psi_bound_nat : (∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * (((N % n : ℕ) : ℝ) / (n : ℝ))) ≤ (Real.log 4 + 4) * (N : ℝ) := by
+      have h_psi_val : ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) = ψ (N : ℝ) := by
+        rw [Chebyshev.psi_eq_sum_Icc (N : ℝ), show ⌊(N : ℝ)⌋₊ = N by simp]
+      have h_psi_bound_val : ψ (N : ℝ) ≤ (Real.log 4 + 4) * (N : ℝ) := by
+        have := psi_bounded (N : ℝ) (by exact_mod_cast (Nat.zero_le N))
+        rw [abs_of_nonneg (Chebyshev.psi_nonneg (N : ℝ))] at this; exact this
+      calc
+        ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * (((N % n : ℕ) : ℝ) / (n : ℝ))
+            ≤ ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * 1 := by
+              refine Finset.sum_le_sum (λ n hn => ?_)
+              have h_rem_bound : ((N % n : ℕ) : ℝ) / (n : ℝ) ≤ 1 := by
+                have hmod : N % n < n := Nat.mod_lt N (by omega)
+                have : ((N % n : ℕ) : ℝ) < (n : ℝ) := by exact_mod_cast hmod
+                exact (div_le_one (by exact_mod_cast (Nat.pos_of_ne_zero (by omega)))).mpr (by exact_mod_cast hmod.le)
+              nlinarith
+        _ = ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) := by simp
+        _ = ψ (N : ℝ) := h_psi_val
+        _ ≤ (Real.log 4 + 4) * (N : ℝ) := h_psi_bound_val
+    
+    have h_log_approx : |Real.log (N : ℝ)| ≤ Real.log (N : ℝ) + 1 := by
+      rw [abs_of_nonneg (Real.log_nonneg (by exact_mod_cast hN))]
+    
+    calc
+      |∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log (N : ℝ)|
+          = |(1 / (N : ℝ)) * (∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ)) - ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ))| := by
+            ring
+      _ = |(1 / (N : ℝ)) * ((N : ℝ) * ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) / (n : ℝ) - ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ))| := by ring
+      _ = |(1 / (N : ℝ)) * (∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * (((N % n : ℕ) : ℝ) / (n : ℝ)))| := by
+        rw [h_conv]
+        have h_temp : (N : ℝ) * ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) / (n : ℝ) - ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ) =
+            ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * (((N % n : ℕ) : ℝ) / (n : ℝ)) := by
+          calc
+            (N : ℝ) * ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) / (n : ℝ) - ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ)
+                = ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * (((N : ℝ) / (n : ℝ)) - ((N / n : ℕ) : ℝ)) := by ring
+            _ = ∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * (((N % n : ℕ) : ℝ) / (n : ℝ)) := by
+              refine Finset.sum_congr rfl (λ n hn => ?_)
+              rw [h_div_rem n (by
+                have hn1 : 1 ≤ n := (Finset.mem_Icc.mp hn).1; exact hn1)]
+              ring
+        rw [h_temp]
+      _ = (1 / (N : ℝ)) * |∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) * (((N % n : ℕ) : ℝ) / (n : ℝ))| := by
+        rw [abs_mul, abs_of_pos (by
+          have : (N : ℝ) > 0 := by exact_mod_cast (Nat.pos_of_ne_zero (by omega)); positivity)]
+      _ ≤ (1 / (N : ℝ)) * ((Real.log 4 + 4) * (N : ℝ)) := by
+        refine mul_le_mul_of_nonneg_left h_psi_bound_nat (by positivity)
+      _ = Real.log 4 + 4 := by field_simp [show (N : ℝ) ≠ 0 from by exact_mod_cast (Nat.pos_of_ne_zero (by omega)).ne']; ring
+      _ ≤ Real.log 4 + 5 := by nlinarith
+  
+  -- 从整数到实数: log x 和 log N 的差 ≤ 1 (因为 N ≤ x < N+1)
+  have h_log_diff : |Real.log (N : ℝ) - Real.log x| ≤ 1 := by
+    have hx_lower : N ≤ x := Nat.floor_le x
+    have hx_upper : x < N + 1 := by
+      have : x < (⌊x⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one x
+      simpa [N]
+    have h_log_N_le_log_x : Real.log (N : ℝ) ≤ Real.log x :=
+      Real.log_le_log (by exact_mod_cast (Nat.pos_of_ne_zero (by omega))) (by exact_mod_cast hx_lower)
+    have h_log_x_le_log_N1 : Real.log x ≤ Real.log ((N : ℝ) + 1) :=
+      Real.log_le_log (by nlinarith) (by nlinarith)
+    have h_log_N1_sub_log_N : Real.log ((N : ℝ) + 1) - Real.log (N : ℝ) ≤ 1 := by
+      have : Real.log ((N : ℝ) + 1) - Real.log (N : ℝ) = Real.log (1 + 1 / (N : ℝ)) := by
+        calc
+          Real.log ((N : ℝ) + 1) - Real.log (N : ℝ) = Real.log (((N : ℝ) + 1) / (N : ℝ)) := by
+            rw [Real.log_div, add_comm]; simp
+          _ = Real.log (1 + 1 / (N : ℝ)) := by ring
+      rw [this]
+      have hNpos : (0 : ℝ) < N := by exact_mod_cast (Nat.pos_of_ne_zero (by omega))
+      have : 1 + 1 / (N : ℝ) ≤ Real.exp 1 := by
+        have : 1 / (N : ℝ) ≤ 1 := by
+          refine (div_le_one ?_).mpr ?_
+          · exact hNpos
+          · exact_mod_cast hN
+        nlinarith
+      exact Real.log_le_log (by positivity) this
+    nlinarith
+  
+  calc
+    |∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x|
+        = |(∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log (N : ℝ)) + (Real.log (N : ℝ) - Real.log x)| := by ring
+    _ ≤ |∑ n ∈ Icc 1 N, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log (N : ℝ)| + |Real.log (N : ℝ) - Real.log x| := abs_add _ _
+    _ ≤ (Real.log 4 + 5) + 1 := by nlinarith
+    _ = Real.log 4 + 7 := by ring
+    _ = C := by rfl
 theorem mertens_first_theorem_bounded : ∃ C : ℝ, ∀ᶠ x in atTop, |∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x| ≤ C := by
   rcases mertens_first_theorem.exists_bounded with ⟨C, hC⟩
   refine ⟨C, ?_⟩; filter_upwards [hC] with x hx; simpa using hx
