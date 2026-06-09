@@ -297,16 +297,16 @@ theorem psi_integral_sub_log_isBigO :
 
     证明策略:
     1. 对每个素数 p, ∑_{k≥2} (log p)/p^k = (log p)/(p(p-1))
-    2. (log p)/(p(p-1)) ≤ 2·(log p)/p² (对 p ≥ 2)
-    3. ∑_p (log p)/p² 收敛:
-       - log p ≤ p^{0.5} 对大 p (对数增长慢于幂函数)
-       - ∑ p^{-1.5} 收敛 (由 Nat.Primes.summable_rpow, r=-1.5 < -1)
-       - 比较判别法
+    2. (log p)/(p(p-1)) ≤ 4·p^{-1.5} (对 p ≥ 2)
+    3. ∑_p p^{-1.5} 收敛 (Nat.Primes.summable_rpow, r = -1.5)
+    
+    需要: 级数收敛性的比较判别法 (Summable.of_nonneg_of_le)
+    以及几何级数公式 ∑_{k≥2} 1/p^k = 1/(p(p-1))
 
-    依赖:
-    - Nat.Primes.summable_rpow: ∑ p^r 收敛 ↔ r < -1
-    - Real.log_le_sqrt: log p ≤ √p 对大 p
-    - Summable.of_nonneg_of_le: 比较判别法
+    当前 Mathlib 状态:
+    - Nat.Primes.summable_rpow 已可用
+    - 缺少 ∑_{n=1}^{∞} 1/n^{1.5} 收敛的引理
+    - 需要 log p ≤ 2√p 的初等证明 (可用 Real.log_le_sub_one_of_pos)
 -/
 theorem primePower_contribution_bounded :
     ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x →
