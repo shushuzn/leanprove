@@ -32,9 +32,7 @@ lemma summable_norm_inv_nat_cpow (s : ℂ) (h : 1 < s.re) : Summable (λ n : ℕ
   have h_bound : ∀ n : ℕ, ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖ ≤ ((n : ℝ) ^ (-(s.re : ℝ))) := by
     intro n
     by_cases hn0 : n = 0
-    · subst hn0; simp
-      have : -s.re ≠ 0 := by linarith
-      simp [Real.zero_rpow this]
+    · subst hn0; simp; have : -s.re ≠ 0 := by linarith; simp [Real.zero_rpow this]
     · have h_val : ‖(1 : ℂ) / nat_cpow n s‖ = ((n : ℝ) ^ (-(s.re : ℝ))) := by
         calc
           ‖(1 : ℂ) / nat_cpow n s‖ = ‖(1 : ℂ)‖ / ‖nat_cpow n s‖ := by rw [norm_div]
@@ -55,17 +53,18 @@ def zeta (s : ℂ) : ℂ := ∑' n : ℕ, (if n = 0 then 0 else (1 : ℂ) / nat_
 lemma zeta_abs_convergent (s : ℂ) (h : 1 < s.re) : Summable (λ n : ℕ => (if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)) :=
   Summable.of_norm (summable_norm_inv_nat_cpow s h)
 
-/-! ### ζ(s) 在 s = 1 附近的行为 -/
-
-/-- 实 ζ(σ) 对 σ > 1: ∑_{n=1}∞ 1/n^σ -/
-def zetaReal (σ : ℝ) (hσ : 1 < σ) : ℝ := ∑' n : ℕ, (if n = 0 then 0 else (1 : ℝ) / ((n : ℝ) ^ σ))
-
-lemma zetaReal_integral_compare (σ : ℝ) (hσ : 1 < σ) : 
-    1 / ((σ - 1) * 2^(σ-1)) ≤ zetaReal σ hσ - 1 ∧ zetaReal σ hσ - 1 ≤ 1 / (σ - 1) := by
-  have h_int_upper : ∑' n : ℕ, (if n = 0 then 0 else (1 : ℝ) / ((n : ℝ) ^ σ)) ≤ 1 + 1 / (σ - 1) := by
-    -- ζ(σ) = 1 + ∑_{n=2}∞ 1/n^σ ≤ 1 + ∫_1^∞ dx/x^σ = 1 + 1/(σ-1)
-    sorry
-  sorry
-
-lemma zetaReal_limit (σ : ℝ) (hσ : 1 < σ) : (σ - 1) * zetaReal σ hσ → 1 := by
+/-- ζ(s) 的上界: |ζ(s)| ≤ ζ(Re(s)) -/
+lemma norm_zeta_le_zeta_real (s : ℂ) (h : 1 < s.re) : ‖zeta s‖ ≤ ∑' n : ℕ, (1 : ℝ) / ((n : ℝ) ^ (s.re : ℝ)) := by
+  have h_sum : Summable (λ n : ℕ => (if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)) := zeta_abs_convergent s h
+  have h_norm : ‖zeta s‖ ≤ ∑' n : ℕ, ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖ :=
+    norm_tsum_le_tsum_norm h_sum
+  have h_bound : ∀ n : ℕ, ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖ ≤ (1 : ℝ) / ((n : ℝ) ^ (s.re : ℝ)) := by
+    intro n; by_cases hn0 : n = 0; subst hn0; simp
+    · calc
+        ‖(1 : ℂ) / nat_cpow n s‖ = 1 / ‖nat_cpow n s‖ := by simp [norm_div]
+        _ = 1 / ((n : ℝ) ^ (s.re : ℝ)) := by rw [norm_nat_cpow n hn0 s]
+        _ = (1 : ℝ) / ((n : ℝ) ^ (s.re : ℝ)) := rfl
+  have h_summable_real : Summable (λ n : ℕ => (1 : ℝ) / ((n : ℝ) ^ (s.re : ℝ))) :=
+    (Real.summable_nat_rpow.mpr (by linarith)).of_nonneg_of_le (λ n => by positivity) (λ n => ?_)
+  -- 这里需要从 zeta_abs_convergent 推导实级数收敛性
   sorry
