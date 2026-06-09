@@ -441,3 +441,172 @@ theorem three_dvd_sq_sub_one (p : Nat) (hp_ge : 2 ≤ p) (hp3 : p % 3 ≠ 0) :
         rw [Nat.mul_mod]
       rw [h1, hb, Nat.mul_zero, Nat.zero_mod]
     exact Nat.dvd_of_mod_eq_zero hmod
+
+
+/-!
+  === GENERALIZATION: Odd numbers coprime to 6 ===
+
+  The main theorem 24 | p² - 1 actually holds for ALL odd numbers
+  not divisible by 3, not just primes. This generalization reveals
+  that primality is not the essential condition — only oddness and
+  non-divisibility by 3 matter.
+-/
+
+-- Generalized: for any odd n not divisible by 3, 24 | n² - 1
+theorem odd_not_three_sq_sub_one_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) :
+    24 ∣ n ^ 2 - 1 := by
+  have hn2 : n ^ 2 = n * n := by rw [Nat.pow_succ, Nat.pow_one]
+  rw [hn2]
+  -- Step 1: n % 3 ∈ {1, 2} → n² ≡ 1 (mod 3)
+  have hmod3 : (n * n) % 3 = 1 := by
+    have : n % 3 = 1 ∨ n % 3 = 2 := by omega
+    rcases this with (h | h)
+    · have h1 : (n * n) % 3 = (n % 3 * (n % 3)) % 3 := by rw [Nat.mul_mod]
+      rw [h1, h]
+    · have h1 : (n * n) % 3 = (n % 3 * (n % 3)) % 3 := by rw [Nat.mul_mod]
+      rw [h1, h]
+  -- Step 2: n odd → n % 8 ∈ {1,3,5,7} → n² ≡ 1 (mod 8)
+  have hmod8 : (n * n) % 8 = 1 := by
+    have : n % 8 = 1 ∨ n % 8 = 3 ∨ n % 8 = 5 ∨ n % 8 = 7 := by omega
+    rcases this with (h | h | h | h)
+    · rw [Nat.mul_mod, h]
+    · rw [Nat.mul_mod, h]
+    · rw [Nat.mul_mod, h]
+    · rw [Nat.mul_mod, h]
+  -- Step 3: CRT: mod 3 × mod 8 → mod 24
+  have hmod24 : (n * n) % 24 = 1 := by
+    have : (n * n) % 24 < 24 := Nat.mod_lt (n * n) (by decide)
+    have : (n * n) % 24 % 3 = 1 := by
+      rw [Nat.mod_mod_of_dvd (n * n) (by decide : 3 ∣ 24)]
+      exact hmod3
+    have : (n * n) % 24 % 8 = 1 := by
+      rw [Nat.mod_mod_of_dvd (n * n) (by decide : 8 ∣ 24)]
+      exact hmod8
+    omega
+  have : (n * n - 1) % 24 = 0 := by omega
+  exact Nat.dvd_of_mod_eq_zero this
+
+
+/-!
+  === HIGHER POWER: 48 | n⁴ - 1 ===
+
+  For odd n coprime to 6, not only 24 | n² - 1, but 48 | n⁴ - 1.
+
+  Proof strategy:
+  - n⁴ - 1 = (n² - 1)(n² + 1)
+  - We know 24 | n² - 1 (from above)
+  - n odd → n² odd → n² + 1 even → 2 | n² + 1
+  - Therefore 24 × 2 = 48 | (n² - 1)(n² + 1)
+
+  This shows that higher powers gain additional factors of 2.
+-/
+
+-- For any odd n not divisible by 3, 48 | n⁴ - 1
+-- Proof sketch: n⁴ - 1 = (n² - 1)(n² + 1), 24 | (n² - 1) and 2 | (n² + 1)
+-- TODO: omega cannot handle n^2 nonlinear terms; needs Mathlib.Tactic.Ring
+theorem odd_not_three_fourth_sub_one_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) :
+    48 ∣ n ^ 4 - 1 := by
+  -- 24 | n² - 1
+  have h24 : 24 ∣ n ^ 2 - 1 := odd_not_three_sq_sub_one_dvd n hodd h3
+  -- 48 = 24 * 2, and 48 | (n² - 1)(n² + 1)
+  -- n⁴ - 1 = (n² - 1)(n² + 1) by the algebraic identity
+  -- The identity holds because n^4 = (n^2)^2 and a^2 - 1 = (a-1)(a+1)
+  sorry -- requires ring tactic for n^4 - 1 = (n^2 - 1)(n^2 + 1)
+
+
+/-!
+  === CONSECUTIVE PRODUCT: 24 | n³ - n ===
+
+  For any odd n not divisible by 3, 24 | n³ - n.
+  This is because n³ - n = n(n-1)(n+1), the product of
+  three consecutive integers centered at n.
+
+  Proof strategy:
+  - n³ - n = n(n² - 1) = n · (n-1)(n+1)
+  - 24 | (n-1)(n+1) from the main theorem
+  - Therefore 24 | n · (n-1)(n+1)
+-/
+
+
+/-!
+  === CONSECUTIVE PRODUCT: 24 | n³ - n ===
+
+  For any odd n not divisible by 3, 24 | n³ - n.
+  This is because n³ - n = n(n-1)(n+1), the product of
+  three consecutive integers centered at n.
+
+  Proof strategy:
+  - n³ - n = n(n² - 1) = n · (n-1)(n+1)
+  - 24 | (n-1)(n+1) from the main theorem
+  - Therefore 24 | n · (n-1)(n+1)
+-/
+
+-- For any odd n not divisible by 3, 24 | n³ - n
+-- Proof sketch: n³ - n = n(n² - 1), and 24 | (n² - 1)
+-- TODO: omega cannot handle n * k nonlinear terms; needs Mathlib.Tactic.Ring
+theorem odd_not_three_cubed_sub_self_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) :
+    24 ∣ n ^ 3 - n := by
+  have h24 : 24 ∣ n ^ 2 - 1 := odd_not_three_sq_sub_one_dvd n hodd h3
+  -- n³ - n = n(n² - 1) by the algebraic identity n^3 = n * n^2
+  -- Since 24 | n² - 1, we get 24 | n(n² - 1) = n³ - n
+  sorry -- requires ring tactic for n^3 - n = n * (n^2 - 1)
+/-!
+  === STRUCTURAL: lcm(p-1, p+1) = (p-1)(p+1)/2 ===
+
+  For odd p ≥ 3, since gcd(p-1, p+1) = 2, we have:
+    lcm(p-1, p+1) = (p-1)(p+1) / gcd(p-1, p+1) = (p-1)(p+1) / 2
+
+  This connects the gcd result to the lcm, completing the
+  structural picture of the relationship between p-1 and p+1.
+-/
+
+-- For odd p ≥ 3, lcm(p-1, p+1) = (p-1)(p+1)/2
+theorem lcm_pm1_eq_half_mul (p : Nat) (hge : 3 ≤ p) (hodd : p % 2 = 1) :
+    (p - 1).lcm (p + 1) = (p - 1) * (p + 1) / 2 := by
+  -- lcm(a, b) * gcd(a, b) = a * b
+  have hlcm : (p - 1).lcm (p + 1) * (p - 1).gcd (p + 1) =
+              (p - 1) * (p + 1) :=
+    Nat.lcm_mul_gcd (p - 1) (p + 1)
+  -- gcd(p-1, p+1) = 2
+  have hgcd : (p - 1).gcd (p + 1) = 2 := gcd_pm1_eq_two p hge hodd
+  -- lcm * 2 = (p-1)(p+1)
+  have hlcm2 : (p - 1).lcm (p + 1) * 2 = (p - 1) * (p + 1) := by
+    have := hlcm
+    simp only [hgcd] at this
+    exact this
+  -- Therefore lcm = (p-1)(p+1) / 2
+  have h2_pos : 0 < 2 := by decide
+  have h2_dvd : 2 ∣ (p - 1) * (p + 1) := by omega
+  have : (p - 1) * (p + 1) / 2 = (p - 1).lcm (p + 1) := by
+    rw [Nat.div_eq_iff_eq_mul_right h2_pos h2_dvd]
+    omega
+  exact this.symm
+
+
+/-!
+  === QUOTIENT BOUNDS ===
+
+  For primes p ≥ 5, the quotient (p² - 1)/24 is always a positive integer.
+  Moreover, for p ≥ 7, the quotient is at least 2.
+-/
+
+-- For primes p ≥ 5, (p² - 1)/24 ≥ 1
+theorem sq_sub_one_div_24_ge_one (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
+    1 ≤ (p ^ 2 - 1) / 24 := by
+  have h24 : 24 ∣ p ^ 2 - 1 := prime_ge_five_sq_sub_one_dvd p hp hge
+  have hp2 : p ^ 2 = p * p := by rw [Nat.pow_succ, Nat.pow_one]
+  rw [Nat.le_div_iff_mul_le (by decide), hp2]
+  have : p ≥ 5 := hge
+  have : p * p ≥ 25 := Nat.mul_le_mul this this
+  omega
+
+
+-- For primes p ≥ 7, (p² - 1)/24 ≥ 2
+theorem sq_sub_one_div_24_ge_two (p : Nat) (hp : Nat.Prime p) (hge : 7 ≤ p) :
+    2 ≤ (p ^ 2 - 1) / 24 := by
+  have h24 : 24 ∣ p ^ 2 - 1 := prime_ge_five_sq_sub_one_dvd p hp (by omega)
+  have hp2 : p ^ 2 = p * p := by rw [Nat.pow_succ, Nat.pow_one]
+  rw [Nat.le_div_iff_mul_le (by decide), hp2]
+  have : p ≥ 7 := hge
+  have : p * p ≥ 49 := Nat.mul_le_mul this this
+  omega
