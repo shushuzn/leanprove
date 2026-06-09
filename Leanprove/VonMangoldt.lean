@@ -244,40 +244,6 @@ theorem mertens_abel_identity (x : ℝ) (hx : 1 ≤ x) : ∑ n ∈ Finset.Icc 0 
 /-! === 第七部分: Mertens 第一定理 (4定理) === -/
 
 /-- Abel 求和恒等式 (已证明) -/
-theorem mertens_abel_identity (x : ℝ) (hx : 1 ≤ x) : ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) = ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t) := by
-  have hc0 : vonMangoldt 0 = 0 := rfl
-  have hf_diff : ∀ t ∈ Set.Icc (1 : ℝ) x, DifferentiableAt ℝ (λ u : ℝ => u⁻¹) t := by
-    intro t ht; have ht_pos : t ≠ 0 := by linarith [ht.1, ht.2]; exact differentiableAt_inv ht_pos
-  have hf_int : IntegrableOn (deriv (λ u : ℝ => u⁻¹)) (Set.Icc (1 : ℝ) x) := by
-    have h_cont : ContinuousOn (λ t : ℝ => -(t ^ 2)⁻¹) (Set.Icc (1 : ℝ) x) := by
-      refine (Continuous.neg ((continuous_id.pow 2).inv₀ (λ t ht => ?_))).continuousOn
-      have : 1 ≤ t := ht.1; nlinarith
-    have h_deriv : deriv (λ u : ℝ => u⁻¹) = λ t : ℝ => -(t ^ 2)⁻¹ := by ext t; simp [deriv_inv]
-    rw [h_deriv]; exact h_cont.integrableOn_Icc
-  have h_formula := sum_mul_eq_sub_integral_mul₀ (c := vonMangoldt) hc0 x hf_diff hf_int
-  have h_left : ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) = ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, ((n : ℝ)⁻¹) * (vonMangoldt n : ℝ) := by
-    refine Finset.sum_congr rfl (λ n hn => ?_)
-    by_cases hn0 : n = 0; subst hn0; simp; field_simp [show (n : ℝ) ≠ 0 from by exact_mod_cast hn0]; ring
-  have h_right1 : ((x : ℝ)⁻¹) * (∑ n ∈ Finset.Icc 0 ⌊x⌋₊, vonMangoldt n) = ψ x / x := by
-    rw [Chebyshev.psi_eq_sum_Icc x]; field_simp [show x ≠ 0 from by linarith]; ring
-  have h_right2 : ∫ t in Set.Ioc (1 : ℝ) x, (deriv (λ u : ℝ => u⁻¹) t) * (∑ n ∈ Finset.Icc 0 ⌊t⌋₊, vonMangoldt n) = -∫ t in Set.Ioc 1 x, ψ t / (t * t) := by
-    have h_deriv : deriv (λ u : ℝ => u⁻¹) = λ t : ℝ => -(t ^ 2)⁻¹ := by ext t; simp [deriv_inv]
-    rw [h_deriv, Chebyshev.psi_eq_sum_Icc]
-    calc
-      ∫ t : ℝ in Set.Ioc (1 : ℝ) x, (-(t ^ 2)⁻¹) * (ψ t) = ∫ t : ℝ in Set.Ioc (1 : ℝ) x, -(ψ t / (t * t)) := by
-        refine setIntegral_congr_set (Set.Ioc (1 : ℝ) x) (λ t ht => ?_)
-        have ht_pos : t ≠ 0 := by have : 1 < t := ht.1; nlinarith; field_simp [ht_pos]; ring
-      _ = -(∫ t : ℝ in Set.Ioc (1 : ℝ) x, ψ t / (t * t)) := by simp [integral_neg]
-      _ = -∫ t in Set.Ioc 1 x, ψ t / (t * t) := rfl
-  calc
-    ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) = ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, ((n : ℝ)⁻¹) * (vonMangoldt n : ℝ) := h_left
-    _ = ((x : ℝ)⁻¹) * (∑ n ∈ Finset.Icc 0 ⌊x⌋₊, vonMangoldt n) - ∫ t in Set.Ioc (1 : ℝ) x, (deriv (λ u : ℝ => u⁻¹) t) * (∑ n ∈ Finset.Icc 0 ⌊t⌋₊, vonMangoldt n) := h_formula
-    _ = (ψ x / x) - (-∫ t in Set.Ioc 1 x, ψ t / (t * t)) := by rw [h_right1, h_right2]
-    _ = ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t) := by ring
-
-/-- 关键引理: ∫₁ˣ ψ(t)/t² dt - log x = O(1)
-    等价于 ∫₁^∞ (ψ(t)-t)/t² dt 收敛, 即素数定理.
-    当前待定 -/
 theorem psi_integral_sub_log_isBigO : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
   sorry
 
