@@ -374,14 +374,118 @@ theorem psi_integral_sub_log_isBigO :
       =O[atTop] (fun _ ↦ (1 : ℝ)) := by
   sorry
 
-/-- **Mertens 第一定理**: ∑_{n≤x} Λ(n)/n = Real.log x + O(1) -/
+/-- **Mertens 第一定理**: ∑_{n≤x} Λ(n)/n = Real.log x + O(1)
+    证明: 由 Abel 恒等式 + 积分收敛 + Chebyshev 界推出 -/
 theorem mertens_first_theorem :
     (fun x : ℝ ↦ ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x)
       =O[atTop] (fun _ ↦ (1 : ℝ)) := by
-  sorry
+  -- 使用 Abel 恒等式: ∑ Λ(n)/n = ψ(x)/x + ∫ ψ(t)/t² dt
+  -- 积分收敛: ∫ ψ(t)/t² dt - log x = O(1)
+  -- Chebyshev: ψ(x)/x = O(1)
+  -- 合并: ∑ Λ(n)/n - log x = O(1) + O(1) = O(1)
+  have h_integral : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) :=
+    psi_integral_sub_log_isBigO
+  have h_psi_bound : (fun x : ℝ ↦ ψ x / x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
+    apply Asymptotics.isBigO_of_le_atTop (λ x hx => ?_)
+    have hx' : 0 ≤ x := by linarith
+    have h_bd : |ψ x| ≤ (Real.log 4 + 4) * x := psi_bounded x hx'
+    have : ψ x / x ≤ (Real.log 4 + 4) := by
+      have hx_pos : x > 0 := by
+        by_contra! h; have : x ≤ 0 := h; linarith
+      calc
+        ψ x / x ≤ |ψ x / x| := le_abs_self _
+        _ = |ψ x| / |x| := by rw [abs_div]
+        _ ≤ (Real.log 4 + 4) * x / x := by
+          refine (div_le_div_right (by exact_mod_cast (by positivity : 0 < x))).mpr ?_
+          rw [abs_of_nonneg (by positivity : 0 ≤ x), abs_of_nonneg (by
+            have h_nonneg : 0 ≤ ψ x := Chebyshev.psi_nonneg x; exact h_nonneg)]
+          exact h_bd
+        _ = Real.log 4 + 4 := by
+          field_simp [show x ≠ 0 from by linarith]
+    have : ψ x / x < 1 + (Real.log 4 + 4) := by nlinarith
+    apply le_trans (by nlinarith) ?_
+    norm_num
+  have h_sum_diff : (fun x : ℝ ↦ ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x) =O[atTop]
+      (fun x : ℝ ↦ (ψ x / x) + (∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x)) := by
+    apply Asymptotics.isBigO_of_sub_eq_zero
+    ext x
+    calc
+      ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x
+          = (ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t)) - Real.log x := by rw [mertens_abel_identity x (by
+            have : 1 ≤ x := ?_; exact this)]
+      _ = ψ x / x + (∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) := by ring
+    -- 需要 1 ≤ x, 当 x 充分大时成立
+    sorry
+  -- 当 x 充分大时, x ≥ 1, 可以用 Abel 恒等式
+  refine h_sum_diff.trans ?_
+  refine ((h_psi_bound.add h_integral).trans ?_)
+  simp
 
 /-- Mertens 第一定理 (有界差版本) -/
 theorem mertens_first_theorem_bounded :
     ∃ C : ℝ, ∀ᶠ x in atTop,
       |∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x| ≤ C := by
+  rcases mertens_first_theorem.exists_bounded with ⟨C, hC⟩
+  refine ⟨C, ?_⟩
+  -- hC 给出 |...| ≤ C * 1 对于充分大的 x
+  -- 需要将 hC (BigO) 转换为有界差的形式
   sorry
+
+
+/-- 关键引理: ∫₁ˣ ψ(t)/t² dt - Real.log x = O(1) 
+    需要: ∫₁^∞ (ψ(t) - t)/t² dt 收敛 (等价于素数定理)
+    当前为待定状态 -/
+theorem psi_integral_sub_log_isBigO :
+    (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x)
+      =O[atTop] (fun _ ↦ (1 : ℝ)) := by
+  sorry
+
+/-- **Mertens 第一定理**: ∑_{n≤x} Λ(n)/n = Real.log x + O(1)
+    证明: 由 Abel 恒等式 + 积分引理 + Chebyshev 界推出 -/
+theorem mertens_first_theorem :
+    (fun x : ℝ ↦ ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x)
+      =O[atTop] (fun _ ↦ (1 : ℝ)) := by
+  have h_abel : ∀ x ≥ 1, ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) = ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t) :=
+    λ x hx => mertens_abel_identity x hx
+  have h_psi_bound : (fun x : ℝ ↦ ψ x / x) =O[atTop] (fun _ : ℝ ↦ (1 : ℝ)) := by
+    apply Asymptotics.isBigO_of_le_atTop (λ x hx => ?_)
+    have hx_nonneg : 0 ≤ x := by linarith
+    have hbd : |ψ x| ≤ (Real.log 4 + 4) * x := psi_bounded x hx_nonneg  
+    have hpos : 0 ≤ ψ x := Chebyshev.psi_nonneg x
+    have hx_pos : x > 0 := by
+      by_contra! h; have : x ≤ 0 := h; linarith
+    calc
+      |ψ x / x| = |ψ x| / |x| := by rw [abs_div]
+      _ = |ψ x| / x := by simp [hx_pos.le]
+      _ ≤ ((Real.log 4 + 4) * x) / x := by
+        refine (div_le_div_right (by exact_mod_cast (by positivity : 0 < x))).mpr ?_
+        rw [abs_of_nonneg (hpos.trans ?_)]
+        exact hbd
+      _ = Real.log 4 + 4 := by field_simp [hx_pos.ne']
+    _ = (Real.log 4 + 4) * (1 : ℝ) := by ring
+  have h_diff : (fun x : ℝ ↦ ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x) =O[atTop]
+      (fun x : ℝ ↦ ψ x / x + (∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x)) := by
+    apply Asymptotics.isBigO_of_sub_eq_zero
+    ext x
+    have hx : 1 ≤ x := by
+      by_cases h : x ≥ 1; exact h
+      · have : x < 1 := by linarith; have : x ∈ Set.Ioo (-∞) 1 := by exact Set.mem_Ioo.mpr (by linarith)
+        exfalso; exact not_mem_atTop (Set.mem_Ioo.mpr (by linarith))
+    calc
+      ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x
+          = (ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t)) - Real.log x := by rw [mertens_abel_identity x hx]
+      _ = ψ x / x + (∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) := by ring
+  have h_int_bound : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) =O[atTop] (fun _ : ℝ ↦ (1 : ℝ)) :=
+    psi_integral_sub_log_isBigO
+  have h_sum : (fun x : ℝ ↦ ψ x / x + (∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x)) =O[atTop] (fun _ : ℝ ↦ (1 : ℝ)) := by
+    apply h_psi_bound.add h_int_bound
+  exact h_diff.trans h_sum
+
+/-- Mertens 第一定理 (有界差版本) -/
+theorem mertens_first_theorem_bounded :
+    ∃ C : ℝ, ∀ᶠ x in atTop,
+      |∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x| ≤ C := by
+  rcases mertens_first_theorem.exists_bounded with ⟨C, hC⟩
+  refine ⟨C, ?_⟩
+  filter_upwards [hC] with x hx
+  simpa using hx
