@@ -4,7 +4,11 @@ import Mathlib.Data.Nat.Prime.Defs
 import Mathlib.Data.Nat.Prime.Basic
 import Mathlib.Data.Nat.Factors
 import Mathlib.Data.Nat.ModEq
+import Mathlib.Data.ZMod.Basic
 import Mathlib.NumberTheory.PrimesCongruentOne
+import Mathlib.NumberTheory.LegendreSymbol.Basic
+import Mathlib.FieldTheory.Finite.Basic
+import Mathlib.GroupTheory.OrderOfElement
 import Leanprove.Basic
 
 /-!
@@ -17,14 +21,14 @@ import Leanprove.Basic
       ∃ p > n, p.Prime ∧ p ≡ a [MOD q]
 
   本文件:
-  1. 用 Mathlib 现有定理直接导出 p ≡ 1 (mod 4) 的情形
-  2. 用初等方法 (欧几里得式构造) 给出 p ≡ 3 (mod 4) 的原创证明
-  3. 这两个结果的组合展示了 Dirichlet 定理在特殊模数下的两个面
+  1. 用 Mathlib 分圆多项式定理导出 p ≡ 1 (mod 4) 的情形 (代数方法)
+  2. 用初等方法 (n² + 1 的素因子) 独立证明 p ≡ 1 (mod 4) 的无穷性
+  3. 用欧几里得式构造给出 p ≡ 3 (mod 4) 的原创证明 (本文件独立构造)
 
   意义:
-  - p ≡ 1 (mod 4) 的证明 (Mathlib) 使用分圆多项式, 是非初等的方法
-  - p ≡ 3 (mod 4) 的证明 (本文件) 使用欧几里得式构造, 是初等方法
-  - 两者互补, 体现了数论中不同同余类的不同证明策略
+  - p ≡ 1 (mod 4) 提供两种证明: 分圆多项式 (Mathlib) 与 n² + 1 素因子 (初等)
+  - p ≡ 3 (mod 4) 使用欧几里得式构造 N = 4P - 1
+  - 三种方法互补, 体现数论中不同同余类的不同证明策略
 -/
 
 open scoped Nat.Prime
@@ -57,6 +61,196 @@ theorem exists_prime_mod_four_eq_one_gt (N : ℕ) :
 theorem infinite_primes_mod_four_eq_one :
     ∀ N, ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 1 :=
   exists_prime_mod_four_eq_one_gt
+
+
+/-!
+  === Part 1B: p ≡ 1 (mod 4) 的初等证明 ===
+
+  另一种独立的初等方法, 使用 n² + 1 的素因子性质:
+
+  关键引理: 若奇素数 p 整除 n² + 1, 则 p ≡ 1 (mod 4)。
+  这是因为 n² ≡ -1 (mod p), 即 -1 是模 p 的二次剩余,
+  而 -1 是二次剩余当且仅当 p ≡ 1 (mod 4)。
+  (由 ZMod.mod_four_ne_three_of_sq_eq_neg_one 导出)
+
+  构造: 给定 N, 令 n = (N+1)!, M = n² + 1。
+  M 的任何素因子 p 满足:
+  - p ≠ 2 (M 是奇数)
+  - p > N (否则 p ∣ n, 从而 p ∣ n², 又 p ∣ (n² + 1), 得 p ∣ 1, 矛盾)
+  由引理 p ≡ 1 (mod 4)。
+
+  与 Part 1 的分圆多项式方法完全独立, 是更初等的二次剩余论证。
+-/
+
+-- 引理: 若奇素数 p 整除 n² + 1, 则 p ≡ 1 (mod 4)
+theorem prime_dvd_sq_add_one_mod_four (p n : ℕ) (hp : Nat.Prime p) (hp_ne2 : p ≠ 2)
+    (hpdvd : p ∣ n ^ 2 + 1) : p % 4 = 1 := by
+  letI : Fact (Nat.Prime p) := ⟨hp⟩
+  letI : NeZero p := ⟨hp.ne_zero⟩
+  -- Step 1: 证明 n^2 % p = p - 1
+  have hn2_mod : n ^ 2 % p = p - 1 := by
+    have hmod : (n ^ 2 + 1) % p = 0 := Nat.mod_eq_zero_of_dvd hpdvd
+    -- (n^2 + 1) % p = (n^2 % p + 1 % p) % p by Nat.add_mod
+    have h_add : (n ^ 2 + 1) % p = (n ^ 2 % p + 1 % p) % p := Nat.add_mod _ _ _
+    rw [h_add] at hmod
+    -- 1 % p = 1 since p > 1
+    have h1mod : 1 % p = 1 := Nat.mod_eq_of_lt hp.one_lt
+    rw [h1mod] at hmod
+    -- Now hmod : (n^2 % p + 1) % p = 0
+    have hp_gt1 : p > 1 := hp.one_lt
+    by_cases heq : n ^ 2 % p = p - 1
+    · exact heq
+    · have hlt : n ^ 2 % p < p - 1 := by
+        have : n ^ 2 % p < p := Nat.mod_lt _ hp.pos
+        omega
+      have : n ^ 2 % p + 1 < p := by omega
+      have : (n ^ 2 % p + 1) % p = n ^ 2 % p + 1 := Nat.mod_eq_of_lt this
+      rw [this] at hmod
+      omega
+  -- Step 2: 在 ZMod p 中, 设 a = (n : ZMod p), 证明 a^2 = -1
+  have ha2_eq_neg1 : (n : ZMod p) ^ 2 = -1 := by
+    -- Use val injectivity
+    have hp_gt1 : 1 < p := hp.one_lt
+    -- Compute ((n : ZMod p) ^ 2).val
+    have h_pow_val : ((n : ZMod p) ^ 2).val = (n ^ 2) % p := by
+      have h1 : ((n : ZMod p) ^ 2).val = ((n : ZMod p) * (n : ZMod p)).val := by
+        rw [pow_two]
+      rw [h1]
+      have h2 : ((n : ZMod p) * (n : ZMod p)).val =
+          ((n : ZMod p).val * (n : ZMod p).val) % p := ZMod.val_mul _ _
+      rw [h2]
+      have h3 : (n : ZMod p).val = n % p := ZMod.val_natCast _ _
+      rw [h3]
+      -- Goal: (n%p * n%p) % p = n^2 % p
+      -- Use Nat.mul_mod (which says (a*b)%c = (a%c * b%c)%c) in reverse
+      have h4 : (n % p * (n % p)) % p = (n * n) % p := by
+        have h_step : (n * n) % p = (n % p * (n % p)) % p := by
+          rw [Nat.mul_mod, Nat.mul_mod]
+        exact h_step.symm
+      rw [h4, ← Nat.pow_two]
+    -- Compute (-1 : ZMod p).val = p - 1
+    have h_neg1_val : (-1 : ZMod p).val = p - 1 := by
+      cases p with
+      | zero => contradiction
+      | succ p' => exact ZMod.val_neg_one p'
+    -- Show val(a^2) = val(-1)
+    have h_val_eq : ((n : ZMod p) ^ 2).val = (-1 : ZMod p).val := by
+      rw [h_pow_val, h_neg1_val]
+      exact hn2_mod
+    -- val injective → a^2 = -1
+    exact ZMod.val_injective p h_val_eq
+  -- Step 3: Apply ZMod.mod_four_ne_three_of_sq_eq_neg_one
+  have hp_not3 : p % 4 ≠ 3 := ZMod.mod_four_ne_three_of_sq_eq_neg_one ha2_eq_neg1
+  -- p is odd prime → p % 4 ∈ {1, 3}
+  have hp_odd : p % 2 = 1 := hp.eq_two_or_odd.resolve_left hp_ne2
+  have hp_mod4_cases : p % 4 = 1 ∨ p % 4 = 3 := by
+    have : p % 4 < 4 := Nat.mod_lt p (by decide)
+    omega
+  cases hp_mod4_cases with
+  | inl h1 => exact h1
+  | inr h3 => exfalso; exact hp_not3 h3
+
+
+-- 推论: n² + 1 的素因子只能是 2 或 ≡ 1 (mod 4)
+theorem prime_factor_sq_add_one (p n : ℕ) (hp : Nat.Prime p)
+    (hpdvd : p ∣ n ^ 2 + 1) : p = 2 ∨ p % 4 = 1 := by
+  by_cases hp2 : p = 2
+  · exact Or.inl hp2
+  · exact Or.inr (prime_dvd_sq_add_one_mod_four p n hp hp2 hpdvd)
+
+
+/-!
+  === Part 1C: p ≡ 1 (mod 4) 初等无穷性证明 ===
+
+  使用 Part 1B 的引理, 构造性地证明: 对任意 N, 存在素数 p > N 且 p ≡ 1 (mod 4)。
+  构造: n = (N+1)!, M = n² + 1。
+  M 的素因子 p 满足 p > N 且 (p = 2 或 p ≡ 1 (mod 4))。
+  由于 M 是奇数, p ≠ 2, 故 p ≡ 1 (mod 4)。
+-/
+
+-- 定理 (初等): 对任意 N, 存在素数 p > N 使得 p ≡ 1 (mod 4)
+theorem exists_prime_mod_four_eq_one_gt_elementary (N : ℕ) :
+    ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 1 := by
+  -- 对 N = 0, 直接给出 p = 5
+  by_cases hN0 : N = 0
+  · use 5
+    constructor
+    · decide
+    · constructor
+      · rw [hN0]; decide
+      · decide
+  -- N ≥ 1 的情形
+  · have hN_pos : N ≥ 1 := by omega
+    -- 构造: n = (N+1)!, M = n² + 1
+    let n := (N + 1).factorial
+    let M := n ^ 2 + 1
+    -- M ≥ 2, 所以 M ≠ 1
+    have hM_ge2 : M ≥ 2 := by
+      have hn_ge1 : n ≥ 1 := Nat.factorial_pos (N + 1)
+      have hn2_ge1 : n ^ 2 ≥ 1 := by
+        have : n ^ 2 ≥ n := Nat.le_self_pow (by omega) n
+        omega
+      dsimp [M]
+      omega
+    have hM_ne1 : M ≠ 1 := by
+      intro h
+      have : M ≥ 2 := hM_ge2
+      omega
+    -- M 有素因子
+    obtain ⟨p, hp_prime, hpM⟩ : ∃ p, Nat.Prime p ∧ p ∣ M := by
+      exact Nat.exists_prime_and_dvd hM_ne1
+    -- M 是奇数 (n = (N+1)! 是偶数因为 N ≥ 1, M = n² + 1 是奇数)
+    have hM_odd : M % 2 = 1 := by
+      have hn_even : n % 2 = 0 := by
+        have h2pos : (2 : ℕ) > 0 := by decide
+        have h2le : 2 ≤ N + 1 := by omega
+        have : 2 ∣ (N + 1).factorial := Nat.dvd_factorial h2pos h2le
+        exact Nat.mod_eq_zero_of_dvd this
+      have hn2_even : (n ^ 2) % 2 = 0 := by
+        rw [Nat.pow_two, Nat.mul_mod, hn_even]
+      dsimp [M]
+      have : (n ^ 2 + 1) % 2 = ((n ^ 2) % 2 + 1 % 2) % 2 := Nat.add_mod _ _ _
+      rw [this, hn2_even]
+    -- 取 M 的素因子 p, 由 Part 1B 知 p = 2 或 p ≡ 1 (mod 4)
+    have hp_choice : p = 2 ∨ p % 4 = 1 := prime_factor_sq_add_one p n hp_prime hpM
+    -- p ≠ 2 (M 是奇数, 2 不整除 M)
+    have hp_ne2 : p ≠ 2 := by
+      intro h2
+      rw [h2] at hpM
+      have : (2 : ℕ) ∣ M := hpM
+      have hmod0 : M % 2 = 0 := Nat.mod_eq_zero_of_dvd this
+      have hmod1 : M % 2 = 1 := hM_odd
+      omega
+    -- 因此 p ≡ 1 (mod 4)
+    have hp_mod4 : p % 4 = 1 := by
+      cases hp_choice with
+      | inl h2 => exfalso; exact hp_ne2 h2
+      | inr h1 => exact h1
+    -- 证明 p > N
+    have hp_gt : p > N := by
+      by_contra hp_le
+      have hp_le_N : p ≤ N := by omega
+      -- p ≤ N → p ∣ (N+1)! = n
+      have hp_dvd_n : p ∣ n := by
+        have hp_le_succ : p ≤ N + 1 := by omega
+        exact Nat.dvd_factorial hp_prime.pos hp_le_succ
+      -- p ∣ n → p ∣ n² (n² = n * n)
+      have hp_dvd_n2 : p ∣ n ^ 2 := by
+        have : n ^ 2 = n * n := by rw [Nat.pow_two]
+        rw [this]
+        exact dvd_mul_of_dvd_left hp_dvd_n n
+      -- p ∣ n² 且 p ∣ (n² + 1) → p ∣ 1
+      have hp_dvd_one : p ∣ 1 := by
+        have hsub : p ∣ (n ^ 2 + 1) - n ^ 2 := Nat.dvd_sub hpM hp_dvd_n2
+        have heq : (n ^ 2 + 1) - n ^ 2 = 1 := by
+          have : n ^ 2 + 1 ≥ n ^ 2 := Nat.le_add_right (n ^ 2) 1
+          omega
+        rwa [heq] at hsub
+      -- 素数 p ≥ 2 不能整除 1
+      have : p ≤ 1 := Nat.le_of_dvd (by decide) hp_dvd_one
+      have : p ≥ 2 := hp_prime.two_le
+      omega
+    exact ⟨p, hp_prime, hp_gt, hp_mod4⟩
 
 
 /-!
@@ -93,9 +287,7 @@ theorem exists_prime_factor_mod_four_eq_three (n : ℕ) (hn : n % 4 = 3) :
     fun p hp => Nat.prime_of_mem_primeFactorsList hp
   -- 反证: 假设不存在 ≡ 3 (mod 4) 的素因子
   by_contra hnone
-  -- push_neg 已弃用, 用 push Not 替代; 或直接手动展开
   -- hnone : ¬∃ p, Nat.Prime p ∧ p ∣ n ∧ p % 4 = 3
-  -- 展开后: ∀ p, Nat.Prime p → p ∣ n → p % 4 ≠ 3
   have hnone' : ∀ p, Nat.Prime p → p ∣ n → p % 4 ≠ 3 := by
     intro p hp_prime hp_dvd hp_mod4
     exact hnone ⟨p, hp_prime, hp_dvd, hp_mod4⟩
@@ -156,7 +348,6 @@ theorem exists_prime_mod_four_eq_three_gt (N : ℕ) :
   have hP_pos : P ≥ 1 := by
     apply Finset.one_le_prod'
     intro x hx
-    -- hx : x ∈ S = filter (fun p => Prime p ∧ p % 4 = 3) (range (N+1))
     have hx_mem : x ∈ Finset.filter (fun p => Nat.Prime p ∧ p % 4 = 3) (Finset.range (N + 1)) := by
       dsimp [S] at hx; exact hx
     have : x ∈ Finset.range (N + 1) := Finset.mem_of_mem_filter x hx_mem
@@ -190,7 +381,6 @@ theorem exists_prime_mod_four_eq_three_gt (N : ℕ) :
       dsimp [M] at hq_dvd
       have h4P_ge_1 : 4 * P ≥ 1 := by omega
       have hsub : q ∣ 4 * P - (4 * P - 1) := Nat.dvd_sub hq_dvd_4P hq_dvd
-      -- 4*P - (4*P - 1) = 1
       have heq : 4 * P - (4 * P - 1) = 1 := by omega
       rwa [heq] at hsub
     -- 素数 q ≥ 2 不能整除 1

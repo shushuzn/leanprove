@@ -37,17 +37,23 @@ theorem interval_contains_prime (n : Nat) (hn : n ≠ 0) :
   exact ⟨p, hp, Nat.succ_le_of_lt hlt, hle⟩
 
 -- 应用3: 素数间隙有界
--- 存在无穷多对素数 (p, q) 满足 q ≤ 2p
+-- 存在无穷多对不同的素数 (p, q) 满足 p < q ≤ 2p
 theorem infinite_prime_pairs :
     ∀ N : Nat, ∃ p q : Nat, Nat.Prime p ∧ Nat.Prime q ∧
-    p > N ∧ q ≤ 2 * p := by
+    p > N ∧ p ≠ q ∧ q ≤ 2 * p := by
   intro N
+  -- 第一步: 用 Bertrand 假设找 p > N
   have hN : N + 1 ≠ 0 := Nat.succ_ne_zero N
-  obtain ⟨q, hq_prime, hq_low, _hq_high⟩ :=
+  obtain ⟨p, hp_prime, hlt, hle⟩ :=
     Nat.exists_prime_lt_and_le_two_mul (N + 1) hN
-  have hp_low : N < q := Nat.lt_of_succ_lt hq_low
-  have hq_le : q ≤ 2 * q := by omega
-  exact ⟨q, q, hq_prime, hq_prime, hp_low, hq_le⟩
+  have hp_gt : p > N := Nat.lt_of_succ_lt hlt
+  -- 第二步: 再用 Bertrand 假设找 q ∈ (p, 2p]
+  have hp_ne0 : p ≠ 0 := Nat.Prime.ne_zero hp_prime
+  obtain ⟨q, hq_prime, hq_lt, hq_le⟩ :=
+    Nat.exists_prime_lt_and_le_two_mul p hp_ne0
+  -- p < q 确保 p ≠ q
+  have hpq : p ≠ q := by omega
+  exact ⟨p, q, hp_prime, hq_prime, hp_gt, hpq, hq_le⟩
 
 
 -- 应用4: 素数有无穷多个
