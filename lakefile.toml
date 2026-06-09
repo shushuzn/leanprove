@@ -1,0 +1,11 @@
+name = "leanprove"
+version = "0.1.0"
+defaultTargets = ["Leanprove"]
+
+[[lean_lib]]
+name = "Leanprove"
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.31.0-rc2"
