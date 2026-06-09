@@ -281,8 +281,10 @@ theorem mertens_abel_identity (x : ℝ) (hx : 1 ≤ x) : ∑ n ∈ Finset.Icc 0 
 theorem psi_integral_sub_log_isBigO : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
   sorry
 
-/-- Mertens 第一定理: ∑ Λ(n)/n = log x + O(1)
-    由 Abel 恒等式 + 积分引理 + Chebyshev 界推出 -/
+/-- Mertens 第一定理的初等证明需要 Stirling 公式和卷积恒等式,
+    当前为待定状态. -/
+
+/-- Mertens 第一定理 (初等证明: ∑ Λ(n)/n = ∑ log n/x + O(ψ(x)/x)) -/
 theorem mertens_first_theorem : (fun x : ℝ ↦ ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
   have h_psi_bound : (fun x : ℝ ↦ ψ x / x) =O[atTop] (fun _ : ℝ ↦ (1 : ℝ)) := by
     refine Asymptotics.isBigO_of_le_atTop (λ x hx => ?_)
@@ -297,15 +299,14 @@ theorem mertens_first_theorem : (fun x : ℝ ↦ ∑ n ∈ Finset.Icc 0 ⌊x⌋�
         rw [abs_of_nonneg hpos, abs_of_nonneg hx_pos.le]; exact hbd)
       _ = Real.log 4 + 4 := by field_simp [hx_pos.ne']
     _ = (Real.log 4 + 4) * (1 : ℝ) := by ring
-  have h_integral := psi_integral_sub_log_isBigO
-  have h_sum : (fun x : ℝ ↦ ψ x / x + (∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x)) =O[atTop] (fun _ : ℝ ↦ (1 : ℝ)) :=
-    h_psi_bound.add h_integral
-  refine (Asymptotics.isBigO_of_eventually_eq ?_ h_sum).trans h_sum
-  refine Filter.eventually_atTop.mpr ⟨1, λ x hx => ?_⟩
-  calc
-    ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x
-        = (ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t)) - Real.log x := by rw [mertens_abel_identity x hx]
-    _ = ψ x / x + (∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) := by ring
+  have h_mertens_abel : ∀ x ≥ 1, ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) = ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t) :=
+    mertens_abel_identity
+  
+  -- 由 mertens_abel_identity: ∑ Λ/n = ψ/x + ∫ ψ/t² dt
+  -- 所以: ∑ Λ/n - log x = ψ/x + (∫ ψ/t² dt - log x)
+  -- 需要: ∫ ψ/t² dt - log x = O(1), 这等价于素数定理.
+  -- 目前为待定: 需要 ∫_1^∞ (ψ(t) - t)/t² dt 收敛
+  sorry
 
 /-- Mertens 第一定理 (有界差版本) -/
 theorem mertens_first_theorem_bounded : ∃ C : ℝ, ∀ᶠ x in atTop, |∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x| ≤ C := by

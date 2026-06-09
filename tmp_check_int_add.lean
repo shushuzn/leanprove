@@ -1,0 +1,6 @@
+
+import Mathlib
+open Real
+
+#check intervalIntegral.integral_add_adjacent_intervals
+#check intervalIntegral.integral_add_adjacent_intervals_eq
