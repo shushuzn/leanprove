@@ -251,6 +251,107 @@ theorem psi_integral_sub_log_isBigO : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ 
     当前为待定状态. -/
 
 /-- Mertens 第一定理 (初等证明: ∑ Λ(n)/n = ∑ log n/x + O(ψ(x)/x)) -/
+
+lemma log_int_on (a b : ℕ) (ha : 1 ≤ a) (hb : a ≤ b) : IntervalIntegrable Real.log volume (a : ℝ) (b : ℝ) := by
+  have h_uicc : Set.uIcc (a : ℝ) (b : ℝ) ⊆ {0}ᶜ := by
+    intro x hx
+    have hx_pos : 0 < x := by
+      rcases Set.mem_uIcc.mp hx with (⟨h1, h2⟩ | ⟨h1, h2⟩)
+      · have : (1 : ℝ) ≤ x := le_trans (show (1 : ℝ) ≤ (a : ℝ) from by exact_mod_cast ha) h1; linarith
+      · have : (1 : ℝ) ≤ x := le_trans (show (1 : ℝ) ≤ (a : ℝ) from by exact_mod_cast ha)
+          (le_trans (by exact_mod_cast hb : (a : ℝ) ≤ (b : ℝ)) h1)
+        linarith
+    simp [hx_pos.ne', Set.mem_compl_iff, Set.mem_singleton_iff]
+  exact (Real.continuousOn_log.mono h_uicc).intervalIntegrable
+
+lemma log_interval_ineq (n : ℕ) (hn : 1 ≤ n) : Real.log (n : ℝ) ≤ ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t ∧
+    ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t ≤ Real.log ((n+1 : ℕ) : ℝ) := by
+  have h_n_n1 : (n : ℝ) ≤ n+1 := by nlinarith
+  have h_int_const : IntervalIntegrable (λ _ : ℝ => Real.log (n : ℝ)) volume (n : ℝ) (n+1 : ℝ) := intervalIntegrable_const
+  have h_int_log : IntervalIntegrable Real.log volume (n : ℝ) (n+1 : ℝ) := by
+    simpa [show ((n+1 : ℕ) : ℝ) = (n : ℝ) + 1 by simp] using log_int_on n (n+1) hn (Nat.le_succ n)
+  have h_int_n1 : IntervalIntegrable (λ _ : ℝ => Real.log ((n+1 : ℕ) : ℝ)) volume (n : ℝ) (n+1 : ℝ) := intervalIntegrable_const
+  have h_log_on : ∀ x ∈ Set.Icc (n : ℝ) (n+1 : ℝ), Real.log (n : ℝ) ≤ Real.log x := by
+    intro x hx; have hnpos : 0 < (n : ℝ) := by exact_mod_cast (show 0 < n from by omega)
+    exact Real.log_le_log hnpos hx.1
+  have h_log_on' : ∀ x ∈ Set.Icc (n : ℝ) (n+1 : ℝ), Real.log x ≤ Real.log ((n+1 : ℕ) : ℝ) := by
+    intro x hx; have hxpos : 0 < x := calc
+      0 < (1 : ℝ) := by norm_num; _ ≤ (n : ℝ) := by exact_mod_cast hn; _ ≤ x := hx.1
+    exact Real.log_le_log hxpos (by simpa [Nat.cast_succ] using hx.2)
+  constructor
+  · calc
+      Real.log (n : ℝ) = ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log (n : ℝ) := by simp
+      _ ≤ ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t :=
+        intervalIntegral.integral_mono_on h_n_n1 h_int_const h_int_log h_log_on
+  · calc
+      ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t ≤ ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log ((n+1 : ℕ) : ℝ) :=
+        intervalIntegral.integral_mono_on h_n_n1 h_int_log h_int_n1 h_log_on'
+      _ = Real.log ((n+1 : ℕ) : ℝ) := by simp
+
+lemma int_split_eq (N : ℕ) (hN : N ≥ 1) : ∫ t in (1 : ℝ)..(N : ℝ), Real.log t = ∑ n ∈ Finset.Icc 1 (N-1), ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t := by
+  induction' N with k IH
+  · omega
+  · by_cases hk : k = 0
+    · subst hk; simp
+    · have hk1 : 1 ≤ k := by omega
+      have h_1k : IntervalIntegrable Real.log volume (1 : ℝ) (k : ℝ) := by
+        simpa using log_int_on 1 k (by omega) hk1
+      have h_kk1 : IntervalIntegrable Real.log volume (k : ℝ) ((k : ℝ) + 1) := by
+        simpa [Nat.cast_succ] using log_int_on k (k+1) hk1 (Nat.le_succ k)
+      have h_add : ∫ t in (1 : ℝ)..(k.succ : ℝ), Real.log t = ∫ t in (1 : ℝ)..(k : ℝ), Real.log t + ∫ t in (k : ℝ)..(k+1 : ℝ), Real.log t := calc
+        ∫ t in (1 : ℝ)..(k.succ : ℝ), Real.log t = ∫ t in (1 : ℝ)..((k : ℝ) + 1), Real.log t := by simp
+        _ = ∫ t in (1 : ℝ)..(k : ℝ), Real.log t + ∫ t in (k : ℝ)..(k+1 : ℝ), Real.log t :=
+          (intervalIntegral.integral_add_adjacent_intervals h_1k h_kk1).symm
+      rw [h_add, IH (by omega)]
+      have h_range : Icc 1 (k.succ - 1) = Icc 1 k := by ext n; simp; omega
+      have h_union : Icc 1 (k - 1) ∪ {k} = Icc 1 k := by ext n; simp; omega
+      have h_disjoint : Disjoint (Icc 1 (k - 1)) ({k} : Finset ℕ) := by
+        apply Finset.disjoint_singleton_right.mpr; intro h; have : k ≤ k - 1 := (Finset.mem_Icc.mp h).2; omega
+      rw [h_range]
+      calc
+        ∑ n ∈ Icc 1 (k-1), ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t + ∫ t in (k : ℝ)..(k+1 : ℝ), Real.log t
+            = (∑ n ∈ Icc 1 (k-1), ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t) + ∫ t in (k : ℝ)..(k+1 : ℝ), Real.log t := rfl
+        _ = ∑ n ∈ (Icc 1 (k-1) ∪ {k}), ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t := by
+          rw [Finset.sum_union h_disjoint, Finset.sum_singleton]
+        _ = ∑ n ∈ Icc 1 k, ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t := by rw [h_union]
+
+lemma sum_log_stirling (N : ℕ) (hN : N ≥ 1) : |∑ n ∈ Icc 1 N, Real.log (n : ℝ) - ((N : ℝ) * Real.log (N : ℝ) - (N : ℝ))| ≤ Real.log (N : ℝ) + 1 := by
+  have h_int_val : ∫ t in (1 : ℝ)..(N : ℝ), Real.log t = (N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1 := by
+    rw [integral_log]; ring
+  have h_split : ∫ t in (1 : ℝ)..(N : ℝ), Real.log t = ∑ n ∈ Icc 1 (N-1), ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t := int_split_eq N hN
+  have h_low_sum : ∑ n ∈ Icc 1 (N-1), Real.log (n : ℝ) ≤ ∑ n ∈ Icc 1 (N-1), ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t :=
+    Finset.sum_le_sum (λ n hn => (log_interval_ineq n ((Finset.mem_Icc.mp hn).1)).1)
+  have h_high_sum : ∑ n ∈ Icc 1 (N-1), ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t ≤ ∑ n ∈ Icc 1 (N-1), Real.log ((n+1 : ℕ) : ℝ) :=
+    Finset.sum_le_sum (λ n hn => (log_interval_ineq n ((Finset.mem_Icc.mp hn).1)).2)
+  have h_shift : ∑ n ∈ Icc 1 (N-1), Real.log ((n+1 : ℕ) : ℝ) = ∑ n ∈ Icc 2 N, Real.log (n : ℝ) := by
+    refine Finset.sum_bij (λ n _ => n+1) ?_ ?_ ?_ ?_ ?_ ?_
+    · intro n hn; rcases Finset.mem_Icc.mp hn with ⟨hn1, hn2⟩
+      apply Finset.mem_Icc.mpr; constructor <;> omega
+    · intro n hn; simp
+    · intro a ha b hb h; omega
+    · intro m hm; rcases Finset.mem_Icc.mp hm with ⟨hm2, hmN⟩
+      refine ⟨m-1, Finset.mem_Icc.mpr ⟨by omega, by omega⟩, ?_⟩; omega
+    · rfl
+  have h_Icc1N_eq : ∑ n ∈ Icc 1 N, Real.log (n : ℝ) = (∑ n ∈ Icc 1 (N-1), Real.log (n : ℝ)) + Real.log (N : ℝ) := by
+    rcases N with (h | N); omega; simp [Finset.Icc_succ_singleton, add_comm]
+  have h_Icc1N_cover : ∑ n ∈ Icc 2 N, Real.log (n : ℝ) = ∑ n ∈ Icc 1 N, Real.log (n : ℝ) := by
+    have h_eq : Icc 1 N = {1} ∪ Icc 2 N := by ext n; simp; omega
+    rw [h_eq, Finset.sum_union (by simp), Finset.sum_singleton]; simp
+  have h_sum_low : (N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1 ≤ ∑ n ∈ Icc 1 N, Real.log (n : ℝ) := by
+    calc
+      (N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1 = ∫ t in (1 : ℝ)..(N : ℝ), Real.log t := by rw [h_int_val]
+      _ = ∑ n ∈ Icc 1 (N-1), ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t := h_split
+      _ ≤ ∑ n ∈ Icc 1 (N-1), Real.log ((n+1 : ℕ) : ℝ) := h_high_sum
+      _ = ∑ n ∈ Icc 2 N, Real.log (n : ℝ) := h_shift
+      _ = ∑ n ∈ Icc 1 N, Real.log (n : ℝ) := h_Icc1N_cover
+  have h_sum_high : ∑ n ∈ Icc 1 N, Real.log (n : ℝ) ≤ (N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1 + Real.log (N : ℝ) := by
+    calc
+      ∑ n ∈ Icc 1 N, Real.log (n : ℝ) = (∑ n ∈ Icc 1 (N-1), Real.log (n : ℝ)) + Real.log (N : ℝ) := h_Icc1N_eq
+      _ ≤ (∑ n ∈ Icc 1 (N-1), ∫ t in (n : ℝ)..(n+1 : ℝ), Real.log t) + Real.log (N : ℝ) := by nlinarith
+      _ = (∫ t in (1 : ℝ)..(N : ℝ), Real.log t) + Real.log (N : ℝ) := by rw [h_split]
+      _ = (N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1 + Real.log (N : ℝ) := by rw [h_int_val]
+  rw [abs_le]; constructor <;> nlinarith
+
 theorem mertens_first_theorem : (fun x : ℝ ↦ ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
   have h_psi_bound : (fun x : ℝ ↦ ψ x / x) =O[atTop] (fun _ : ℝ ↦ (1 : ℝ)) := by
     refine Asymptotics.isBigO_of_le_atTop (λ x hx => ?_)
