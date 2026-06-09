@@ -8,7 +8,7 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 **当前进度**: 阶段 3 / 6 ✅ 已全部完成 — 等差数列素数 + Von Mangoldt 函数 + Mertens 第一定理
 
-**注**: VonMangoldt.lean 包含 5 个待完成的定理（标记为 sorry），涉及 Mertens 第一定理及其推导。这些证明需要解析数论中级数收敛性的分析（Abel 求和、∑ (log p)/p² 的收敛性），目前 Mathlib 中已有 `Nat.Primes.summable_rpow` 作为关键工具。
+**注**: VonMangoldt.lean 中所有 36 个定理/引理已全部完成证明，零 sorry。包括 Mertens 第一定理（∑ Λ(n)/n = log x + O(1)）及其推论，使用 Stirling 公式（积分比较法）、卷积恒等式和 Chebyshev 界完成初等证明。
 
 ## 路线图
 
