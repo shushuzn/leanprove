@@ -63,13 +63,7 @@ Dirichlet 定理 (1837) 的特殊情形: 用初等方法证明特定等差数列
 (`Nat.forall_exists_prime_gt_and_modEq`, 在 `Mathlib.NumberTheory.LSeries.PrimesInAP` 中)。
 本文件的价值在于: p ≡ 3 (mod 4) 的证明是原创的初等方法, 与 Mathlib 的解析证明互补。
 
-### 阶段 4-6: 待实现
-
-| 阶段 | 主题 | 核心目标 | Mathlib 现状 |
-|------|------|----------|-------------|
-| 4 | 素数定理 | π(x) ~ x/ln(x) | 缺少 ζ 解析延拓、Tauber 定理 |
-| 5 | ζ 函数与零点 | 非平凡零点的分布 | 缺少函数方程、Hadamard 乘积 |
-| 6 | 黎曼猜想 | 零点在 Re(s) = 1/2 上 | 未解决 (千禧年问题) |
+后续阶段的详细规划、Mathlib 现状分析与实施建议见 [ROADMAP.md](ROADMAP.md)。
 
 ## 项目结构
 
