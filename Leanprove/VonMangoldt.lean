@@ -2,8 +2,10 @@
 import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
 import Mathlib.NumberTheory.Chebyshev
 open ArithmeticFunction (vonMangoldt vonMangoldt_apply_one vonMangoldt_nonneg vonMangoldt_apply_prime vonMangoldt_apply_pow vonMangoldt_ne_zero_iff vonMangoldt_pos_iff vonMangoldt_eq_zero_iff vonMangoldt_sum vonMangoldt_mul_zeta zeta_mul_vonMangoldt log_mul_moebius_eq_vonMangoldt moebius_mul_log_eq_vonMangoldt sum_moebius_mul_log_eq)
-open Set Filter Topology Real; open scoped BigOperators
-local notation "ψ" => Chebyshev.psi; local notation "θ" => Chebyshev.theta
+open Set Filter Topology Real
+open scoped BigOperators
+notation "ψ" => Chebyshev.psi
+notation "θ" => Chebyshev.theta
 
 /-! === 第一部分: 基本性质 (8定理) === -/
 theorem vonMangoldt_one : vonMangoldt 1 = 0 := vonMangoldt_apply_one
@@ -27,8 +29,13 @@ theorem sum_moebius_mul_log_eq_vonMangoldt' (n : ℕ) : (∑ d ∈ n.divisors, (
 theorem psi_eq_sum_vonMangoldt_Icc (x : ℝ) : ψ x = ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, vonMangoldt n := Chebyshev.psi_eq_sum_Icc x
 theorem psi_nat_eq_sum (n : ℕ) : ψ (n : ℝ) = ∑ k ∈ Finset.Ioc 0 n, vonMangoldt k := by simp [Chebyshev.psi]
 theorem psi_nat_eq_sum_Icc (n : ℕ) : ψ (n : ℝ) = ∑ k ∈ Finset.Icc 0 n, vonMangoldt k := by rw [Chebyshev.psi_eq_sum_Icc]; simp
+theorem vonMangoldt_zero : vonMangoldt 0 = 0 := by
+  rw [show vonMangoldt 0 = 0 from by norm_num [ArithmeticFunction.vonMangoldt]]
 theorem sum_vonMangoldt_eq_psi (n : ℕ) (hn : 0 < n) : ∑ k ∈ Finset.Icc 1 n, vonMangoldt k = ψ (n : ℝ) := by
-  rw [Chebyshev.psi_eq_sum_Icc]; simp [Nat.floor_natCast]; omega
+  rw [psi_nat_eq_sum_Icc]
+  have : Finset.Icc 0 n = insert 0 (Finset.Icc 1 n) := by
+    apply Finset.ext; intro k; simp; omega
+  rw [this, Finset.sum_insert (by simp), vonMangoldt_zero, zero_add]
 
 /-! === 第四部分: Chebyshev 界 (3定理) === -/
 theorem psi_bounded (x : ℝ) (hx : 0 ≤ x) : |ψ x| ≤ (Real.log 4 + 4) * x := by
@@ -42,19 +49,20 @@ lemma log_lt_two_sqrt {p : ℝ} (hp : 1 ≤ p) : Real.log p < 2 * Real.sqrt p :=
   have h_log_sqrt : Real.log (Real.sqrt p) ≤ Real.sqrt p - 1 := Real.log_le_sub_one_of_pos hsqrt_pos
   calc Real.log p = Real.log ((Real.sqrt p) ^ 2) := by rw [Real.sq_sqrt (by linarith)]
     _ = 2 * Real.log (Real.sqrt p) := by rw [Real.log_pow, Nat.cast_ofNat]
-    _ ≤ 2 * (Real.sqrt p - 1) := by gcongr; _ < 2 * Real.sqrt p := by nlinarith
+    _ ≤ 2 * (Real.sqrt p - 1) := by linarith [h_log_sqrt]
+    _ < 2 * Real.sqrt p := by linarith [hsqrt_pos]
 
 lemma sqrt_div_sq_eq_rpow (p : ℕ) (hp : 0 < p) : Real.sqrt (p : ℝ) / ((p : ℝ) ^ (2 : ℝ)) = (p : ℝ) ^ (-3/2 : ℝ) := by
-  have hp_pos : (p : ℝ) > 0 := by exact_mod_cast hp; have h_sub : (1/2 : ℝ) - (2 : ℝ) = (-3/2 : ℝ) := by ring
+  have hp_pos : (p : ℝ) > 0 := by exact_mod_cast hp
   calc Real.sqrt (p : ℝ) / ((p : ℝ) ^ (2 : ℝ)) = ((p : ℝ) ^ (1/2 : ℝ)) / ((p : ℝ) ^ (2 : ℝ)) := by rw [Real.sqrt_eq_rpow]
-    _ = (p : ℝ) ^ ((1/2 : ℝ) - (2 : ℝ)) := by rw [← Real.rpow_sub hp_pos]; _ = (p : ℝ) ^ (-3/2 : ℝ) := by rw [h_sub]
+    _ = (p : ℝ) ^ ((1/2 : ℝ) - (2 : ℝ)) := by rw [Real.rpow_sub hp_pos]
+    _ = (p : ℝ) ^ (-3/2 : ℝ) := by rw [show (1/2 : ℝ) - (2 : ℝ) = (-3/2 : ℝ) from by ring]
 
 lemma log_div_sq_bound_le (p : ℕ) (hp : 2 ≤ p) : Real.log (p : ℝ) / ((p : ℝ) ^ (2 : ℝ)) ≤ 2 * ((p : ℝ) ^ (-3/2 : ℝ)) := by
   have hp' : 1 ≤ (p : ℝ) := by exact_mod_cast (show 1 ≤ p from by omega)
   have h_log : Real.log (p : ℝ) < 2 * Real.sqrt (p : ℝ) := log_lt_two_sqrt hp'
   have h_sq_pos : (p : ℝ) ^ (2 : ℝ) > 0 := by positivity
-  have h1 : Real.log (p : ℝ) / ((p : ℝ) ^ (2 : ℝ)) < (2 * Real.sqrt (p : ℝ)) / ((p : ℝ) ^ (2 : ℝ)) :=
-    (div_lt_div_right h_sq_pos).mpr h_log
+  have h1 : Real.log (p : ℝ) / ((p : ℝ) ^ (2 : ℝ)) < (2 * Real.sqrt (p : ℝ)) / ((p : ℝ) ^ (2 : ℝ)) := by gcongr
   have h2 : (2 * Real.sqrt (p : ℝ)) / ((p : ℝ) ^ (2 : ℝ)) = 2 * ((p : ℝ) ^ (-3/2 : ℝ)) := by
     calc _ = 2 * (Real.sqrt (p : ℝ) / ((p : ℝ) ^ (2 : ℝ))) := by ring
       _ = 2 * ((p : ℝ) ^ (-3/2 : ℝ)) := by rw [sqrt_div_sq_eq_rpow p (by omega : 0 < p)]
@@ -89,10 +97,16 @@ lemma pow_div_pow_bound (p : ℕ) (hp : 2 ≤ p) (k : ℕ) (hk : 2 ≤ k) : (1 :
   have hp_pos : (p : ℝ) > 0 := by exact_mod_cast (show 0 < p from by omega)
   calc
     (1 : ℝ) / ((p : ℝ) ^ k) = (1 / ((p : ℝ) ^ 2)) * ((1 / (p : ℝ)) ^ (k - 2)) := by
-      have hk_eq : k = (k - 2) + 2 := by omega; rw [hk_eq, pow_add, div_div]; field_simp [hp_pos.ne'']; ring
+      have hk : (p : ℝ) ^ k = (p : ℝ) ^ 2 * (p : ℝ) ^ (k - 2) := by
+        rw [← pow_add]; congr 1; omega
+      rw [hk, div_mul_eq_div_div_swap, ← one_div_pow]
+      -- 现在: (1/↑p)^(k-2) / ↑p^2 = 1/↑p^2 * (1/↑p)^(k-2)
+      -- 关键引理: a / b = (1/b) * a
+      have key : ∀ a b : ℝ, b ≠ 0 → a / b = (1 / b) * a := by intros; field_simp
+      rw [key _ _ (by positivity : (↑p : ℝ) ^ 2 ≠ 0)]
     _ ≤ (1 / ((p : ℝ) ^ 2)) * (((1 : ℝ) / 2) ^ (k - 2)) := by
-      gcongr; refine pow_le_pow_right (by positivity) ?_
-      refine (one_div_le_one_div (by positivity) (by norm_num)).mpr ?_; exact_mod_cast hp
+      gcongr
+      exact_mod_cast hp
     _ = ((1 : ℝ) / 2) ^ (k - 2) * (1 / ((p : ℝ) ^ 2)) := by ring
 
 lemma geom_tail_Icc_bound (p M : ℕ) (hp : 2 ≤ p) (hM : 2 ≤ M) : 
@@ -119,8 +133,8 @@ lemma geom_tail_Icc_bound (p M : ℕ) (hp : 2 ≤ p) (hM : 2 ≤ M) :
     calc (1 : ℝ) / ((p : ℝ) ^ k) = (1 / ((p : ℝ) ^ 2)) * ((1 / (p : ℝ)) ^ (k - 2)) := by
       have hk_eq : k = (k - 2) + 2 := by omega; rw [hk_eq, pow_add, div_div]; field_simp [show (p : ℝ) ≠ 0 from by exact_mod_cast (Nat.pos_of_ne_zero (by omega)).ne']; ring
     _ ≤ (1 / ((p : ℝ) ^ 2)) * (((1 : ℝ) / 2) ^ (k - 2)) := by
-      gcongr; refine pow_le_pow_right (by positivity) ?_
-      refine (one_div_le_one_div (by positivity) (by norm_num)).mpr ?_; exact_mod_cast hp
+      gcongr
+      exact_mod_cast hp
     _ = ((1 : ℝ) / 2) ^ (k - 2) * (1 / ((p : ℝ) ^ 2)) := by ring
 
 /-! === 第六部分: primePower_contribution_bounded (已证明) === -/
