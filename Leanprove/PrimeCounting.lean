@@ -2,6 +2,7 @@
 -- 基于 Mathlib.NumberTheory.PrimeCounting 的定义
 -- 和 Mathlib.NumberTheory.Chebyshev 的 Chebyshev 界
 import Mathlib.NumberTheory.Chebyshev
+import Leanprove.Chebyshev
 
 /-!
   == 素数计数函数 π(x) ==
@@ -73,9 +74,9 @@ theorem pi_tendsto_top :
 /-!
   === π(x) 与 Chebyshev 函数的关系 ===
 
-  核心关系 (Mathlib):
-  - θ(x) ≤ π(x) · ln(x)          (theta_le_pi_mul_log)
-  - ψ(x) ≤ π(x) · ln(x)          (psi_le_primeCounting_mul_log)
+  核心关系 (Mathlib, 见 Leanprove.Chebyshev):
+  - θ(x) ≤ π(x) · ln(x)          (theta_le_pi_mul_log')
+  - ψ(x) ≤ π(x) · ln(x)          (psi_le_pi_mul_log')
   - π(x) = θ(x)/ln(x) + O(x/ln²(x))  (primeCounting_eq_theta_div_log_add_integral)
 
   这些关系说明:
@@ -84,16 +85,8 @@ theorem pi_tendsto_top :
   3. 从 θ(x) 的界可以推导 π(x) 的界
 -/
 
-
--- θ(x) ≤ π(x) · ln(x)
-theorem theta_le_pi_mul_log'' (n : Nat) : θ n ≤ (π n) * log n :=
-  Chebyshev.theta_le_pi_mul_log n
-
-
--- ψ(x) ≤ π(x) · ln(x)
-theorem psi_le_pi_mul_log'' (n : Nat) : ψ n ≤ (π n) * log n :=
-  Chebyshev.psi_le_primeCounting_mul_log n
-
+-- θ(x) ≤ π(x) · ln(x) 和 ψ(x) ≤ π(x) · ln(x) 已在 Leanprove.Chebyshev 中定义
+-- 见 theta_le_pi_mul_log' 和 psi_le_pi_mul_log'
 
 /-!
   === 数值验证 ===

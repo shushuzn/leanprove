@@ -172,55 +172,16 @@ theorem gcd_consecutive (n : Nat) : Nat.gcd n (n + 1) = 1 := by
     p=13, q=5:  169 - 25 = 144 = 24 × 6  ✓
 -/
 
--- Helper: 24 ∣ p*p - 1 (same content as main theorem, stated with p*p directly)
+-- Helper: 24 ∣ p*p - 1 (same content as prime_ge_five_sq_sub_one_dvd,
+-- using p*p notation for use in prime_sq_diff_dvd_24)
 theorem dvd_sq_sub_one (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
     24 ∣ p * p - 1 := by
-  -- Use prime_ge_five_mod_six for mod 3 analysis (same as main theorem)
-  have hmod6 : p % 6 = 1 ∨ p % 6 = 5 := prime_ge_five_mod_six p hp hge
-  -- (p * p) ≡ 1 (mod 3)
-  have hmod3 : (p * p) % 3 = 1 := by
-    rcases hmod6 with (h6 | h6)
-    · have hp3 : p % 3 = 1 := by
-        have : p % 6 % 3 = 1 % 3 := by rw [h6]
-        rw [Nat.mod_mod_of_dvd p (by decide : 3 ∣ 6)] at this
-        exact this
-      have h1 : (p * p) % 3 = (p % 3 * (p % 3)) % 3 := by rw [Nat.mul_mod]
-      rw [h1, hp3]
-    · have hp3 : p % 3 = 2 := by
-        have : p % 6 % 3 = 5 % 3 := by rw [h6]
-        rw [Nat.mod_mod_of_dvd p (by decide : 3 ∣ 6)] at this
-        exact this
-      have h1 : (p * p) % 3 = (p % 3 * (p % 3)) % 3 := by rw [Nat.mul_mod]
-      rw [h1, hp3]
-  -- p % 2 = 1 (p is odd)
-  have hp_odd : p % 2 = 1 := by
-    have : p % 2 ≠ 0 := prime_not_dvd_of_range hp hge (by decide) (by omega)
-    omega
-  -- (p * p) ≡ 1 (mod 8)
-  have hmod8 : (p * p) % 8 = 1 := by
-    have : p % 8 = 1 ∨ p % 8 = 3 ∨ p % 8 = 5 ∨ p % 8 = 7 := by omega
-    rcases this with (h | h | h | h)
-    · have h1 : (p * p) % 8 = (p % 8 * (p % 8)) % 8 := by rw [Nat.mul_mod]
-      rw [h1, h]
-    · have h1 : (p * p) % 8 = (p % 8 * (p % 8)) % 8 := by rw [Nat.mul_mod]
-      rw [h1, h]
-    · have h1 : (p * p) % 8 = (p % 8 * (p % 8)) % 8 := by rw [Nat.mul_mod]
-      rw [h1, h]
-    · have h1 : (p * p) % 8 = (p % 8 * (p % 8)) % 8 := by rw [Nat.mul_mod]
-      rw [h1, h]
-  -- CRT: combine mod 3 and mod 8 to get mod 24
-  have hmod24 : (p * p) % 24 = 1 := by
-    have : (p * p) % 24 < 24 := Nat.mod_lt (p * p) (by decide)
-    have : (p * p) % 24 % 3 = 1 := by
-      rw [Nat.mod_mod_of_dvd (p * p) (by decide : 3 ∣ 24)]
-      exact hmod3
-    have : (p * p) % 24 % 8 = 1 := by
-      rw [Nat.mod_mod_of_dvd (p * p) (by decide : 8 ∣ 24)]
-      exact hmod8
-    omega
-  -- (p * p) % 24 = 1 implies 24 ∣ p * p - 1
-  have : (p * p - 1) % 24 = 0 := by omega
-  exact Nat.dvd_of_mod_eq_zero this
+  have h := prime_ge_five_sq_sub_one_dvd p hp hge
+  -- p^2 = p*p by definition
+  have hp2 : p ^ 2 = p * p := by rw [Nat.pow_succ, Nat.pow_one]
+  have hpp : p ^ 2 - 1 = p * p - 1 := by rw [hp2]
+  rw [← hpp]
+  exact h
 
 -- Helper: algebraic identity (a-1) - (b-1) = a - b
 theorem sub_one_sub_sub_one {a b : Nat} (hb1 : 1 ≤ b) (hba : b ≤ a) :
@@ -500,20 +461,6 @@ theorem odd_not_three_sq_sub_one_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 �
   - Therefore 24 × 2 = 48 | (n² - 1)(n² + 1)
 
   This shows that higher powers gain additional factors of 2.
--/
-
-
-/-!
-  === CONSECUTIVE PRODUCT: 24 | n³ - n ===
-
-  For any odd n not divisible by 3, 24 | n³ - n.
-  This is because n³ - n = n(n-1)(n+1), the product of
-  three consecutive integers centered at n.
-
-  Proof strategy:
-  - n³ - n = n(n² - 1) = n · (n-1)(n+1)
-  - 24 | (n-1)(n+1) from the main theorem
-  - Therefore 24 | n · (n-1)(n+1)
 -/
 
 

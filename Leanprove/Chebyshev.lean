@@ -163,16 +163,6 @@ theorem theta_hundred_le : θ 100 ≤ log 4 * 100 :=
   Chebyshev.theta_le_log4_mul_x (by norm_num : (0 : ℝ) ≤ 100)
 
 
--- θ(x) = 0 当 x < 2 (显式版本)
-theorem theta_zero_of_lt_two'' {x : ℝ} (hx : x < 2) : θ x = 0 :=
-  Chebyshev.theta_eq_zero_of_lt_two hx
-
-
--- ψ(x) = 0 当 x < 2 (显式版本)
-theorem psi_zero_of_lt_two'' {x : ℝ} (hx : x < 2) : ψ x = 0 :=
-  Chebyshev.psi_eq_zero_of_lt_two hx
-
-
 /-!
   === 渐近行为 (需要后续证明) ===
 
