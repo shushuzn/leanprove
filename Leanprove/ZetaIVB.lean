@@ -102,9 +102,7 @@ lemma sum_bound_upper (N : ℕ) (σ : ℝ) (hσ : 1 < σ) (hN : N ≥ 1) :
       Finset.sum_le_sum (λ n hn => n_pow_le_telescope n σ hσ ((Finset.mem_Icc.mp hn).1))
     _ = (1 / (σ - 1)) - ((N : ℝ) ^ (1 - σ)) / (σ - 1) := by
       have hNpos : N ≥ 1 := hN
-      refine Nat.le_induction (by
-        simp [Real.zero_rpow (by linarith : 1 - σ ≠ 0)])
-        (λ k hk hk_IH => ?_) N hNpos
+      refine Nat.le_induction (by simp) (λ k hk hk_IH => ?_) N hNpos
       by_cases hk2 : k ≥ 2
       · have h_insert : Finset.Icc 2 k.succ = (Finset.Icc 2 k) ∪ {k.succ} := by ext n; simp; omega
         have h_disj : Disjoint (Finset.Icc 2 k) ({k.succ} : Finset ℕ) := by simp
@@ -126,7 +124,7 @@ lemma sum_bound_upper (N : ℕ) (σ : ℝ) (hσ : 1 < σ) (hN : N ≥ 1) :
         subst this
         -- Icc 2 (1+1) = Icc 2 2 = {2}
         have h_Icc : Finset.Icc 2 (1 + 1 : ℕ) = ({2} : Finset ℕ) := by
-          ext n; simp; omega
+          ext n; simp
         rw [h_Icc, Finset.sum_singleton]
         -- (((2:ℝ) - 1)^(1-σ) - (2:ℝ)^(1-σ)) / (σ-1) = (1 - 2^(1-σ)) / (σ-1) = 1/(σ-1) - 2^(1-σ)/(σ-1)
         push_cast
@@ -156,10 +154,11 @@ lemma zeta_upper_bound (σ : ℝ) (hσ : 1 < σ) : ∑' n : ℕ, (1 : ℝ) / ((n
       · -- N = 1
         have : N = 1 := by omega
         subst this
-        simp
+        norm_cast
+        simp [Real.zero_rpow (by linarith : (σ : ℝ) ≠ 0)]
         positivity
-    · push_neg at hN
-      -- N ≥ 2
+    · -- N ≥ 2
+      push Not at hN
       have h_split : Finset.range N = ({0} : Finset ℕ) ∪ Finset.Icc 1 (N - 1) := by
         apply Finset.ext; intro n; simp; omega
       have h_disj : Disjoint ({0} : Finset ℕ) (Finset.Icc 1 (N - 1)) := by simp
@@ -169,9 +168,12 @@ lemma zeta_upper_bound (σ : ℝ) (hσ : 1 < σ) : ∑' n : ℕ, (1 : ℝ) / ((n
       have h_main : (∑ n ∈ Finset.range N, (1 : ℝ) / ((n : ℝ) ^ σ)) = 
           1 + ∑ n ∈ Finset.Icc 2 (N - 1), (1 : ℝ) / ((n : ℝ) ^ σ) := by
         rw [h_split, Finset.sum_union h_disj, Finset.sum_singleton]
+        push_cast
         rw [Real.zero_rpow (by linarith : (σ : ℝ) ≠ 0)]
-        rw [zero_add, h_split2, Finset.sum_union h_disj2, Finset.sum_singleton]
-        rw [Real.one_rpow]
+        simp
+        rw [h_split2, Finset.sum_union h_disj2, Finset.sum_singleton]
+        -- 1^σ = 1
+        norm_num [Real.one_rpow]
       rw [h_main]
       apply add_le_add_right
       have hN_sub : N - 1 ≥ 1 := by omega
@@ -179,4 +181,4 @@ lemma zeta_upper_bound (σ : ℝ) (hσ : 1 < σ) : ∑' n : ℕ, (1 : ℝ) / ((n
   have h_tendsto : Filter.Tendsto (λ N : ℕ => ∑ n ∈ Finset.range N, (1 : ℝ) / ((n : ℝ) ^ σ)) Filter.atTop
       (𝓝 (∑' n : ℕ, (1 : ℝ) / ((n : ℝ) ^ σ))) :=
     h_summable.hasSum.tendsto_sum_nat
-  exact le_of_tendsto h_tendsto (Filter.eventually_of_forall h_partial)
+  exact le_of_tendsto h_tendsto (Filter.Eventually.of_forall h_partial)
