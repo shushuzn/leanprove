@@ -16,10 +16,8 @@ lemma nat_cpow_eq_exp_log_mul (n : ℕ) (hn : n ≠ 0) (s : ℂ) : nat_cpow n s 
 
 lemma norm_nat_cpow (n : ℕ) (hn : n ≠ 0) (s : ℂ) : ‖nat_cpow n s‖ = ((n : ℝ) ^ (s.re : ℝ)) := by
   have hnpos : 0 < (n : ℝ) := by exact_mod_cast (Nat.pos_of_ne_zero hn)
-  have hlog_eq : Complex.log (n : ℂ) = (Real.log (n : ℝ) : ℂ) :=
-    (Complex.ofReal_log (show 0 ≤ (n : ℝ) from by exact_mod_cast (Nat.zero_le n))).symm
   have h_re : ((Real.log (n : ℝ) : ℂ) * s).re = Real.log (n : ℝ) * s.re := by
-    rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
+    simp [Complex.mul_re, Complex.ofReal_re]
   calc
     ‖nat_cpow n s‖ = ‖cexp ((Real.log (n : ℝ) : ℂ) * s)‖ := by rw [nat_cpow_eq_exp_log_mul n hn s]
     _ = Real.exp (((Real.log (n : ℝ) : ℂ) * s).re) := Complex.norm_exp ((Real.log (n : ℝ) : ℂ) * s)
@@ -27,10 +25,10 @@ lemma norm_nat_cpow (n : ℕ) (hn : n ≠ 0) (s : ℂ) : ‖nat_cpow n s‖ = ((
     _ = (n : ℝ) ^ (s.re : ℝ) := by rw [Real.rpow_def_of_pos hnpos]
 
 lemma summable_norm_inv_nat_cpow (s : ℂ) (h : 1 < s.re) : Summable (λ n : ℕ => ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖) := by
-  have h_nonneg : ∀ n : ℕ, 0 ≤ ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖ := by
-    intro n; positivity
   have hsum : Summable (λ n : ℕ => ((n : ℝ) ^ (-(s.re : ℝ)))) :=
     Real.summable_nat_rpow.mpr (by linarith)
+  have h_nonneg : ∀ n : ℕ, 0 ≤ ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖ := by
+    intro n; positivity
   have h_bound : ∀ n : ℕ, ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖ ≤ ((n : ℝ) ^ (-(s.re : ℝ))) := by
     intro n
     by_cases hn0 : n = 0
@@ -48,8 +46,6 @@ lemma summable_norm_inv_nat_cpow (s : ℂ) (h : 1 < s.re) : Summable (λ n : ℕ
       have h_norm : ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖ = ‖(1 : ℂ) / nat_cpow n s‖ := by
         simp [hn0]
       rw [h_norm, h_val]
-  have h_nonneg' : ∀ n : ℕ, 0 ≤ ‖(1 : ℂ) / nat_cpow n s‖ := by
-    intro n; positivity
   refine Summable.of_nonneg_of_le h_nonneg h_bound hsum
 
 /-- ζ(s) = ∑_{n=1}^{∞} 1/n^s, 定义域 Re(s) > 1 -/
@@ -58,3 +54,18 @@ def zeta (s : ℂ) : ℂ := ∑' n : ℕ, (if n = 0 then 0 else (1 : ℂ) / nat_
 /-- ζ(s) 绝对收敛: Re(s) > 1 时 ∑ 1/|n^s| 收敛 -/
 lemma zeta_abs_convergent (s : ℂ) (h : 1 < s.re) : Summable (λ n : ℕ => (if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)) :=
   Summable.of_norm (summable_norm_inv_nat_cpow s h)
+
+/-! ### ζ(s) 在 s = 1 附近的行为 -/
+
+/-- 实 ζ(σ) 对 σ > 1: ∑_{n=1}∞ 1/n^σ -/
+def zetaReal (σ : ℝ) (hσ : 1 < σ) : ℝ := ∑' n : ℕ, (if n = 0 then 0 else (1 : ℝ) / ((n : ℝ) ^ σ))
+
+lemma zetaReal_integral_compare (σ : ℝ) (hσ : 1 < σ) : 
+    1 / ((σ - 1) * 2^(σ-1)) ≤ zetaReal σ hσ - 1 ∧ zetaReal σ hσ - 1 ≤ 1 / (σ - 1) := by
+  have h_int_upper : ∑' n : ℕ, (if n = 0 then 0 else (1 : ℝ) / ((n : ℝ) ^ σ)) ≤ 1 + 1 / (σ - 1) := by
+    -- ζ(σ) = 1 + ∑_{n=2}∞ 1/n^σ ≤ 1 + ∫_1^∞ dx/x^σ = 1 + 1/(σ-1)
+    sorry
+  sorry
+
+lemma zetaReal_limit (σ : ℝ) (hσ : 1 < σ) : (σ - 1) * zetaReal σ hσ → 1 := by
+  sorry
