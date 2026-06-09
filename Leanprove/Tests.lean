@@ -80,3 +80,9 @@ import Leanprove.PrimeReciprocals
 
 -- PrimeReciprocals.lean
 #check not_summable_prime_reciprocal
+
+-- Missing tests for Mertens theorems
+#check mertens_abel_identity
+#check psi_integral_sub_log_isBigO
+#check mertens_first_theorem
+#check mertens_first_theorem_bounded

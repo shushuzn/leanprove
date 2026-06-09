@@ -324,3 +324,34 @@ theorem primePower_contribution_bounded :
     _ = ∑ p ∈ Finset.range (N + 1), f p := by simp [Finset.sum_filter]
     _ ≤ ∑'' p, f p := range_sum_le_tsum_of_nonneg f h_f_nonneg h_f_summable (N + 1)
     _ = C := rfl
+
+
+/-! === 第七部分: Mertens 第一定理 (待完善) === 
+
+  以下 4 个定理需要实分析基础设施(Abel求和, 积分收敛, 级数比较),
+  当前用 sorry 占位, 待 Mathlib 完善后完成证明。
+-/
+
+/-- Abel 求和恒等式: 将 ∑_{n≤x} Λ(n)/n 用 ψ 表达 -/
+theorem mertens_abel_identity (x : ℝ) (hx : 1 ≤ x) :
+    ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) =
+      ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t) := by
+  sorry
+
+/-- 关键引理: ∫₁ˣ ψ(t)/t² dt - Real.log x = O(1) -/
+theorem psi_integral_sub_log_isBigO :
+    (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x)
+      =O[atTop] (fun _ ↦ (1 : ℝ)) := by
+  sorry
+
+/-- **Mertens 第一定理**: ∑_{n≤x} Λ(n)/n = Real.log x + O(1) -/
+theorem mertens_first_theorem :
+    (fun x : ℝ ↦ ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x)
+      =O[atTop] (fun _ ↦ (1 : ℝ)) := by
+  sorry
+
+/-- Mertens 第一定理 (有界差版本) -/
+theorem mertens_first_theorem_bounded :
+    ∃ C : ℝ, ∀ᶠ x in atTop,
+      |∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x| ≤ C := by
+  sorry
