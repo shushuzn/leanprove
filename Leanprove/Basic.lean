@@ -641,3 +641,90 @@ theorem sq_sub_one_div_24_ge_two (p : Nat) (hp : Nat.Prime p) (hge : 7 ≤ p) :
   have : p ≥ 7 := hge
   have : p * p ≥ 49 := Nat.mul_le_mul this this
   omega
+
+
+/-!
+  === PRIME MODULO 12 ===
+  For primes p ≥ 5, p² ≡ 1 (mod 12).
+-/
+
+-- For primes p ≥ 5, p² ≡ 1 (mod 12)
+theorem prime_sq_mod_twelve (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
+    p ^ 2 % 12 = 1 := by
+  have h6 := prime_ge_five_mod_six p hp hge
+  simp only [Nat.pow_succ, Nat.pow_zero, Nat.one_mul]
+  rw [Nat.mul_mod p p 12]
+  rcases h6 with (h6 | h6)
+  · have : p % 12 = 1 ∨ p % 12 = 7 := by omega
+    rcases this with (h | h) <;> rw [h]
+  · have : p % 12 = 5 ∨ p % 12 = 11 := by omega
+    rcases this with (h | h) <;> rw [h]
+
+
+/-!
+  === SUM OF SQUARES: p² + q² ≡ 2 (mod 24) ===
+  For any two primes p, q ≥ 5, p² + q² ≡ 2 (mod 24).
+-/
+
+-- Helper: from p % 6, enumerate p % 24
+private theorem mod6_to_mod24 (p : Nat) (h6 : p % 6 = 1 ∨ p % 6 = 5) :
+    p % 24 = 1 ∨ p % 24 = 5 ∨ p % 24 = 7 ∨ p % 24 = 11 ∨
+    p % 24 = 13 ∨ p % 24 = 17 ∨ p % 24 = 19 ∨ p % 24 = 23 := by
+  rcases h6 with (h6 | h6) <;> omega
+
+-- For each residue mod 24: x² % 24 = 1
+private theorem sq_mod24_of_residue (x : Nat)
+    (hx : x = 1 ∨ x = 5 ∨ x = 7 ∨ x = 11 ∨
+           x = 13 ∨ x = 17 ∨ x = 19 ∨ x = 23) :
+    (x * x) % 24 = 1 := by
+  rcases hx with (h | h | h | h | h | h | h | h) <;> rw [h]
+
+-- For any two primes p, q ≥ 5, (p² + q²) % 24 = 2
+theorem prime_sq_sum_mod_24 (p q : Nat)
+    (hp : Nat.Prime p) (hq : Nat.Prime q)
+    (hp_ge : 5 ≤ p) (hq_ge : 5 ≤ q) :
+    (p ^ 2 + q ^ 2) % 24 = 2 := by
+  have h6p := prime_ge_five_mod_six p hp hp_ge
+  have h6q := prime_ge_five_mod_six q hq hq_ge
+  simp only [Nat.pow_succ, Nat.pow_zero, Nat.one_mul]
+  rw [Nat.add_mod, Nat.mul_mod p p 24, Nat.mul_mod q q 24]
+  rw [sq_mod24_of_residue (p % 24) (mod6_to_mod24 p h6p)]
+  rw [sq_mod24_of_residue (q % 24) (mod6_to_mod24 q h6q)]
+
+
+/-!
+  === SUM OF SQUARES: p² + q² ≡ 2 (mod 8) ===
+  For any two primes p, q ≥ 5, p² + q² ≡ 2 (mod 8).
+-/
+
+-- For each odd residue mod 8: x² % 8 = 1
+private theorem sq_mod8_of_odd (x : Nat)
+    (hx : x = 1 ∨ x = 3 ∨ x = 5 ∨ x = 7) :
+    (x * x) % 8 = 1 := by
+  rcases hx with (h | h | h | h) <;> rw [h]
+
+-- For any two primes p, q ≥ 5, (p² + q²) % 8 = 2
+theorem prime_sq_sum_mod_8 (p q : Nat)
+    (hp : Nat.Prime p) (hq : Nat.Prime q)
+    (hp_ge : 5 ≤ p) (hq_ge : 5 ≤ q) :
+    (p ^ 2 + q ^ 2) % 8 = 2 := by
+  have hp_odd : p % 2 = 1 := by
+    have := prime_not_dvd_of_range hp hp_ge (show 1 < 2 from by omega) (by omega)
+    omega
+  have hq_odd : q % 2 = 1 := by
+    have := prime_not_dvd_of_range hq hq_ge (show 1 < 2 from by omega) (by omega)
+    omega
+  simp only [Nat.pow_succ, Nat.pow_zero, Nat.one_mul]
+  rw [Nat.add_mod, Nat.mul_mod p p 8, Nat.mul_mod q q 8]
+  have hp8 : p % 8 = 1 ∨ p % 8 = 3 ∨ p % 8 = 5 ∨ p % 8 = 7 := by omega
+  have hq8 : q % 8 = 1 ∨ q % 8 = 3 ∨ q % 8 = 5 ∨ q % 8 = 7 := by omega
+  rw [sq_mod8_of_odd (p % 8) hp8]
+  rw [sq_mod8_of_odd (q % 8) hq8]
+
+
+/-!
+  === PRODUCT OF CONSECUTIVE FACTORS ===
+  For primes p ≥ 7, (p-1)(p+1)/24 ≥ 2.
+-/
+
+
