@@ -1,141 +1,132 @@
-## leanprove 项目路线图与发展建议
+## leanprove 项目路线图
 
-### 项目现状评估
+### 项目现状
 
-leanprove 是一个使用 Lean 4 + Mathlib 进行数论形式化证明的项目，目标是从素数分布基础推进到黎曼猜想。目前完成了阶段 1（素数模运算性质）和阶段 2（Chebyshev 理论），共 54 个定理，**零 sorry**，所有证明都是完整的。
+leanprove 是一个使用 Lean 4 + Mathlib 进行数论形式化证明的项目。目前完成了阶段 1-3 的核心工作, 共 58 个定理, **零 sorry**。
 
-项目的一个显著特点是 `Basic.lean` 中的原创证明——围绕 `24 | p² - 1` 及其推广，构建了完整的定理依赖链，证明策略清晰、文档详尽。其余文件（`Bertrand`、`Chebyshev`、`PrimeCounting`、`PrimeReciprocals`）则主要是对 Mathlib 已有定理的包装和推论提取。
+已完成的里程碑:
 
----
-
-### 建议优先处理的问题
-
-在进入阶段 3 之前，有几件事值得先做：
-
-**代码清理。** 当前存在跨文件重复问题：`theta_le_pi_mul_log'`（Chebyshev.lean）和 `theta_le_pi_mul_log''`（PrimeCounting.lean）本质上是同一个定理。`Chebyshev.lean` 内部也有重复定义（`theta_zero_of_lt_two'` 和 `theta_zero_of_lt_two''`）。建议统一命名，消除歧义。`Basic.lean` 中 `dvd_sq_sub_one` 和 `prime_ge_five_sq_sub_one_dvd` 的证明逻辑高度重复，可以让前者直接调用后者。
-
-**补充回归测试。** 目前没有 `#eval` 或 `#check` 驱动的测试文件来验证编译正确性。建议添加一个 `Tests.lean`，至少包含关键定理的 `#check` 声明，方便后续 Mathlib 升级时快速发现问题。
-
-**加强 `infinite_prime_pairs`。** 当前证明使用了 `p = q`（同一个素数），但定理名字暗示的是不同素数对。建议强化为要求 `p < q` 或至少 `p ≠ q`。
+- **阶段 1** (素数分布基础): 围绕 `24 | p² - 1` 的原创证明体系, 25 个定理
+- **阶段 2** (Chebyshev 理论): Chebyshev 函数、π(x) 界限、Bertrand 假设、素数倒数发散, 26 个定理
+- **阶段 3** (等差数列素数, 部分): p ≡ 1 和 p ≡ 3 (mod 4) 的素数无穷性, 6 个定理
+- **代码清理**: 消除了跨文件重复定理、冗余证明和重复文档块
 
 ---
 
-### 阶段 3：Dirichlet 定理（等差数列中的素数）
+### Mathlib 中已有的关键结果
 
-**目标：** 证明对任意互素的 `a, d`，等差数列 `a, a+d, a+2d, ...` 中包含无穷多个素数。
+在推进后续阶段前, 了解 Mathlib 中已有的成果至关重要。以下发现在本项目的调研中确认:
 
-**Mathlib 现状：** 这是第一个真正有挑战的阶段。Mathlib 中已有部分 Dirichlet L-函数的基础设施（`Mathlib.NumberTheory.LSeries.Dirichlet`），但核心难点——**L(1, χ) ≠ 0**（Dirichlet L-函数在 s=1 处不消失）——尚未被形式化。
+**Dirichlet 定理 (完整)**: `Mathlib.NumberTheory.LSeries.PrimesInAP` 中的 `Nat.forall_exists_prime_gt_and_modEq` 已证明完整的 Dirichlet 定理——对任意 q ≠ 0 和 gcd(a,q) = 1, 存在无穷多素数 p ≡ a (mod q)。这意味着阶段 3 的完整目标在 Mathlib 中已经解决。
 
-**建议路线：**
+**p ≡ 1 (mod k)**: `Mathlib.NumberTheory.PrimesCongruentOne` 中的 `Nat.exists_prime_gt_modEq_one` 用分圆多项式方法单独证明了此特殊情形。
 
-1. 先建立 Dirichlet 特征（character）的基本理论：特征的正交性、完全乘性、周期性。Mathlib 中有 `(Z/qZ)*` 的群论基础可用。
-2. 定义 L(s, χ) 并证明其在 Re(s) > 1 上的绝对收敛性。
-3. 证明 L(1, χ) ≠ 0——这是整个证明的核心障碍。经典方法是利用 `∏_χ L(s, χ)` 的 Dirichlet 级数展开和正性论证。
-4. 从 L(1, χ) ≠ 0 推导出等差数列中素数的无穷性。
+**素数计数函数**: Mathlib 有 `Nat.primeCounting` 和 `Nat.tendsto_primeCounting` (π(x) → ∞)。
 
-**替代策略：** 如果 L-函数完整理论暂时过于繁重，可以先证明**特殊情形**，例如：
-- `p ≡ 1 (mod 4)` 的素数无穷多（利用二次剩余和 Minkowski 定理）
-- `p ≡ 3 (mod 4)` 的素数无穷多（欧拉式初等证明，类似欧几里得方法）
-- 这些特殊情形的证明可以在 `Basic.lean` 的风格下完成，不需要解析数论工具
+**Chebyshev 函数**: Mathlib 有完整的 θ(x)、ψ(x) 定义, 以及 Chebyshev 界 (ln2 ≤ liminf ≤ limsup ≤ ln4)。
 
-**预计工作量：** 如果走完整 Dirichlet 定理路线，需要大量新的形式化工作（可能 2000+ 行新代码）。建议先做特殊情形作为里程碑。
+**尚未在 Mathlib 中形式化的关键结果** (阶段 4-6 所需):
+
+- ζ 函数的解析延拓 (仅有 Re(s) > 1 的定义)
+- ζ(1+it) ≠ 0 (PNT 的关键步骤)
+- PNT 本身 (π(x) ~ x/ln(x))
+- ζ 函数的函数方程
+- 零点计数函数 N(T) 和 Hadamard 乘积
+- 黎曼猜想的任何非平凡结果
 
 ---
 
-### 阶段 4：素数定理（PNT）
+### 阶段 3 的后续方向
 
-**目标：** 证明 π(x) ~ x/ln(x)，即 lim π(x)·ln(x)/x = 1。
+虽然完整 Dirichlet 定理已在 Mathlib 中, 但本项目的阶段 3 仍有扩展空间:
 
-**Mathlib 现状：** 这是目前最大的缺口。需要的基础设施包括：
+**补充更多初等证明**。当前只有 p ≡ 3 (mod 4) 的原创证明。可以增加:
 
-- 黎曼 ζ 函数的解析延拓（Mathlib 有 `RiemannZeta` 模块，但仅有 Re(s) > 1 的定义）
+- p ≡ 5 (mod 6) 素数无穷多 (欧几里得式构造)
+- p ≡ 1 (mod 4) 的初等证明 (不依赖分圆多项式, 用 n² + 1 的素因子方法)
+- 算术级数中素数的 Dirichlet 密度 (作为 Mathlib 完整定理的推论提取)
+
+**加强 `infinite_prime_pairs`**。Bertrand.lean 中的此定理使用了 p = q, 可以强化为要求 p ≠ q。
+
+---
+
+### 阶段 4: 素数定理 (PNT)
+
+**目标**: 证明 π(x) ~ x/ln(x), 即 lim π(x)·ln(x)/x = 1。
+
+**Mathlib 现状**: 这是目前最大的缺口。需要的基础设施包括:
+
+- 黎曼 ζ 函数的解析延拓 (Mathlib 有 `RiemannZeta` 模块, 但仅有 Re(s) > 1 的定义)
 - ζ(s) 在 Re(s) = 1 上不消失
-- 复分析工具：围道积分、留数定理、Mellin 变换、Perron 公式
-- Wiener-Ikehara 定理（或 Newman/Zagier 的简化证明路径）
+- 复分析工具: 围道积分、留数定理、Mellin 变换、Perron 公式
+- Wiener-Ikehara 定理 (或 Newman/Zagier 的简化证明路径)
 
-Mathlib 的复分析部分（`Mathlib.Analysis.Complex`）在持续增长，但距离支撑 PNT 还有显著差距。
+Mathlib 的复分析部分 (`Mathlib.Analysis.Complex`) 在持续增长, 但距离支撑 PNT 还有显著差距。
 
-**建议路线：**
+**建议路线**:
 
-1. **前置工作：** 完善 Mathlib 中的复分析基础设施，特别是围道积分和留数定理。这本身就是一个对社区的贡献。
-2. **ζ 函数解析延拓：** 从 Re(s) > 1 延拓到 Re(s) > 0（除了 s=1 处的简单极点）。
-3. **非消失性：** 证明 ζ(1+it) ≠ 0（经典 Hadamard/de la Vallée Poussin 论证）。
-4. **Tauber 定理：** 形式化 Wiener-Ikehara 或 Newman 的 Tauber 定理。
-5. **最终推导：** 将以上结果组合为 PNT。
+1. 完善复分析基础设施 (围道积分、留数定理), 作为向 Mathlib 的 PR 贡献
+2. ζ 函数解析延拓到 Re(s) > 0 (除了 s=1 处的单极点)
+3. 证明 ζ(1+it) ≠ 0 (经典 Hadamard/de la Vallée Poussin 论证)
+4. 形式化 Tauber 定理 (Wiener-Ikehara 或 Newman)
+5. 组合为 PNT
 
-**替代策略：** Selberg-Erdős 的初等证明（不使用复分析），但这条路线在 Lean 中同样不轻松——它需要大量关于 Λ(n)（von Mangoldt 函数）的组合估计。
-
-**预计工作量：** 这是一个长期目标，可能需要数月甚至数年的持续工作。建议将其拆分为多个子项目。
+**替代策略**: Selberg-Erdős 初等证明 (不使用复分析), 但需要大量关于 Λ(n) 的组合估计, 在 Lean 中同样不轻松。
 
 ---
 
-### 阶段 5：ζ 函数与零点理论
+### 阶段 5: ζ 函数与零点理论
 
-**目标：** 研究 ζ(s) 的非平凡零点分布——零点计数函数 N(T)、Hadamard 乘积表示、显式公式。
+**目标**: 研究 ζ(s) 的非平凡零点分布。
 
-**依赖：** 阶段 4 的全部基础设施，加上：
+**依赖**: 阶段 4 的全部基础设施, 加上复 Gamma 函数的完整理论、ζ 函数的函数方程、整函数的 Hadamard 因式分解定理。
 
-- 复 Gamma 函数的完整理论（Mathlib 有部分实现）
-- ζ 函数的函数方程：ζ(s) = 2^s π^{s-1} sin(πs/2) Γ(1-s) ζ(1-s)
-- 整函数的 Hadamard 因式分解定理
+**建议路线**:
 
-**建议路线：**
-
-1. 从 PNT 的框架出发，补全 ζ 函数的函数方程证明。
-2. 证明 N(T) ~ (T/2π)·ln(T/2π) - T/2π（零点计数渐近公式）。
-3. 推导 Hadamard 乘积：ξ(s) = e^{A+Bs} ∏_ρ (1 - s/ρ)e^{s/ρ}。
-4. 建立素数分布与零点之间的显式公式（von Mangoldt 显式公式）。
+1. 补全 ζ 函数的函数方程证明
+2. 证明 N(T) ~ (T/2π)·ln(T/2π) - T/2π (零点计数渐近公式)
+3. 推导 Hadamard 乘积: ξ(s) = e^{A+Bs} ∏_ρ (1 - s/ρ)e^{s/ρ}
+4. 建立 von Mangoldt 显式公式 (素数分布与零点的桥梁)
 
 ---
 
-### 阶段 6：黎曼猜想
+### 阶段 6: 黎曼猜想
 
-**目标：** 陈述并（尝试）证明黎曼猜想：ζ(s) 的所有非平凡零点满足 Re(s) = 1/2。
+**目标**: 陈述并 (尝试) 证明黎曼猜想: ζ(s) 的所有非平凡零点在 Re(s) = 1/2 上。
 
-**现实评估：** 黎曼猜想是 Clay 研究所七大千禧年问题之一，至今未解决。在 Lean 中形式化 RH 的**陈述**是可行的（定义清晰即可），但**证明**它需要数学本身的突破。
+**现实评估**: 黎曼猜想是 Clay 研究所七大千禧年问题之一, 至今未解决。在 Lean 中形式化陈述是可行的, 但证明需要数学本身的突破。
 
-**可以做的事情：**
+**可以做的事情**:
 
-- 形式化 RH 的等价表述（如 Li 准则、Nyman-Beurling 准则）
-- 证明已知结果：Hardy 定理（临界线上有无穷多个零点）、零点密度估计
-- 验证 RH 在小范围内的数值正确性
-- 形式化 RH 的推论（如素数分布的最优误差项 π(x) = Li(x) + O(√x · ln x)）
+- 形式化 RH 的等价表述 (Li 准则、Nyman-Beurling 准则)
+- 证明 Hardy 定理 (临界线上有无穷多个零点)
+- 形式化 RH 的推论 (素数分布最优误差项 π(x) = Li(x) + O(√x · ln x))
+- 零点密度估计的已知结果
 
 ---
 
 ### 推荐的实施顺序
 
 ```
-近期（1-2个月）
-  ├── 代码清理：消除重复、统一命名
-  ├── 添加 Tests.lean 回归测试
-  ├── 强化 infinite_prime_pairs
-  └── 扩展 PrimeReciprocals.lean（添加 Mertens 定理目标）
+近期
+  ├── 补充 p ≡ 1 (mod 4) 的初等证明 (n² + 1 素因子方法)
+  ├── 加强 infinite_prime_pairs (要求 p ≠ q)
+  ├── 扩展 PrimeReciprocals.lean (Mertens 定理目标)
+  └── 添加 Tests.lean 回归测试文件
 
-中期（3-6个月）
-  ├── 阶段3 特殊情形：p ≡ 1 (mod 4) 和 p ≡ 3 (mod 4) 的素数无穷性
-  ├── Dirichlet 特征基础理论
-  └── L(1, χ) ≠ 0 的形式化
+中期
+  ├── 复分析基础设施补全 (围道积分、留数定理)
+  ├── ζ 函数解析延拓
+  └── ζ(1+it) ≠ 0 的证明
 
-远期（6-12个月+）
-  ├── 完整 Dirichlet 定理
-  ├── 复分析基础设施补全（围道积分、留数定理）
-  └── ζ 函数解析延拓
-
-超长期
-  ├── 素数定理
+远期
+  ├── 素数定理 (PNT)
   ├── ζ 函数零点理论
-  └── 黎曼猜想（陈述与已知结果）
+  └── 黎曼猜想 (陈述与已知结果)
 ```
 
 ---
 
 ### 对 Mathlib 社区的建议
 
-阶段 3 以后的工作高度依赖 Mathlib 中尚不存在的基础设施。建议以向 Mathlib 贡献 PR 的方式推进——特别是：
-
-- 复分析工具（留数定理、围道积分的完善）
-- Dirichlet L-函数的完整理论
-- Γ 函数的复平面性质
-
-这样既能推进 leanprove 项目，又能让整个社区受益。
+阶段 4 以后的工作高度依赖 Mathlib 中尚不存在的基础设施。建议以向 Mathlib 贡献 PR 的方式推进, 特别是复分析工具和 ζ 函数理论。这样既能推进 leanprove 项目, 又能让整个社区受益。
