@@ -1,101 +1,87 @@
 # leanprove
 
-Lean 4 数学证明项目 — 从素数分布到黎曼猜想的探索之旅
+Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索之旅。
 
-## 当前状态
+## 项目概述
 
-本项目使用 Lean 4 + Mathlib 形式化证明数论定理，当前聚焦于素数模运算性质。
+使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-### 核心定理
+**当前进度**: 阶段 2 / 6 — 已完成素数分布基础与 Chebyshev 理论
 
-**主定理**: 对所有素数 p ≥ 5，24 整除 p² - 1
+## 路线图
 
-| 定理 | 陈述 | 状态 |
-|------|------|------|
-| prime_ge_five_sq_sub_one_dvd | 24 \| p² - 1 | ✅ |
-| prime_ge_five_mod_six | p ≡ 1 或 5 (mod 6) | ✅ |
-| prime_sq_diff_dvd_24 | 24 \| p² - q² | ✅ |
-| gcd_pm1_eq_two | gcd(p-1, p+1) = 2 | ✅ |
-| lcm_pm1_eq_half_mul | lcm(p-1,p+1) = (p-1)(p+1)/2 | ✅ |
-| prime_sq_mod_twelve | p² ≡ 1 (mod 12) | ✅ |
-| prime_sq_sum_mod_24 | p² + q² ≡ 2 (mod 24) | ✅ |
-| prime_sq_sum_mod_8 | p² + q² ≡ 2 (mod 8) | ✅ |
-
-### 推广定理
-
-| 定理 | 陈述 | 状态 |
-|------|------|------|
-| odd_not_three_sq_sub_one_dvd | 24 \| n² - 1 (奇数, 3∤n) | ✅ |
-| odd_not_three_cubed_sub_self_dvd | 24 \| n³ - n | ✅ |
-| odd_not_three_fourth_sub_one_dvd | 48 \| n⁴ - 1 | ✅ |
-
-## 路线图: 通向黎曼猜想
+```
+阶段 1 ████████████ 素数分布基础        ✅ 完成
+阶段 2 ████████████ Chebyshev 理论      ✅ 完成
+阶段 3 ░░░░░░░░░░░░ Dirichlet 定理      待开始
+阶段 4 ░░░░░░░░░░░░ 素数定理            待开始
+阶段 5 ░░░░░░░░░░░░ ζ 函数与零点        待开始
+阶段 6 ░░░░░░░░░░░░ 黎曼猜想            待开始
+```
 
 ### 阶段 1: 素数分布基础 ✅
 
-- [x] 素数模 6 分类 (p ≡ 1 或 5 mod 6)
-- [x] 平方差整除性 (24 | p² - 1)
-- [x] 相邻因子的 gcd/lcm 结构
-- [x] 模 12、模 24、模 8 的平方和
+| 定理 | 陈述 | 文件 |
+|------|------|------|
+| `prime_ge_five_mod_six` | p ≥ 5 素数 → p ≡ 1 或 5 (mod 6) | Basic |
+| `prime_ge_five_sq_sub_one_dvd` | 24 ∣ p² - 1 | Basic |
+| `prime_sq_diff_dvd_24` | 24 ∣ p² - q² | Basic |
+| `gcd_pm1_eq_two` | gcd(p-1, p+1) = 2 | Basic |
+| `lcm_pm1_eq_half_mul` | lcm(p-1, p+1) = (p-1)(p+1)/2 | Basic |
+| `prime_sq_mod_twelve` | p² ≡ 1 (mod 12) | Basic |
+| `prime_sq_sum_mod_24` | p² + q² ≡ 2 (mod 24) | Basic |
+| `odd_not_three_sq_sub_one_dvd` | 24 ∣ n² - 1 (奇数, 3∤n) | Basic |
+| `odd_not_three_cubed_sub_self_dvd` | 24 ∣ n³ - n | Basic |
+| `odd_not_three_fourth_sub_one_dvd` | 48 ∣ n⁴ - 1 | Basic |
 
-### 阶段 2: 素数分布进阶 ✅ (部分)
+### 阶段 2: Chebyshev 理论 ✅
 
-- [x] Bertrand 假设 (Mathlib 已证明)
-- [ ] Chebyshev 函数 θ(x) = Σ_{p≤x} ln(p)
-- [ ] 素数计数函数 π(x) 的定义
-- [ ] Chebyshev 不等式: c₁ x/ln(x) < π(x) < c₂ x/ln(x)
-- [ ] Bertrand 假设的应用和扩展
+| 主题 | 内容 | 文件 |
+|------|------|------|
+| Chebyshev 函数 | θ(x), ψ(x) 的定义与性质 | Chebyshev |
+| π(x) 界 | 上界: π(x) ≤ ln4·x/ln√x + √x | Chebyshev |
+| π(x) 界 | 下界: ((x-1)ln2 - ln(x+2))/lnx ≤ π(x) | Chebyshev |
+| Bertrand 假设 | ∃p 素数: n < p ≤ 2n | Bertrand |
+| 素数无穷性 | ∀N, ∃p > N, p 素数 | Bertrand |
+| 素数比值 | p_{k+1}/p_k ≤ 2 | Bertrand |
 
-### 阶段 3: Dirichlet 定理
+### 阶段 3-6: 待实现
 
-- [ ] 等差数列中素数的无穷性
-- [ ] Dirichlet L-函数 L(s, χ) 的定义
-- [ ] L(1, χ) ≠ 0 的证明
-- [ ] 素数在等差数列中的分布
-
-### 阶段 4: 素数定理
-
-- [ ] ζ 函数的 Euler 乘积: ζ(s) = ∏_p (1 - p^{-s})^{-1}
-- [ ] ζ 函数的解析延拓
-- [ ] ζ 函数的函数方程
-- [ ] 素数定理: π(x) ~ x/ln(x)
-- [ ] 等价形式: ψ(x) ~ x
-
-### 阶段 5: ζ 函数与零点
-
-- [ ] 非平凡零点的存在性
-- [ ] 零点计数函数 N(T)
-- [ ] 零点密度估计
-- [ ] Hardy 定理: 无穷多个零点在 Re(s) = 1/2 上
-- [ ] Selberg 筛法基础
-
-### 阶段 6: 黎曼猜想
-
-- [ ] 黎曼猜想的精确形式化
-- [ ] 临界线定理的强化版本
-- [ ] 零点分布的精细结构
-- [ ] 黎曼猜想的证明 (需要全新数学工具)
+| 阶段 | 主题 | 核心目标 |
+|------|------|----------|
+| 3 | Dirichlet 定理 | 等差数列中素数的无穷性 |
+| 4 | 素数定理 | π(x) ~ x/ln(x) |
+| 5 | ζ 函数与零点 | 非平凡零点的分布 |
+| 6 | 黎曼猜想 | 所有非平凡零点在 Re(s) = 1/2 上 |
 
 ## 项目结构
 
 ```
 leanprove/
-├── Leanprove.lean           # 入口文件
+├── Leanprove.lean              # 入口文件
 ├── Leanprove/
-│   ├── Basic.lean           # 核心定理 (25+ 定理)
-│   └── MathlibTest.lean     # Mathlib 功能验证
-├── ARCHITECTURE.txt         # 定理架构图
-├── lakefile.toml            # 构建配置
-├── lean-toolchain           # Lean 版本
-└── README.md                # 本文件
+│   ├── Basic.lean              # 核心数论定理 (25 个定理)
+│   ├── Bertrand.lean           # Bertrand 假设及其应用 (6 个定理)
+│   ├── Chebyshev.lean          # Chebyshev 函数与界限 (16 个定理)
+│   ├── PrimeCounting.lean      # 素数计数函数与 PNT 目标 (5 个定理)
+│   └── MathlibTest.lean        # Mathlib 功能验证 (1 个定理)
+├── ARCHITECTURE.txt            # 定理依赖架构图
+├── lakefile.toml               # 构建配置
+├── lean-toolchain              # Lean 版本锁定
+└── README.md                   # 本文件
 ```
+
+**总计**: 53 个已证明定理
 
 ## 技术栈
 
-- **语言**: Lean 4 (v4.31.0-rc2)
-- **数学库**: Mathlib (v4.31.0-rc2)
-- **关键工具**: omega, ring_nf, simp, decide
-- **构建系统**: Lake
+| 组件 | 版本 | 说明 |
+|------|------|------|
+| Lean 4 | v4.31.0-rc2 | 证明助手与编程语言 |
+| Mathlib | v4.31.0-rc2 | 社区数学库 |
+| Lake | — | 构建系统 |
+
+**证明策略**: `omega`, `ring_nf`, `simp`, `decide`, `norm_num`, `linarith`
 
 ## 构建
 
@@ -103,14 +89,17 @@ leanprove/
 lake build Leanprove
 ```
 
+需要 Lean 4 和 Mathlib 依赖。首次构建会下载并编译 Mathlib（约 2700 个模块）。
+
 ## 参考文献
 
 1. Hardy & Wright, *An Introduction to the Theory of Numbers*
 2. Apostol, *Introduction to Analytic Number Theory*
 3. Davenport, *Multiplicative Number Theory*
 4. Iwaniec & Kowalski, *Analytic Number Theory*
-5. Lean 4 Mathlib: https://leanprover-community.github.io/mathlib4/
-6. Riemann Hypothesis on Clay Millennium: https://www.claymath.org/millennium-problems/riemann-hypothesis/
+5. Aigner & Ziegler, *Proofs from THE BOOK*
+6. [Lean 4 Mathlib](https://leanprover-community.github.io/mathlib4/)
+7. [Riemann Hypothesis — Clay Mathematics Institute](https://www.claymath.org/millennium-problems/riemann-hypothesis/)
 
 ## 许可证
 
