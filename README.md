@@ -38,12 +38,13 @@ Lean 4 数学证明项目 — 从素数分布到黎曼猜想的探索之旅
 - [x] 相邻因子的 gcd/lcm 结构
 - [x] 模 12、模 24、模 8 的平方和
 
-### 阶段 2: 素数计数函数
+### 阶段 2: 素数分布进阶 ✅ (部分)
 
+- [x] Bertrand 假设 (Mathlib 已证明)
 - [ ] Chebyshev 函数 θ(x) = Σ_{p≤x} ln(p)
 - [ ] 素数计数函数 π(x) 的定义
 - [ ] Chebyshev 不等式: c₁ x/ln(x) < π(x) < c₂ x/ln(x)
-- [ ] Bertrand 假设: 对所有 n ≥ 1，存在素数 p 满足 n < p < 2n
+- [ ] Bertrand 假设的应用和扩展
 
 ### 阶段 3: Dirichlet 定理
 
