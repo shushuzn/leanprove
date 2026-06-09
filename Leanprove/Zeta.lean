@@ -1,5 +1,5 @@
 import Mathlib
-open Complex Real Filter Finset
+open Complex Real Filter Topology Finset
 open scoped BigOperators
 
 noncomputable section
@@ -79,16 +79,15 @@ lemma norm_zeta_le_zeta_real (s : ℂ) (h : 1 < s.re) : ‖zeta s‖ ≤ ∑' n 
 
 /-! ### Euler 乘积 -/
 
-/-- 辅助引理: 对任意有限素数集 S, 乘积展开为光滑数和 -/
-lemma prod_geo_expand (S : Finset ℕ) (σ : ℝ) (hσ : 1 < σ) :
+/-- 辅助引理: 对任意有限集 S (元素 ≥ 2), 乘积展开为光滑数和 -/
+lemma prod_geo_expand (S : Finset ℕ) (hS : ∀ p ∈ S, 2 ≤ p) (σ : ℝ) (hσ : 1 < σ) :
     ∏ p ∈ S, ((1 : ℝ) - ((p : ℝ) ^ (-σ)))⁻¹ = ∑' n : ℕ, (if (∀ p ∈ Nat.primeFactors n, p ∈ S) ∧ n ≠ 0 then (1 : ℝ) / ((n : ℝ) ^ σ) else 0) := by
   induction' S using Finset.induction with q S hq IH
-  · -- S = ∅: 乘积 = 1, 求和 = 1 (只有 n=1 满足无素因子的条件)
+  · -- S = ∅: 乘积 = 1, 求和 = 1
     have h_condition : ∀ n : ℕ, ((∀ p ∈ Nat.primeFactors n, p ∈ (∅ : Finset ℕ)) ∧ n ≠ 0) ↔ n = 1 := by
       intro n; constructor
       · rintro ⟨h, hn0⟩
         by_contra! hx
-        have hx' : n ≠ 0 := hn0
         have h_comp : n ≠ 1 := hx
         rcases Nat.exists_prime_and_dvd h_comp with ⟨p, hp_prime, hp_dvd⟩
         have hp_mem : p ∈ Nat.primeFactors n :=
@@ -115,26 +114,85 @@ lemma prod_geo_expand (S : Finset ℕ) (σ : ℝ) (hσ : 1 < σ) :
         _ = 1 := h_sum
     simpa [eq_comm] using h_tsum
   · -- S = T ∪ {q} 其中 q ∉ T
-    rw [Finset.prod_insert hq, IH]
-    -- 需要证明: (1 - q^{-σ})⁻¹ * ∑_{n smooth w.r.t. T} n^{-σ} = ∑_{m smooth w.r.t. T ∪ {q}} m^{-σ}
-    sorry
-
-/-- 有限 Euler 乘积 ≥ 部分和: ∏_{p ≤ X} (1 - p^{-σ})⁻¹ ≥ ∑_{n=1}^{X} n^{-σ} -/
-lemma euler_product_partial_ge (σ : ℝ) (hσ : 1 < σ) (X : ℕ) (hX : X ≥ 1) :
-    ∏ p ∈ (Finset.Icc 2 X).filter Nat.Prime, (1 - ((p : ℝ) ^ (-σ)))⁻¹ ≥ ∑ n ∈ Finset.Icc 1 X, (1 : ℝ) / ((n : ℝ) ^ σ) := by
-  have h_eq := prod_geo_expand ((Finset.Icc 2 X).filter Nat.Prime) σ hσ
-  -- 右侧是 ∑_{n smooth} n^{-σ}
-  -- 对每个 n ≤ X, 所有素因子 ≤ n ≤ X, 所以 n 是 smooth 的
-  have h_mem : ∀ n : ℕ, n ≥ 1 → n ≤ X → (∀ p ∈ Nat.primeFactors n, p ∈ (Finset.Icc 2 X).filter Nat.Prime) := by
-    intro n hn1 hnX
-    intro p hp
-    rcases Nat.mem_primeFactors.mp hp with ⟨hp_prime, hp_dvd, hp_pos⟩
-    have hp_le_n : p ≤ n := Nat.le_of_dvd hn1 hp_dvd
-    have hp_ge_2 : 2 ≤ p := Nat.Prime.two_le hp_prime
-    refine Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨by omega, le_trans hp_le_n hnX⟩, hp_prime⟩
-  sorry
-
-/-- ζ(σ) = lim_{X→∞} ∏_{p ≤ X} (1 - p^{-σ})⁻¹ (Euler 乘积) -/
-lemma euler_product_zeta (σ : ℝ) (hσ : 1 < σ) : 
-    Filter.Tendsto (λ (X : ℕ) => ∏ p ∈ (Finset.Icc 2 X).filter Nat.Prime, (1 - ((p : ℝ) ^ (-σ)))⁻¹) Filter.atTop (nhds (∑' n : ℕ, (1 : ℝ) / ((n : ℝ) ^ σ))) := by
-  sorry
+    have hq_ge_2 : 2 ≤ q := hS q (Finset.mem_insert_self q S)
+    have hS_ge_2 : ∀ p ∈ S, 2 ≤ p := λ p hp => hS p (Finset.mem_insert_of_mem hp)
+    rw [Finset.prod_insert hq, IH S hS_ge_2 σ hσ]
+    
+    let f_T (n : ℕ) : ℝ := if (∀ p ∈ Nat.primeFactors n, p ∈ S) ∧ n ≠ 0 then (1 : ℝ) / ((n : ℝ) ^ σ) else 0
+    let f_Tq (n : ℕ) : ℝ := if (∀ p ∈ Nat.primeFactors n, p ∈ (insert q S)) ∧ n ≠ 0 then (1 : ℝ) / ((n : ℝ) ^ σ) else 0
+    
+    -- 需要证明: (1 - q^{-σ})⁻¹ * (∑' n, f_T n) = (∑' n, f_Tq n)
+    have h_q_pow : 0 < (q : ℝ) ^ (-σ) := Real.rpow_pos_of_pos (by exact_mod_cast (Nat.one_le_of_lt (by omega))) _
+    have h_norm : |(q : ℝ) ^ (-σ)| < 1 := by
+      have h_pow_lt_one : (q : ℝ) ^ (-σ) < 1 := by
+        refine (Real.rpow_lt_rpow_of_exponent_lt ?_ (by linarith)).trans_eq ?_
+        · exact_mod_cast (show 1 < q from by omega)
+        · simp
+      rw [abs_of_pos h_q_pow]
+      exact h_pow_lt_one
+    
+    have h_geo_hasSum : HasSum (λ k : ℕ => ((q : ℝ) ^ (-σ)) ^ k) ((1 : ℝ) - ((q : ℝ) ^ (-σ)))⁻¹ := by
+      simpa [Real.one_div] using hasSum_geometric_of_norm_lt_one h_norm
+    have h_geo_summable : Summable (λ k : ℕ => ((q : ℝ) ^ (-σ)) ^ k) := h_geo_hasSum.summable
+    
+    have h_fT_summable : Summable f_T := by
+      -- f_T(n) ≤ n^{-σ}, 且 ∑ n^{-σ} 收敛
+      have h_bound : ∀ n : ℕ, f_T n ≤ (1 : ℝ) / ((n : ℝ) ^ σ) := by
+        intro n; dsimp [f_T]; split <;> try positivity
+        · split <;> positivity
+        · positivity
+      have h_summable_ref : Summable (λ n : ℕ => (1 : ℝ) / ((n : ℝ) ^ σ)) := by
+        have : Summable (λ n : ℕ => ((n : ℝ) ^ (-σ : ℝ))) :=
+          Real.summable_nat_rpow.mpr (by linarith)
+        have h_eq : (λ n : ℕ => (1 : ℝ) / ((n : ℝ) ^ σ)) = (λ n : ℕ => ((n : ℝ) ^ (-σ : ℝ))) := by
+          ext n; simp [Real.rpow_neg (by exact_mod_cast (Nat.zero_le n) : 0 ≤ (n : ℝ))]
+        rw [h_eq]; exact this
+      have h_nonneg : ∀ n : ℕ, 0 ≤ f_T n := by
+        intro n; dsimp [f_T]; split <;> try positivity
+        split <;> positivity
+      exact Summable.of_nonneg_of_le h_nonneg h_bound h_summable_ref
+    
+    -- 多项展开: (∑ q^{-kσ})·(∑ f_T(m)) = ∑_{(k,m)} (q^k)^{-σ}·f_T(m)
+    -- 用 tsum_mul_tsum 处理乘积
+    have h_prod : ((1 : ℝ) - ((q : ℝ) ^ (-σ)))⁻¹ * (∑' n : ℕ, f_T n) = ∑' (x : ℕ × ℕ), (((q : ℝ) ^ (-σ)) ^ x.1 * f_T x.2) := by
+      calc
+        ((1 : ℝ) - ((q : ℝ) ^ (-σ)))⁻¹ * (∑' n : ℕ, f_T n) = 
+            (∑' k : ℕ, ((q : ℝ) ^ (-σ)) ^ k) * (∑' n : ℕ, f_T n) := by rw [h_geo_hasSum.tsum_eq]
+        _ = ∑' (x : ℕ × ℕ), (((q : ℝ) ^ (-σ)) ^ x.1 * f_T x.2) := 
+          tsum_mul_tsum h_geo_summable h_fT_summable
+    
+    -- 双射: (k,m) → n = q^k·m 把求和重写为 f_Tq(n)
+    have h_bij : ∑' (x : ℕ × ℕ), (((q : ℝ) ^ (-σ)) ^ x.1 * f_T x.2) = ∑' n : ℕ, f_Tq n := by
+      have h_nonneg_prod : ∀ x : ℕ × ℕ, 0 ≤ ((q : ℝ) ^ (-σ)) ^ x.1 * f_T x.2 := by
+        intro x; positivity
+      -- 用 tsum_bij 重排
+      refine (tsum_bij (λ (x : ℕ × ℕ) => q ^ x.1 * x.2) ?_ ?_ ?_ ?_ ?_).symm
+      · intro x hx
+        dsimp [f_Tq]
+        have hq_factor : ∀ p ∈ Nat.primeFactors (q ^ x.1 * x.2), p ∈ insert q S := by
+          intro p hp
+          rcases Nat.mem_primeFactors.mp hp with ⟨hp_prime, hp_dvd, hp_pos⟩
+          -- p ∣ q^x.1 * x.2, 所以 p ∣ q^x.1 或 p ∣ x.2
+          rcases hp_prime.dvd_mul.mp hp_dvd with (h | h)
+          · -- p ∣ q^k, 所以 p = q
+            have h_p_eq_q : p = q := hp_prime.eq_of_dvd_dvd (by exact Nat.prime_of_mem_primeFactors hp) h
+            simp [h_p_eq_q]
+          · -- p ∣ x.2, 由 f_T 条件 p ∈ S
+            have hx_mem : ∀ p ∈ Nat.primeFactors x.2, p ∈ S := by
+              -- 从 f_T x.2 ≠ 0 可推出
+              have : f_T x.2 ≠ 0 := by
+                intro hzero
+                have : ((q : ℝ) ^ (-σ)) ^ x.1 * f_T x.2 = 0 := by simp [hzero]
+                -- 但 x 在求和域中, 这个乘积 > 0...
+                sorry
+              sorry
+            sorry
+        sorry
+      · intro x hx; simp
+      · intro x hx y hy h; ... -- 单射
+      · intro n hn; ... -- 满射
+      · rfl
+    
+    calc
+      ((1 : ℝ) - ((q : ℝ) ^ (-σ)))⁻¹ * (∑' n : ℕ, f_T n) = ∑' (x : ℕ × ℕ), (((q : ℝ) ^ (-σ)) ^ x.1 * f_T x.2) := h_prod
+      _ = ∑' n : ℕ, f_Tq n := h_bij
