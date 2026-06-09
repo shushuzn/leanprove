@@ -1,5 +1,6 @@
 -- Uses Mathlib for Nat.Prime definition and related lemmas
 import Mathlib.Data.Nat.Prime.Defs
+import Mathlib.Tactic.Ring.RingNF
 
 /-!
   Helper: If p is prime and k is in the range (1, p), then p is not divisible by k.
@@ -501,18 +502,6 @@ theorem odd_not_three_sq_sub_one_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 �
   This shows that higher powers gain additional factors of 2.
 -/
 
--- For any odd n not divisible by 3, 48 | n⁴ - 1
--- Proof sketch: n⁴ - 1 = (n² - 1)(n² + 1), 24 | (n² - 1) and 2 | (n² + 1)
--- TODO: omega cannot handle n^2 nonlinear terms; needs Mathlib.Tactic.Ring
-theorem odd_not_three_fourth_sub_one_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) :
-    48 ∣ n ^ 4 - 1 := by
-  -- 24 | n² - 1
-  have h24 : 24 ∣ n ^ 2 - 1 := odd_not_three_sq_sub_one_dvd n hodd h3
-  -- 48 = 24 * 2, and 48 | (n² - 1)(n² + 1)
-  -- n⁴ - 1 = (n² - 1)(n² + 1) by the algebraic identity
-  -- The identity holds because n^4 = (n^2)^2 and a^2 - 1 = (a-1)(a+1)
-  sorry -- requires ring tactic for n^4 - 1 = (n^2 - 1)(n^2 + 1)
-
 
 /-!
   === CONSECUTIVE PRODUCT: 24 | n³ - n ===
@@ -540,16 +529,58 @@ theorem odd_not_three_fourth_sub_one_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 
   - 24 | (n-1)(n+1) from the main theorem
   - Therefore 24 | n · (n-1)(n+1)
 -/
+
+-- Helper: a² - 1 = (a-1)(a+1) for a ≥ 1
+-- Proof: expand (a-1)(a+1) = a² - a + a - 1 = a² - 1
+private theorem sq_sub_one_eq_mul_pm1_aux {a : Nat} (ha : 1 ≤ a) :
+    a * a - 1 = (a - 1) * (a + 1) := by
+  rw [Nat.mul_add, Nat.mul_one,
+      Nat.mul_comm (a - 1) a,
+      Nat.mul_sub_left_distrib, Nat.mul_one]
+  -- Goal: a * a - 1 = a * a - a + (a - 1)
+  have h1 : a * a - a + (a - 1) = a * a - a + a - 1 := by omega
+  rw [h1]
+  have h2 : a * a - a + a = a * a := by
+    exact Nat.sub_add_cancel (Nat.le_mul_of_pos_left a (by omega))
+  rw [h2]
 
 -- For any odd n not divisible by 3, 24 | n³ - n
--- Proof sketch: n³ - n = n(n² - 1), and 24 | (n² - 1)
--- TODO: omega cannot handle n * k nonlinear terms; needs Mathlib.Tactic.Ring
+-- Proof: n³ - n = n(n² - 1), and 24 | (n² - 1)
 theorem odd_not_three_cubed_sub_self_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) :
     24 ∣ n ^ 3 - n := by
   have h24 : 24 ∣ n ^ 2 - 1 := odd_not_three_sq_sub_one_dvd n hodd h3
-  -- n³ - n = n(n² - 1) by the algebraic identity n^3 = n * n^2
-  -- Since 24 | n² - 1, we get 24 | n(n² - 1) = n³ - n
-  sorry -- requires ring tactic for n^3 - n = n * (n^2 - 1)
+  simp only [Nat.pow_succ, Nat.pow_zero, Nat.one_mul] at h24 ⊢
+  -- n*n*n - n = n*(n*n - 1) by algebraic identity
+  rw [Nat.mul_assoc]
+  rw [show n * (n * n) - n = n * (n * n) - n * 1 from by rw [Nat.mul_one]]
+  rw [← Nat.mul_sub_left_distrib]
+  exact Nat.dvd_mul_left_of_dvd h24 n
+
+
+-- For any odd n not divisible by 3, 48 | n⁴ - 1
+-- Proof: n⁴ - 1 = (n² - 1)(n² + 1), 24 | (n² - 1) and 2 | (n² + 1)
+theorem odd_not_three_fourth_sub_one_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) :
+    48 ∣ n ^ 4 - 1 := by
+  have h24 : 24 ∣ n ^ 2 - 1 := odd_not_three_sq_sub_one_dvd n hodd h3
+  have h2_np1 : 2 ∣ n ^ 2 + 1 := by
+    have : n ^ 2 % 2 = 1 := by
+      simp only [Nat.pow_succ, Nat.pow_zero, Nat.one_mul]
+      rw [Nat.mul_mod, hodd, Nat.one_mul, Nat.one_mod]
+    omega
+  -- Unfold powers to n*n form
+  simp only [Nat.pow_succ, Nat.pow_zero, Nat.one_mul] at h24 h2_np1 ⊢
+  by_cases h0 : n = 0
+  · simp [h0]
+  · have ha : 1 ≤ n * n := by
+      have : 1 ≤ n := by omega
+      calc 1 ≤ n := by omega
+        _ ≤ n * n := Nat.le_mul_of_pos_left _ (by omega)
+    have h_assoc : n * n * n * n = (n * n) * (n * n) := by ring_nf
+    rw [h_assoc]
+    rw [sq_sub_one_eq_mul_pm1_aux ha]
+    have : 48 = 24 * 2 := by decide
+    rw [this]
+    exact Nat.mul_dvd_mul h24 h2_np1
 /-!
   === STRUCTURAL: lcm(p-1, p+1) = (p-1)(p+1)/2 ===
 
