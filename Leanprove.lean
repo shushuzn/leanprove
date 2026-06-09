@@ -4,5 +4,6 @@ import Leanprove.Chebyshev
 import Leanprove.Dirichlet
 import Leanprove.PrimeCounting
 import Leanprove.PrimeReciprocals
+import Leanprove.VonMangoldt
 import Leanprove.MathlibTest
 import Leanprove.Tests
