@@ -250,7 +250,14 @@ theorem abs_psi_sub_theta_le' (x : ℝ) (hx : 1 ≤ x) :
 -/
 
 
-/-- Abel 求和恒等式: 将 ∑_{n≤x} Λ(n)/n 用 ψ 表达 -/
+/-- Abel 求和恒等式: 将 ∑_{n≤x} Λ(n)/n 用 ψ 表达
+
+    证明需要:
+    1. Mathlib abelSummationProof.sum_mul_eq_sub_sub_integral_mul
+    2. f(t) = 1/t 的可微性: deriv (fun t => 1/t) = fun t => -1/t²
+    3. 可积性: IntegrableOn (fun t => -1/t²) (Set.Ioc 1 x)
+    4. 应用 Abel 求和公式 with c = vonMangoldt, f = fun t => 1/t
+-/
 theorem mertens_abel_identity (x : ℝ) (hx : 1 ≤ x) :
     ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) =
       ψ x / x + ∫ t in Set.Ioc 1 x, ψ t / (t * t) := by
@@ -258,8 +265,13 @@ theorem mertens_abel_identity (x : ℝ) (hx : 1 ≤ x) :
 
 
 /-- 关键引理: ∫₁ˣ ψ(t)/t² dt - Real.log x = O(1)
-    这需要比 Chebyshev 界更精细的分析。
-    等价于证明 ∫₁^∞ (ψ(t) - t)/t² dt 收敛。 -/
+
+    证明策略:
+    - ∫₁ˣ ψ(t)/t² dt - ln x = ∫₁ˣ (ψ(t) - t)/t² dt
+    - 需要 ∫₁^∞ (ψ(t) - t)/t² dt 收敛
+    - 由 Chebyshev 界 |ψ(t) - t| ≤ C·t/ln(t) 可得
+    - 此界不依赖 PNT，可用初等方法证明
+-/
 theorem psi_integral_sub_log_isBigO :
     (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x)
       =O[atTop] (fun _ ↦ (1 : ℝ)) := by
@@ -281,7 +293,21 @@ theorem psi_integral_sub_log_isBigO :
 -/
 
 
-/-- 素数幂 (k ≥ 2) 的 Λ 贡献是有界的 -/
+/-- 素数幂 (k ≥ 2) 的 Λ 贡献是有界的
+
+    证明策略:
+    1. 对每个素数 p, ∑_{k≥2} (log p)/p^k = (log p)/(p(p-1))
+    2. (log p)/(p(p-1)) ≤ 2·(log p)/p² (对 p ≥ 2)
+    3. ∑_p (log p)/p² 收敛:
+       - log p ≤ p^{0.5} 对大 p (对数增长慢于幂函数)
+       - ∑ p^{-1.5} 收敛 (由 Nat.Primes.summable_rpow, r=-1.5 < -1)
+       - 比较判别法
+
+    依赖:
+    - Nat.Primes.summable_rpow: ∑ p^r 收敛 ↔ r < -1
+    - Real.log_le_sqrt: log p ≤ √p 对大 p
+    - Summable.of_nonneg_of_le: 比较判别法
+-/
 theorem primePower_contribution_bounded :
     ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x →
       |∑ n ∈ Finset.Icc 2 ⌊x⌋₊ with ¬n.Prime,
@@ -305,7 +331,13 @@ theorem primePower_contribution_bounded :
 
     ∑_{n≤x} Λ(n)/n = Real.log x + O(1)
 
-    即: 存在常数 C 使得 |∑_{n≤x} Λ(n)/n - Real.log x| ≤ C 对所有充分大的 x 成立。
+    证明策略:
+    1. 由 Abel 恒等式 (sorry 1): ∑ Λ(n)/n = ψ(x)/x + ∫₁ˣ ψ(t)/t² dt
+    2. 由关键引理 (sorry 2): ∫₁ˣ ψ(t)/t² dt - ln x = O(1)
+    3. 由 Chebyshev 界: ψ(x)/x = O(1)
+    4. 合并: ∑ Λ(n)/n - ln x = ψ(x)/x + (∫₁ˣ ψ(t)/t² dt - ln x) = O(1)
+
+    依赖: sorry 1 (Abel 恒等式) + sorry 2 (积分收敛)
 
     参考:
     - Hardy & Wright, "An Introduction to the Theory of Numbers", Theorem 425
@@ -327,7 +359,11 @@ theorem mertens_first_theorem :
 -/
 
 
-/-- Mertens 第一定理 (有界差版本): 存在常数使得差有界 -/
+/-- Mertens 第一定理 (有界差版本): 存在常数使得差有界
+
+    证明策略: 由 mertens_first_theorem 直接推出
+    依赖: sorry 4 (Mertens 第一定理)
+-/
 theorem mertens_first_theorem_bounded :
     ∃ C : ℝ, ∀ᶠ x in atTop,
       |∑ n ∈ Finset.Icc 0 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log x| ≤ C := by
