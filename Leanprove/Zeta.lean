@@ -1,5 +1,5 @@
 import Mathlib
-open Complex Real Filter
+open Complex Real Filter Topology
 open scoped BigOperators
 
 noncomputable section
@@ -67,7 +67,6 @@ lemma norm_zeta_le_zeta_real (s : ℂ) (h : 1 < s.re) : ‖zeta s‖ ≤ ∑' n 
     have h_sumnorm : Summable (λ n : ℕ => ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖) :=
       summable_norm_inv_nat_cpow s h
     exact norm_tsum_le_tsum_norm h_sumnorm
-  -- 计算 ∑ ‖a_n‖ = ∑ (1 : ℝ) / ((n : ℝ) ^ (s.re : ℝ))
   have h_eq_tsum : ∑' n : ℕ, ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖ = 
       ∑' n : ℕ, (1 : ℝ) / ((n : ℝ) ^ (s.re : ℝ)) := by
     refine tsum_congr (λ n => ?_)
@@ -81,3 +80,15 @@ lemma norm_zeta_le_zeta_real (s : ℂ) (h : 1 < s.re) : ‖zeta s‖ ≤ ∑' n 
   calc
     ‖zeta s‖ ≤ ∑' n : ℕ, ‖(if n = 0 then 0 else (1 : ℂ) / nat_cpow n s)‖ := h_norm_bound
     _ = ∑' n : ℕ, (1 : ℝ) / ((n : ℝ) ^ (s.re : ℝ)) := h_eq_tsum
+
+/-! ### Euler 乘积 -/
+
+/-- 有限 Euler 乘积 ≥ 部分和: ∏_{p ≤ X} (1 - p^{-σ})⁻¹ ≥ ∑_{n=1}^{X} n^{-σ} -/
+lemma euler_product_partial_ge (σ : ℝ) (hσ : 1 < σ) (X : ℕ) (hX : X ≥ 1) :
+    ∏ p ∈ Nat.primesBelow X, (1 - ((p : ℝ) ^ (-σ)))⁻¹ ≥ ∑ n ∈ Finset.Icc 1 X, (1 : ℝ) / ((n : ℝ) ^ σ) := by
+  sorry
+
+/-- ζ(σ) = lim_{X→∞} ∏_{p ≤ X} (1 - p^{-σ})⁻¹ (Euler 乘积) -/
+lemma euler_product_zeta (σ : ℝ) (hσ : 1 < σ) : 
+    Filter.Tendsto (λ (X : ℕ) => ∏ p ∈ Nat.primesBelow X, (1 - ((p : ℝ) ^ (-σ)))⁻¹) Filter.atTop (𝓝 (∑' n : ℕ, (1 : ℝ) / ((n : ℝ) ^ σ))) := by
+  sorry
