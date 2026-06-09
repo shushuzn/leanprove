@@ -43,7 +43,7 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 | π(x) 界 | 下界: ((x-1)ln2 - ln(x+2))/lnx ≤ π(x) | Chebyshev |
 | Bertrand 假设 | ∃p 素数: n < p ≤ 2n | Bertrand |
 | 素数无穷性 | ∀N, ∃p > N, p 素数 | Bertrand |
-| 素数比值 | p_{k+1}/p_k ≤ 2 | Bertrand |
+| 素数倒数发散 | Σ 1/p 不收敛 | PrimeReciprocals |
 
 ### 阶段 3-6: 待实现
 
@@ -64,6 +64,7 @@ leanprove/
 │   ├── Bertrand.lean           # Bertrand 假设及其应用 (6 个定理)
 │   ├── Chebyshev.lean          # Chebyshev 函数与界限 (16 个定理)
 │   ├── PrimeCounting.lean      # 素数计数函数与 PNT 目标 (5 个定理)
+│   ├── PrimeReciprocals.lean   # 素数倒数和发散性 (1 个定理)
 │   └── MathlibTest.lean        # Mathlib 功能验证 (1 个定理)
 ├── ARCHITECTURE.txt            # 定理依赖架构图
 ├── lakefile.toml               # 构建配置
@@ -71,7 +72,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 53 个已证明定理
+**总计**: 54 个已证明定理
 
 ## 技术栈
 
