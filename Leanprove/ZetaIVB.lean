@@ -1,5 +1,5 @@
 import Mathlib
-open Real Finset Set
+open Real Finset Set Filter
 open scoped BigOperators Topology
 
 set_option maxHeartbeats 0
@@ -121,8 +121,19 @@ lemma sum_bound_upper (N : ℕ) (σ : ℝ) (hσ : 1 < σ) (hN : N ≥ 1) :
           nlinarith
         rw [h_eq]
         simp [Nat.cast_succ]
-      · have : k = 1 := by omega
-        subst this; field_simp [show (σ - 1) ≠ 0 from by linarith]; simp
+      · -- k = 1: Icc 2 2 = {2}, 验证等式
+        have : k = 1 := by omega
+        subst this
+        -- Icc 2 (1+1) = Icc 2 2 = {2}
+        have h_Icc : Finset.Icc 2 (1 + 1 : ℕ) = ({2} : Finset ℕ) := by
+          ext n; simp; omega
+        rw [h_Icc, Finset.sum_singleton]
+        -- (((2:ℝ) - 1)^(1-σ) - (2:ℝ)^(1-σ)) / (σ-1) = (1 - 2^(1-σ)) / (σ-1) = 1/(σ-1) - 2^(1-σ)/(σ-1)
+        push_cast
+        have h_eq : ((2 : ℝ) - 1) ^ (1 - σ) = 1 := by
+          rw [show (2 : ℝ) - 1 = 1 from by ring, Real.one_rpow]
+        rw [h_eq]
+        field_simp [show (σ - 1 : ℝ) ≠ 0 from by linarith]
     _ ≤ 1 / (σ - 1) := by
       have h_nonneg : 0 ≤ ((N : ℝ) ^ (1 - σ)) / (σ - 1) := by positivity
       nlinarith
@@ -135,20 +146,36 @@ lemma zeta_upper_bound (σ : ℝ) (hσ : 1 < σ) : ∑' n : ℕ, (1 : ℝ) / ((n
       ext n; simp [Real.rpow_neg (by exact_mod_cast (Nat.zero_le n) : 0 ≤ (n : ℝ))]
     rw [h_eq]; exact this
   have h_partial (N : ℕ) : ∑ n ∈ Finset.range N, (1 : ℝ) / ((n : ℝ) ^ σ) ≤ 1 + 1 / (σ - 1) := by
-    calc
-      ∑ n ∈ Finset.range N, (1 : ℝ) / ((n : ℝ) ^ σ) ≤ ∑ n ∈ Finset.Icc 1 N, (1 : ℝ) / ((n : ℝ) ^ σ) := by
-        refine Finset.sum_le_sum_of_subset (λ n hn => ?_)
-        rw [Finset.mem_range] at hn
-        by_cases hn0 : n = 0
-        · subst hn0; simp
-        · have hnpos : 1 ≤ n := by omega
-          exact Finset.mem_Icc.mpr ⟨hnpos, hn⟩
-      _ = 1 + ∑ n ∈ Finset.Icc 2 N, (1 : ℝ) / ((n : ℝ) ^ σ) := by
-        have h_split : Finset.Icc 1 N = ({1} : Finset ℕ) ∪ Finset.Icc 2 N := by
-          ext n; simp; omega
-        rw [h_split, Finset.sum_union (by simp), Finset.sum_singleton]; simp
-      _ ≤ 1 + 1 / (σ - 1) := add_le_add_left (sum_bound_upper N σ hσ (by
-        by_cases hN0 : N = 0; subst hN0; omega; omega)) _
+    by_cases hN : N ≤ 1
+    · rcases Nat.lt_or_ge N 1 with hN_lt | hN_ge
+      · -- N < 1
+        interval_cases N
+        -- N = 0
+        simp
+        positivity
+      · -- N = 1
+        have : N = 1 := by omega
+        subst this
+        simp
+        positivity
+    · push_neg at hN
+      -- N ≥ 2
+      have h_split : Finset.range N = ({0} : Finset ℕ) ∪ Finset.Icc 1 (N - 1) := by
+        apply Finset.ext; intro n; simp; omega
+      have h_disj : Disjoint ({0} : Finset ℕ) (Finset.Icc 1 (N - 1)) := by simp
+      have h_split2 : Finset.Icc 1 (N - 1) = ({1} : Finset ℕ) ∪ Finset.Icc 2 (N - 1) := by
+        apply Finset.ext; intro n; simp; omega
+      have h_disj2 : Disjoint ({1} : Finset ℕ) (Finset.Icc 2 (N - 1)) := by simp
+      have h_main : (∑ n ∈ Finset.range N, (1 : ℝ) / ((n : ℝ) ^ σ)) = 
+          1 + ∑ n ∈ Finset.Icc 2 (N - 1), (1 : ℝ) / ((n : ℝ) ^ σ) := by
+        rw [h_split, Finset.sum_union h_disj, Finset.sum_singleton]
+        rw [Real.zero_rpow (by linarith : (σ : ℝ) ≠ 0)]
+        rw [zero_add, h_split2, Finset.sum_union h_disj2, Finset.sum_singleton]
+        rw [Real.one_rpow]
+      rw [h_main]
+      apply add_le_add_right
+      have hN_sub : N - 1 ≥ 1 := by omega
+      exact sum_bound_upper (N - 1) σ hσ hN_sub
   have h_tendsto : Filter.Tendsto (λ N : ℕ => ∑ n ∈ Finset.range N, (1 : ℝ) / ((n : ℝ) ^ σ)) Filter.atTop
       (𝓝 (∑' n : ℕ, (1 : ℝ) / ((n : ℝ) ^ σ))) :=
     h_summable.hasSum.tendsto_sum_nat
