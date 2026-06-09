@@ -6,7 +6,9 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-**当前进度**: 阶段 3 / 6 — 已完成素数分布基础、Chebyshev 理论与等差数列素数特殊情形
+**当前进度**: 阶段 3 / 6 — 等差数列素数 + Von Mangoldt 部分完成
+
+**注**: VonMangoldt.lean 包含 5 个待完成的定理（标记为 sorry），涉及 Mertens 第一定理及其推导。这些证明需要解析数论中级数收敛性的分析（Abel 求和、∑ (log p)/p² 的收敛性），目前 Mathlib 中已有 `Nat.Primes.summable_rpow` 作为关键工具。
 
 ## 路线图
 
