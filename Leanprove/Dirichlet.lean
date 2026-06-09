@@ -23,11 +23,13 @@ import Leanprove.Basic
   本文件:
   1. 用 Mathlib 分圆多项式定理导出 p ≡ 1 (mod 4) 的情形 (代数方法)
   2. 用初等方法 (n² + 1 的素因子) 独立证明 p ≡ 1 (mod 4) 的无穷性
-  3. 用欧几里得式构造给出 p ≡ 3 (mod 4) 的原创证明 (本文件独立构造)
+  3. 用欧几里得式构造给出 p ≡ 3 (mod 4) 的原创证明
+  4. 用欧几里得式构造给出 p ≡ 5 (mod 6) 的证明
 
   意义:
   - p ≡ 1 (mod 4) 提供两种证明: 分圆多项式 (Mathlib) 与 n² + 1 素因子 (初等)
-  - p ≡ 3 (mod 4) 使用欧几里得式构造 N = 4P - 1
+  - p ≡ 3 (mod 4) 使用欧几里得式构造 M = 4P - 1
+  - p ≡ 5 (mod 6) 使用欧几里得式构造 M = 6P - 1
   - 三种方法互补, 体现数论中不同同余类的不同证明策略
 -/
 
@@ -394,3 +396,132 @@ theorem exists_prime_mod_four_eq_three_gt (N : ℕ) :
 theorem infinite_primes_mod_four_eq_three :
     ∀ N, ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 3 :=
   exists_prime_mod_four_eq_three_gt
+
+
+/-!
+  === Part 5: p ≡ 5 (mod 6) 有无穷多个素数 ===
+
+  证明策略与 p ≡ 3 (mod 4) 完全平行:
+
+  引理: 若 n ≡ 5 (mod 6), 则 n 必有 ≡ 5 (mod 6) 的素因子。
+  (2 和 3 不整除 n; 大于 3 的素数 ≡ 1 或 5 (mod 6);
+   全 ≡ 1 的乘积 ≡ 1, 不可能等于 5。)
+
+  构造: 给定 N, 令 S = {素数 p ≤ N : p ≡ 5 (mod 6)}, P = ∏S, M = 6P - 1。
+  M ≡ 5 (mod 6), M 有素因子 q ≡ 5 (mod 6), q > N (否则 q ∣ P → q ∣ 6P → q ∣ 1)。
+-/
+
+-- 辅助: 若列表中所有元素 ≡ 1 (mod 6), 则乘积 ≡ 1 (mod 6)
+private theorem list_prod_mod_six_eq_one : ∀ {l : List ℕ},
+    (∀ p ∈ l, p % 6 = 1) → l.prod % 6 = 1
+  | [], _ => by simp [List.prod_nil, Nat.one_mod]
+  | a :: l, h => by
+    have ha : a % 6 = 1 := h a (by simp)
+    have hl : ∀ p ∈ l, p % 6 = 1 := fun p hp => h p (by simp [hp])
+    have ih : l.prod % 6 = 1 := list_prod_mod_six_eq_one hl
+    simp only [List.prod_cons, Nat.mul_mod, ha, ih, Nat.one_mul]
+
+
+-- 引理: ≡ 5 (mod 6) 的自然数必有 ≡ 5 (mod 6) 的素因子
+theorem exists_prime_factor_mod_six_eq_five (n : ℕ) (hn : n % 6 = 5) :
+    ∃ p, Nat.Prime p ∧ p ∣ n ∧ p % 6 = 5 := by
+  have hn_pos : n ≠ 0 := by omega
+  let pf := Nat.primeFactorsList n
+  have hprod : pf.prod = n := Nat.prod_primeFactorsList hn_pos
+  have hprime : ∀ p ∈ pf, Nat.Prime p :=
+    fun p hp => Nat.prime_of_mem_primeFactorsList hp
+  by_contra hnone
+  have hnone' : ∀ p, Nat.Prime p → p ∣ n → p % 6 ≠ 5 := by
+    intro p hp_prime hp_dvd hp_mod6
+    exact hnone ⟨p, hp_prime, hp_dvd, hp_mod6⟩
+  -- 所有素因子 ≡ 1 (mod 6)
+  have hall_one : ∀ p ∈ pf, p % 6 = 1 := by
+    intro p hp
+    have hp_prime : Nat.Prime p := hprime p hp
+    have hp_dvd : p ∣ n := by
+      have : p ∣ pf.prod := List.dvd_prod hp
+      rwa [hprod] at this
+    -- 2 不整除 n (n ≡ 5 mod 6 → n 是奇数)
+    have hp_ne2 : p ≠ 2 := by
+      intro h2
+      rw [h2] at hp_dvd
+      have : n % 2 = 0 := Nat.mod_eq_zero_of_dvd hp_dvd
+      omega
+    -- 3 不整除 n (n ≡ 5 mod 6 → n % 3 = 2)
+    have hp_ne3 : p ≠ 3 := by
+      intro h3
+      rw [h3] at hp_dvd
+      have : n % 3 = 0 := Nat.mod_eq_zero_of_dvd hp_dvd
+      omega
+    -- p ≥ 5 素数 → p % 6 ∈ {1, 5}
+    have hmod6 : p % 6 = 1 ∨ p % 6 = 5 := by
+      have : p % 2 = 1 := hp_prime.eq_two_or_odd.resolve_left hp_ne2
+      have : p % 3 ≠ 0 := by
+        intro h
+        have : p = 3 := by
+          have h3dvd : 3 ∣ p := Nat.dvd_of_mod_eq_zero (by omega)
+          have := Nat.Prime.eq_one_or_self_of_dvd hp_prime 3 h3dvd
+          omega
+        exact hp_ne3 this
+      have : p % 6 < 6 := Nat.mod_lt p (by decide)
+      omega
+    have hp_not5 : ¬(p % 6 = 5) := fun h5 => hnone' p hp_prime hp_dvd h5
+    cases hmod6 with
+    | inl h1 => exact h1
+    | inr h5 => exfalso; exact hp_not5 h5
+  -- 所有素因子 ≡ 1 (mod 6) → 乘积 ≡ 1 (mod 6)
+  have hprod_mod : pf.prod % 6 = 1 := list_prod_mod_six_eq_one hall_one
+  rw [hprod] at hprod_mod
+  omega
+
+
+-- 定理: 对任意 N, 存在素数 p > N 使得 p ≡ 5 (mod 6)
+theorem exists_prime_mod_six_eq_five_gt (N : ℕ) :
+    ∃ p, Nat.Prime p ∧ p > N ∧ p % 6 = 5 := by
+  let S := (Finset.range (N + 1)).filter (fun p => Nat.Prime p ∧ p % 6 = 5)
+  let P := S.prod id
+  let M := 6 * P - 1
+  -- P ≥ 1
+  have hP_pos : P ≥ 1 := by
+    apply Finset.one_le_prod'
+    intro x hx
+    have hx_mem : x ∈ Finset.filter (fun p => Nat.Prime p ∧ p % 6 = 5) (Finset.range (N + 1)) := by
+      dsimp [S] at hx; exact hx
+    have : x ∈ Finset.range (N + 1) := Finset.mem_of_mem_filter x hx_mem
+    have hx_prime : Nat.Prime x := (Finset.mem_filter.1 hx_mem).2.1
+    exact hx_prime.pos
+  -- M ≡ 5 (mod 6)
+  have hM_mod6 : M % 6 = 5 := by
+    have : (6 * P) % 6 = 0 := Nat.mod_eq_zero_of_dvd (dvd_mul_right 6 P)
+    have h6P_ge : 6 * P ≥ 6 := by omega
+    omega
+  -- M ≥ 5
+  have hM_ge : M ≥ 5 := by omega
+  -- M 有素因子 q ≡ 5 (mod 6)
+  obtain ⟨q, hq_prime, hq_dvd, hq_mod6⟩ := exists_prime_factor_mod_six_eq_five M hM_mod6
+  -- q > N
+  have hq_gt : q > N := by
+    by_contra hq_le
+    have hq_le_N : q ≤ N := by omega
+    have hq_in_S : q ∈ S := by
+      dsimp [S]
+      refine Finset.mem_filter.2 ⟨?_, hq_prime, hq_mod6⟩
+      exact Finset.mem_range.2 (by omega)
+    have hq_dvd_P : q ∣ P := Finset.dvd_prod_of_mem id hq_in_S
+    have hq_dvd_6P : q ∣ 6 * P := dvd_mul_of_dvd_right hq_dvd_P 6
+    have hq_dvd_one : q ∣ 1 := by
+      dsimp [M] at hq_dvd
+      have h6P_ge_1 : 6 * P ≥ 1 := by omega
+      have hsub : q ∣ 6 * P - (6 * P - 1) := Nat.dvd_sub hq_dvd_6P hq_dvd
+      have heq : 6 * P - (6 * P - 1) = 1 := by omega
+      rwa [heq] at hsub
+    have : q ≤ 1 := Nat.le_of_dvd (by decide) hq_dvd_one
+    have : q ≥ 2 := hq_prime.two_le
+    omega
+  exact ⟨q, hq_prime, hq_gt, hq_mod6⟩
+
+
+-- 定理: p ≡ 5 (mod 6) 的素数有无穷多个
+theorem infinite_primes_mod_six_eq_five :
+    ∀ N, ∃ p, Nat.Prime p ∧ p > N ∧ p % 6 = 5 :=
+  exists_prime_mod_six_eq_five_gt

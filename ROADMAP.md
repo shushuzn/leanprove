@@ -31,13 +31,19 @@
 
 虽然完整 Dirichlet 定理已在 Mathlib 中, 但本项目的阶段 3 仍有扩展空间:
 
-**补充更多初等证明**。当前只有 p ≡ 3 (mod 4) 的原创证明。可以增加:
+**已完成的初等证明**:
 
-- p ≡ 5 (mod 6) 素数无穷多 (欧几里得式构造)
-- p ≡ 1 (mod 4) 的初等证明 (不依赖分圆多项式, 用 n² + 1 的素因子方法)
+- ✅ p ≡ 1 (mod 4) 素数无穷多 (n² + 1 素因子方法, ZMod val 论证)
+- ✅ p ≡ 3 (mod 4) 素数无穷多 (欧几里得式构造 M = 4P - 1)
+- ✅ p ≡ 5 (mod 6) 素数无穷多 (欧几里得式构造 M = 6P - 1)
+- ✅ `infinite_prime_pairs` 加强为 p ≠ q (两次 Bertrand 假设)
+- ✅ Tests.lean 回归测试文件 (覆盖全部公开定理)
+
+**可以进一步扩展的方向**:
+
+- p ≡ a (mod q) 的其他小模数情形 (如 mod 8, mod 12)
 - 算术级数中素数的 Dirichlet 密度 (作为 Mathlib 完整定理的推论提取)
-
-**加强 `infinite_prime_pairs`**。Bertrand.lean 中的此定理使用了 p = q, 可以强化为要求 p ≠ q。
+- Brun 筛法或 Selberg 筛法的形式化
 
 ---
 
@@ -99,16 +105,16 @@ Mathlib 的复分析部分 (`Mathlib.Analysis.Complex`) 在持续增长, 但距�
 ### 推荐的实施顺序
 
 ```
-近期
-  ├── 补充 p ≡ 1 (mod 4) 的初等证明 (n² + 1 素因子方法)
-  ├── 加强 infinite_prime_pairs (要求 p ≠ q)
-  ├── 扩展 PrimeReciprocals.lean (Mertens 定理目标)
-  └── 添加 Tests.lean 回归测试文件
+近期 ✅
+  ├── ✅ p ≡ 1 (mod 4) 的初等证明 (n² + 1 素因子方法)
+  ├── ✅ p ≡ 5 (mod 6) 的欧几里得式构造
+  ├── ✅ 加强 infinite_prime_pairs (要求 p ≠ q)
+  └── ✅ Tests.lean 回归测试文件
 
 中期
+  ├── 扩展 PrimeReciprocals.lean (Mertens 定理: Σ 1/p ~ ln ln x)
   ├── 复分析基础设施补全 (围道积分、留数定理)
-  ├── ζ 函数解析延拓
-  └── ζ(1+it) ≠ 0 的证明
+  └── ζ 函数解析延拓
 
 远期
   ├── 素数定理 (PNT)

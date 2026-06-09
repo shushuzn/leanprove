@@ -13,7 +13,7 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 ```
 阶段 1 ████████████ 素数分布基础              ✅ 完成
 阶段 2 ████████████ Chebyshev 理论            ✅ 完成
-阶段 3 ██████░░░░░░ 等差数列中的素数           🔶 部分完成
+阶段 3 ████████░░░░ 等差数列中的素数           🔶 部分完成
 阶段 4 ░░░░░░░░░░░░ 素数定理                  待开始
 阶段 5 ░░░░░░░░░░░░ ζ 函数与零点              待开始
 阶段 6 ░░░░░░░░░░░░ 黎曼猜想                  待开始
@@ -56,12 +56,17 @@ Dirichlet 定理 (1837) 的特殊情形: 用初等方法证明特定等差数列
 | 定理 | 方法 | 文件 |
 |------|------|------|
 | p ≡ 1 (mod 4) 素数无穷多 | Mathlib 分圆多项式方法 | Dirichlet |
-| p ≡ 3 (mod 4) 素数无穷多 | **原创**: 欧几里得式构造 N = 4P - 1 | Dirichlet |
+| p ≡ 1 (mod 4) 素数无穷多 | **原创**: n² + 1 素因子方法 (初等) | Dirichlet |
+| p ≡ 3 (mod 4) 素数无穷多 | **原创**: 欧几里得式构造 M = 4P - 1 | Dirichlet |
+| p ≡ 5 (mod 6) 素数无穷多 | **原创**: 欧几里得式构造 M = 6P - 1 | Dirichlet |
+| 奇素数 p ∣ n²+1 → p ≡ 1 (mod 4) | **原创**: ZMod val 论证 | Dirichlet |
 | ≡ 3 (mod 4) 的数有 ≡ 3 (mod 4) 素因子 | **原创**: primeFactorsList 论证 | Dirichlet |
+| ≡ 5 (mod 6) 的数有 ≡ 5 (mod 6) 素因子 | **原创**: primeFactorsList 论证 | Dirichlet |
 
 **重要发现**: Mathlib 已包含完整的 Dirichlet 定理
 (`Nat.forall_exists_prime_gt_and_modEq`, 在 `Mathlib.NumberTheory.LSeries.PrimesInAP` 中)。
-本文件的价值在于: p ≡ 3 (mod 4) 的证明是原创的初等方法, 与 Mathlib 的解析证明互补。
+本文件的价值在于: p ≡ 3 (mod 4) 和 p ≡ 5 (mod 6) 的证明是原创的初等方法,
+p ≡ 1 (mod 4) 提供了独立于分圆多项式的 n² + 1 素因子证明, 与 Mathlib 的解析证明互补。
 
 后续阶段的详细规划、Mathlib 现状分析与实施建议见 [ROADMAP.md](ROADMAP.md)。
 
@@ -74,10 +79,11 @@ leanprove/
 │   ├── Basic.lean              # 核心数论定理 (25 个定理)
 │   ├── Bertrand.lean           # Bertrand 假设及其应用 (6 个定理)
 │   ├── Chebyshev.lean          # Chebyshev 函数与界限 (16 个定理)
-│   ├── Dirichlet.lean          # 等差数列素数特殊情形 (6 个定理)
+│   ├── Dirichlet.lean          # 等差数列素数特殊情形 (12 个定理)
 │   ├── PrimeCounting.lean      # 素数计数函数与 PNT 目标 (3 个定理)
 │   ├── PrimeReciprocals.lean   # 素数倒数和发散性 (1 个定理)
-│   └── MathlibTest.lean        # Mathlib 功能验证 (1 个定理)
+│   ├── MathlibTest.lean        # Mathlib 功能验证 (1 个定理)
+│   └── Tests.lean              # 回归测试 (#check 全部公开定理)
 ├── ARCHITECTURE.txt            # 定理依赖架构图
 ├── ROADMAP.md                  # 详细路线图与发展建议
 ├── lakefile.toml               # 构建配置
@@ -85,7 +91,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 58 个已证明定理, 零 sorry
+**总计**: 67 个已证明定理, 零 sorry
 
 ## 技术栈
 

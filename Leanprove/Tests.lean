@@ -69,6 +69,9 @@ import Leanprove.PrimeReciprocals
 #check exists_prime_factor_mod_four_eq_three
 #check exists_prime_mod_four_eq_three_gt
 #check infinite_primes_mod_four_eq_three
+#check exists_prime_factor_mod_six_eq_five
+#check exists_prime_mod_six_eq_five_gt
+#check infinite_primes_mod_six_eq_five
 
 -- PrimeCounting.lean
 #check pi_lower_bound_simple
