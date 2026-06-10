@@ -19,7 +19,7 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 阶段 IV  ██████░░░░░░ Zeta 函数系列               🔶 进行中
   IV-A  ████████████ ζ(s) 定义与绝对收敛           ✅ 完成
   IV-B  ████████████ (σ-1)ζ(σ) 上界               ✅ 完成
-  IV-C  ██░░░░░░░░░░ Mertens + Abel 求和          🔶 进行中 (2 sorry)
+  IV-C  ██░░░░░░░░░░ Mertens + Abel 求和          🔶 进行中 (5 sorry)
   IV-D  ░░░░░░░░░░░░ Euler 乘积                   待开始
   IV-E  ░░░░░░░░░░░░ 解析延拓与零区域             待开始
 阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
@@ -137,10 +137,16 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 | 9 | `log_div_sq_bound_le` — log p/p² ≤ 2p^{-3/2} | ✅ | gcongr + sqrt_div_sq_eq_rpow |
 | 10 | `primePower_contribution_bounded` — ∑_{¬Prime} Λ(n)/n 有界 | ❌ sorry | 需要 Summable.sum_le_tsum + summable_nat_rpow |
 | 11 | `psi_integral_sub_log_isBigO` — ∫ψ/t² - log = O(1) | ❌ sorry | 需要 Abel 求和恒等式 |
+| 12 | `mertens_abel_identity` — ∑Λ(n)/n = ψ/x + ∫ψ/t² dt | ❌ sorry | Abel 求和公式 |
+| 13 | `mertens_first_theorem` — ∑_{p≤x} (log p)/p - log x = O(1) | ❌ sorry | Mertens 第一定理 |
+| 14 | `mertens_first_theorem_bounded` — \|∑_{p≤x} (log p)/p - log x\| ≤ C | ❌ sorry | 有界形式 |
 
-**剩余 2 个 sorry 的技术路线**:
+**剩余 5 个 sorry 的技术路线**:
 - `primePower_contribution_bounded`: 用 `Summable.of_nonneg_of_le` 比较 `∑ n^{-3/2}` (由 `summable_nat_rpow` 证明收敛)
 - `psi_integral_sub_log_isBigO`: 需要 Mertens 第一定理 + Abel 求和公式
+- `mertens_abel_identity`: Abel 求和公式应用于 von Mangoldt 函数
+- `mertens_first_theorem`: ∑_{p≤x} (log p)/p = log x + O(1)
+- `mertens_first_theorem_bounded`: 有界形式 |∑ - log x| ≤ C
 
 #### IV-D: Euler 乘积 ⏳
 
@@ -203,7 +209,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 95+ 个已证明定理/引理, 2 个 sorry (primePower_contribution_bounded, psi_integral_sub_log_isBigO)
+**总计**: 98+ 个已声明定理/引理, 5 个 sorry (primePower_contribution_bounded, psi_integral_sub_log_isBigO, mertens_abel_identity, mertens_first_theorem, mertens_first_theorem_bounded)
 
 ## 技术栈
 
