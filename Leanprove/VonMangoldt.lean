@@ -6,6 +6,7 @@ import Mathlib.NumberTheory.Chebyshev
 import Mathlib.NumberTheory.SumPrimeReciprocals
 import Mathlib.Data.Nat.Factorization.PrimePow
 import Mathlib.Topology.Algebra.InfiniteSum.Real
+import Mathlib.NumberTheory.AbelSummation
 open ArithmeticFunction (vonMangoldt vonMangoldt_apply_one vonMangoldt_nonneg vonMangoldt_apply_prime vonMangoldt_apply_pow vonMangoldt_ne_zero_iff vonMangoldt_pos_iff vonMangoldt_eq_zero_iff vonMangoldt_sum vonMangoldt_mul_zeta zeta_mul_vonMangoldt log_mul_moebius_eq_vonMangoldt moebius_mul_log_eq_vonMangoldt sum_moebius_mul_log_eq)
 open Set Filter Topology Real
 open scoped BigOperators
@@ -565,7 +566,108 @@ theorem psi_integral_sub_log_isBigO : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ 
 theorem mertens_abel_identity (x : ℝ) (hx : 2 ≤ x) :
     ∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) =
     ψ x / x + ∫ t in Set.Ioc 2 x, ψ t / (t * t) := by
-  sorry
+  -- Step 1: Apply Abel summation with c = Λ, f(t) = t⁻¹
+  have h_abel := sum_mul_eq_sub_integral_mul₁
+    (c := fun n => (vonMangoldt n : ℝ))
+    (f := fun t : ℝ => t⁻¹)
+    (hc := vonMangoldt_zero)
+    (hc1 := vonMangoldt_one)
+    (b := x)
+    (hf_diff := by
+      intro z hz
+      have : z ≥ 2 := hz.1
+      have : z ≠ 0 := by linarith
+      fun_prop)
+    (hf_int := by
+      have h_deriv_eq : deriv (fun t : ℝ => t⁻¹) = fun t : ℝ => -(t^2)⁻¹ := deriv_inv'
+      rw [h_deriv_eq]
+      have h_eq : (fun t : ℝ => -(t^2)⁻¹) = (fun t : ℝ => (-1 : ℝ) / (t^2)) := by
+        funext t; simp [div_eq_mul_inv]
+      rw [h_eq]
+      refine (intervalIntegrable_iff_integrableOn_Icc_of_le hx).symm.mpr ?_
+      refine ContinuousOn.intervalIntegrable_of_Icc hx ?_
+      refine ContinuousOn.div continuousOn_const (continuousOn_id.pow 2) ?_
+      intro z hz; have : z ≥ 2 := hz.1; have : z ≠ 0 := by linarith
+      simpa [pow_eq_zero_iff] using this)
+  -- Step 2: Convert to interval integral notation
+  rw [← intervalIntegral.integral_of_le hx] at h_abel
+  -- Step 3: Rewrite deriv (·⁻¹) = -(·²)⁻¹ and ∑Λ = ψ inside the integral
+  have int_deriv : ∫ u in (2 : ℝ)..x, deriv (fun t : ℝ => t⁻¹) u * ∑ k ∈ Finset.Icc 0 ⌊u⌋₊, (vonMangoldt k : ℝ) =
+      ∫ u in (2 : ℝ)..x, -(u ^ 2)⁻¹ * ψ u := by
+    apply intervalIntegral.integral_congr
+    intro u _
+    dsimp
+    rw [deriv_inv, (Chebyshev.psi_eq_sum_Icc u).symm]
+  rw [int_deriv] at h_abel
+  -- Step 4: ∑ k ∈ Finset.Icc 0 ⌊x⌋₊, Λ k = ψ x
+  rw [(Chebyshev.psi_eq_sum_Icc x).symm] at h_abel
+  -- Step 5: LHS: ∑ k ∈ Finset.Icc 0 ⌊x⌋₊, k⁻¹ * Λ k = ∑ n ∈ Finset.Icc 2 ⌊x⌋₊, Λ(n)/n
+  have h_lhs : ∑ k ∈ Finset.Icc 0 ⌊x⌋₊, (k : ℝ)⁻¹ * (vonMangoldt k : ℝ) =
+      ∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) := by
+    have h_sub : Finset.Icc 0 ⌊x⌋₊ = {0, 1} ∪ Finset.Icc 2 ⌊x⌋₊ := by
+      ext k
+      simp only [Finset.mem_Icc, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton]
+      have hx_pos : (0 : ℝ) ≤ x := by linarith
+      have hk_floor : k ≤ ⌊x⌋₊ ↔ (k : ℝ) ≤ x := Nat.le_floor_iff hx_pos
+      have h_forward : 0 ≤ k ∧ k ≤ ⌊x⌋₊ → (k = 0 ∨ k = 1) ∨ 2 ≤ k ∧ k ≤ ⌊x⌋₊ := by
+        intro h; have hk0 := h.1; have hkx := h.2
+        by_cases hkl : k < 2
+        · have : k = 0 ∨ k = 1 := by omega
+          exact Or.inl this
+        · have : 2 ≤ k := by omega
+          exact Or.inr (And.intro this hkx)
+      have h_backward : ((k = 0 ∨ k = 1) ∨ 2 ≤ k ∧ k ≤ ⌊x⌋₊) → 0 ≤ k ∧ k ≤ ⌊x⌋₊ := by
+        intro h
+        rcases h with (hk01 | ⟨hk2, hkx⟩)
+        · rcases hk01 with (rfl | rfl)
+          · exact And.intro (Nat.zero_le 0) (Nat.zero_le ⌊x⌋₊)
+          · exact And.intro (Nat.zero_le 1) (hk_floor.mpr (by exact_mod_cast (by linarith : (1 : ℝ) ≤ x)))
+        · exact And.intro (by omega : 0 ≤ k) hkx
+      constructor <;> intro h
+      · exact h_forward h
+      · exact h_backward h
+    rw [h_sub]
+    have h_disj : Disjoint ({0, 1} : Finset ℕ) (Finset.Icc 2 ⌊x⌋₊) := by
+      rw [Finset.disjoint_left]; intro k hk1 hk2
+      simp at hk1
+      have hk_ge : 2 ≤ k := (Finset.mem_Icc.mp hk2).1
+      cases hk1 with
+      | inl h => linarith [hk_ge, h]
+      | inr h => linarith [hk_ge, h]
+    rw [Finset.sum_union h_disj]
+    have h01 : ∑ k ∈ ({0, 1} : Finset ℕ), (k : ℝ)⁻¹ * (vonMangoldt k : ℝ) = 0 := by
+      simp [Finset.sum_pair (by norm_num : (0 : ℕ) ≠ 1)]
+    rw [h01, zero_add]
+    apply Finset.sum_congr rfl
+    intro k hk
+    have hk2 : k ≥ 2 := (Finset.mem_Icc.mp hk).1
+    have hk_ne : (k : ℝ) ≠ 0 := by
+      have : (k : ℝ) ≥ 2 := by exact_mod_cast hk2
+      linarith
+    field_simp [hk_ne]
+  rw [h_lhs] at h_abel
+  -- Step 6: Algebraic simplification
+  have hx_ne : x ≠ 0 := by linarith
+  have h_fx : x⁻¹ * ψ x = ψ x / x := by field_simp [hx_ne]
+  rw [h_fx] at h_abel
+  -- Convert back to Set.Ioc
+  rw [intervalIntegral.integral_of_le hx] at h_abel
+  -- Handle the negated integral
+  have h_neg_int : -∫ t in Set.Ioc 2 x, -(t ^ 2)⁻¹ * ψ t =
+      ∫ t in Set.Ioc 2 x, ψ t / (t * t) := by
+    rw [← MeasureTheory.integral_neg]
+    apply MeasureTheory.setIntegral_congr_fun measurableSet_Ioc
+    intro t ht
+    have ht_pos : t > 0 := by linarith [ht.1]
+    have ht_ne : t ≠ 0 := ne_of_gt ht_pos
+    field_simp [ht_ne, pow_two]
+  -- Final step: rewrite goal using h_neg_int and h_abel
+  have h_final : ψ x / x - ∫ t in Set.Ioc 2 x, -(t ^ 2)⁻¹ * ψ t =
+      ψ x / x + ∫ t in Set.Ioc 2 x, ψ t / (t * t) := by
+    rw [← h_neg_int]
+    ring
+  rw [← h_final]
+  convert h_abel
 
 -- Mertens 第一定理: ∑_{p≤x} (log p)/p = log x + O(1)
 theorem mertens_first_theorem :
