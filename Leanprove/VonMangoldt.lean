@@ -4,6 +4,7 @@ import Mathlib.NumberTheory.Chebyshev
 open ArithmeticFunction (vonMangoldt vonMangoldt_apply_one vonMangoldt_nonneg vonMangoldt_apply_prime vonMangoldt_apply_pow vonMangoldt_ne_zero_iff vonMangoldt_pos_iff vonMangoldt_eq_zero_iff vonMangoldt_sum vonMangoldt_mul_zeta zeta_mul_vonMangoldt log_mul_moebius_eq_vonMangoldt moebius_mul_log_eq_vonMangoldt sum_moebius_mul_log_eq)
 open Set Filter Topology Real
 open scoped BigOperators
+open Finset
 notation "ψ" => Chebyshev.psi
 notation "θ" => Chebyshev.theta
 
@@ -107,9 +108,22 @@ lemma pow_div_pow_bound (p : ℕ) (hp : 2 ≤ p) (k : ℕ) (hk : 2 ≤ k) : (1 :
       exact_mod_cast hp
     _ = ((1 : ℝ) / 2) ^ (k - 2) * (1 / ((p : ℝ) ^ 2)) := by ring
 
--- 简化版：跳过复杂证明，用 sorry
+/-- ∑_{j=0}^{N} (1/2)^j ≤ 2 -/
+lemma geom_sum_bound (N : ℕ) : ∑ j ∈ range (N + 1), ((1 : ℝ) / 2) ^ j ≤ 2 := by
+  calc ∑ j ∈ range (N + 1), ((1 : ℝ) / 2) ^ j
+      = (1 - ((1 : ℝ) / 2) ^ (N + 1)) / (1 - 1 / 2) := by
+        rw [geom_sum_eq (by norm_num : (1/2 : ℝ) ≠ 1) (N + 1)]
+        ring
+    _ = 2 * (1 - ((1 : ℝ) / 2) ^ (N + 1)) := by
+        ring
+    _ ≤ 2 := by
+        have : 0 ≤ ((1 : ℝ) / 2) ^ (N + 1) := by positivity
+        linarith
+
 lemma geom_tail_Icc_bound (p M : ℕ) (hp : 2 ≤ p) (hM : 2 ≤ M) :
     ∑ k ∈ Finset.Icc 2 M, (1 : ℝ) / ((p : ℝ) ^ k) ≤ 2 / ((p : ℝ) ^ 2) := by
+  have hp_pos : (p : ℝ) > 0 := by exact_mod_cast (show 0 < p from by omega)
+  have hp2_pos : (p : ℝ) ^ 2 > 0 := by positivity
   calc ∑ k ∈ Finset.Icc 2 M, (1 : ℝ) / ((p : ℝ) ^ k)
       ≤ ∑ k ∈ Finset.Icc 2 M, ((1 : ℝ) / 2) ^ (k - 2) * (1 / ((p : ℝ) ^ 2)) := by
         apply Finset.sum_le_sum
@@ -123,12 +137,19 @@ lemma geom_tail_Icc_bound (p M : ℕ) (hp : 2 ≤ p) (hM : 2 ≤ M) :
     _ ≤ (1 / ((p : ℝ) ^ 2)) * 2 := by
         apply mul_le_mul_of_nonneg_left _ (by positivity : 0 ≤ 1 / ((p : ℝ) ^ 2))
         -- ∑_{k=2}^M (1/2)^(k-2) = ∑_{j=0}^{M-2} (1/2)^j ≤ 2
-        have h_shift : ∑ k ∈ Finset.Icc 2 M, ((1 : ℝ) / 2) ^ (k - 2) = ∑ j ∈ Finset.range (M - 1), ((1 : ℝ) / 2) ^ j := by
-          rw [Finset.Icc]
-          sorry -- 需要将 Icc 2 M 转换为 range (M-1)
-        rw [h_shift]
-        -- ∑_{j=0}^{N} (1/2)^j = 2 * (1 - (1/2)^{N+1}) ≤ 2
-        sorry
+        have h_range : Finset.Icc 2 M = (Finset.range (M - 1)).image (· + 2) := by
+          ext k; simp [Finset.mem_Icc, Finset.mem_range, Finset.mem_image]
+          constructor
+          · intro hk; exact ⟨k - 2, by omega, by omega⟩
+          · intro ⟨j, hj, hk⟩; exact ⟨by omega, by omega⟩
+        rw [h_range, Finset.sum_image (by intro x hx y hy h; exact Nat.add_right_cancel h)]
+        -- 转换: (1/2)^(x+2-2) = (1/2)^x
+        simp only [add_tsub_cancel_right]
+        -- ∑_{j=0}^{M-2} (1/2)^j ≤ 2
+        have h_eq : M - 2 + 1 = M - 1 := by omega
+        change ∑ x ∈ Finset.range (M - 1), (1 / 2) ^ x ≤ 2
+        rw [← h_eq]
+        exact geom_sum_bound (M - 2)
     _ = 2 / ((p : ℝ) ^ 2) := by ring
 
 -- 跳过 primePower_contribution_bounded 的复杂证明
