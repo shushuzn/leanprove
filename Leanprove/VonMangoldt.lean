@@ -152,6 +152,21 @@ lemma geom_tail_Icc_bound (p M : ℕ) (hp : 2 ≤ p) (hM : 2 ≤ M) :
         exact geom_sum_bound (M - 2)
     _ = 2 / ((p : ℝ) ^ 2) := by ring
 
+
+-- 辅助引理: Λ(n)/n ≥ 0
+lemma vm_nonneg (n : ℕ) : 0 ≤ (vonMangoldt n : ℝ) / (n : ℝ) := by
+  apply div_nonneg
+  · exact_mod_cast ArithmeticFunction.vonMangoldt_nonneg
+  · exact_mod_cast (show 0 ≤ n from by omega)
+
+-- 辅助引理: Λ(n)/n ≤ 1（n ≥ 2）
+lemma vm_le_one {n : ℕ} (hn : 2 ≤ n) : (vonMangoldt n : ℝ) / (n : ℝ) ≤ 1 := by
+  have hn_pos : (0 : ℝ) < (n : ℝ) := by exact_mod_cast (show 0 < n from by omega)
+  have h_vm := (ArithmeticFunction.vonMangoldt_le_log : (vonMangoldt n : ℝ) ≤ Real.log (n : ℝ))
+  have h_log := Real.log_le_self (by linarith : (0 : ℝ) ≤ ↑n)
+  have h_bound : (vonMangoldt n : ℝ) ≤ (n : ℝ) := le_trans h_vm h_log
+  exact (div_le_one hn_pos).mpr h_bound
+
 -- 跳过 primePower_contribution_bounded 的复杂证明
 theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → |∑ n ∈ Finset.Icc 2 ⌊x⌋₊ with ¬Nat.Prime n, (vonMangoldt n : ℝ) / (n : ℝ)| ≤ C := by sorry
 
