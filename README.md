@@ -6,9 +6,9 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-**当前进度**: 阶段 IV-A / VI — Zeta 函数基础 (已完成) → 阶段 IV-B (进行中)
+**当前进度**: 阶段 IV-B ✅ — (σ-1)ζ(σ) 上界已完成，VonMangoldt.lean 引理体系逐步完善中。
 
-**注**: 全项目共 **93+ 个定理/引理**, 涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理和 ζ 函数基础。
+**注**: 全项目共 **95+ 个定理/引理**, 涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理和 ζ 函数基础。
 
 ## 路线图
 
@@ -16,13 +16,14 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 阶段 I   ████████████ 初等数论基础                ✅ 完成
 阶段 II  ████████████ Chebyshev 与素数分布         ✅ 完成
 阶段 III ████████████ 解析数论基础                 ✅ 完成
-阶段 IV  ████░░░░░░░░ Zeta 函数系列               🔶 进行中
+阶段 IV  ██████░░░░░░ Zeta 函数系列               🔶 进行中
   IV-A  ████████████ ζ(s) 定义与绝对收敛           ✅ 完成
-  IV-B  ████░░░░░░░░ 极点: (s-1)ζ(s) → 1           🔶 进行中
-  IV-C  ░░░░░░░░░░░░ Euler 乘积                   待开始
-  IV-D  ░░░░░░░░░░░░ 解析延拓与零区域             待开始
+  IV-B  ████████████ (σ-1)ζ(σ) 上界               ✅ 完成
+  IV-C  ██░░░░░░░░░░ Mertens + Abel 求和          🔶 进行中 (2 sorry)
+  IV-D  ░░░░░░░░░░░░ Euler 乘积                   待开始
+  IV-E  ░░░░░░░░░░░░ 解析延拓与零区域             待开始
 阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
-阶段 VI ░░░░░░░░░░░░ 黎猜想                      待开始
+阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
 ```
 
 ---
@@ -35,9 +36,9 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 | # | 定理 | 方法 |
 |---|------|------|
-| 1 | `24 | p² - 1` 对素数 p ≥ 5 | 模 3 和模 8 分析 |
-| 2 | `24 | p² - q²` 对素数 p,q ≥ 5 | 平方差公式 |
-| 3 | `48 | n⁴ - 1` 对奇数 n, 3 ∤ n | 因式分解 |
+| 1 | `24 \| p² - 1` 对素数 p ≥ 5 | 模 3 和模 8 分析 |
+| 2 | `24 \| p² - q²` 对素数 p,q ≥ 5 | 平方差公式 |
+| 3 | `48 \| n⁴ - 1` 对奇数 n, 3 ∤ n | 因式分解 |
 | 4 | 素数无穷 | 欧几里得经典证明 |
 | 5 | `π(x) < x/ln x · ln 4 + O(√x)` | 组合上界 |
 | 6 | `Σ 1/p` 发散 | 厄多斯证明 |
@@ -80,7 +81,7 @@ Chebyshev θ(x) 和 ψ(x) 函数、Bertrand 假设、素数计数函数的上下
 | 1 | p ≡ 1 (mod 4) 素数无穷 | n²+1 素因子法 (原创) |
 | 2 | p ≡ 3 (mod 4) 素数无穷 | 欧几里得构造 M = 4P - 1 (原创) |
 | 3 | p ≡ 5 (mod 6) 素数无穷 | 欧几里得构造 M = 6P - 1 (原创) |
-| 4 | Λ(n) 定义与 Dirichlet 卷积 | ∑_{d|n} Λ(d) = ln n |
+| 4 | Λ(n) 定义与 Dirichlet 卷积 | ∑_{d\|n} Λ(d) = ln n |
 | 5 | ψ(x) = ∑_{n≤x} Λ(n) | Chebyshev psi |
 | 6 | **Mertens 恒等式**: ∑ Λ(n)/n = ψ/x + ∫ ψ/t² dt | Abel 求和公式 |
 | 7 | **素数幂贡献有界** | 几何级数界 |
@@ -95,7 +96,7 @@ Chebyshev θ(x) 和 ψ(x) 函数、Bertrand 假设、素数计数函数的上下
 
 ### 阶段 IV: Zeta 函数系列 🔶
 
-**文件**: `Zeta.lean`
+**文件**: `Zeta.lean`, `ZetaIVB.lean`, `VonMangoldt.lean`
 
 Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 
@@ -104,24 +105,50 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 | # | 定理 | 状态 |
 |---|------|------|
 | 1 | ζ(s) = ∑ 1/n^s (Re s > 1) | ✅ |
-| 2 | ∑ |1/n^s| 收敛 (Re s > 1) | ✅ |
-| 3 | |ζ(s)| ≤ ζ(Re(s)) | ✅ |
+| 2 | ∑ \|1/n^s\| 收敛 (Re s > 1) | ✅ |
+| 3 | \|ζ(s)\| ≤ ζ(Re(s)) | ✅ |
 
-#### IV-B: 极点 (s-1)ζ(s) → 1 🔶
+#### IV-B: (σ-1)ζ(σ) 上界 ✅
+
+**文件**: `ZetaIVB.lean` — 5 个引理全部证明，零 sorry。
 
 | # | 定理 | 方法 |
 |---|------|------|
-| 1 | ∫_1^N x^{-σ} dx = (N^{1-σ} - 1)/(1-σ) | integral_rpow |
-| 2 | 1/(σ-1) ≤ ζ(σ) ≤ 1 + 1/(σ-1) | 积分比较 |
-| 3 | (σ-1)ζ(σ) → 1 当 σ → 1⁺ | squeeze 定理 |
+| 1 | `rpow_anti` — rpow 反单调性 | gcongr |
+| 2 | `mvt_ineq` — 中值定理不等式 | mvt_norm_le |
+| 3 | `n_pow_le_telescope` — 裂项上界 | Finset.sum_Ico_eq_sum_range |
+| 4 | `sum_bound_upper` — 有限和上界 | div_le_iff + linarith |
+| 5 | **`zeta_upper_bound`** — ζ(σ) ≤ 1 + 1/(σ-1) | le_of_tendsto + Eventually.of_forall |
 
-#### IV-C: Euler 乘积 ⏳
+#### IV-C: Mertens + Abel 求和 🔶
+
+**文件**: `VonMangoldt.lean` — 逐步构建中
+
+| # | 定理 | 状态 | 方法 |
+|---|------|------|------|
+| 1 | `vm_nonneg` — Λ(n)/n ≥ 0 | ✅ | div_nonneg + vonMangoldt_nonneg |
+| 2 | `vm_le_one` — Λ(n)/n ≤ 1 (n≥2) | ✅ | div_le_one + vonMangoldt_le_log |
+| 3 | `pow_div_pow_bound` — 1/p^k ≤ (1/2)^{k-2}·1/p^2 | ✅ | gcongr + field_simp |
+| 4 | `geom_sum_bound` — ∑_{j=0}^N (1/2)^j ≤ 2 | ✅ | geom_sum_eq + positivity |
+| 5 | `geom_tail_Icc_bound` — ∑_{k=2}^M 1/p^k ≤ 2/p^2 | ✅ | pow_div_pow_bound + geom_sum_bound |
+| 6 | `range_sum_le_tsum_of_nonneg` — 部分和 ≤ tsum | ✅ | HasSum.tendsto_sum_nat + by_contra |
+| 7 | `log_lt_two_sqrt` — log p < 2√p | ✅ | log_le_sub_one_of_pos |
+| 8 | `sqrt_div_sq_eq_rpow` — √p/p² = p^{-3/2} | ✅ | rpow_sub |
+| 9 | `log_div_sq_bound_le` — log p/p² ≤ 2p^{-3/2} | ✅ | gcongr + sqrt_div_sq_eq_rpow |
+| 10 | `primePower_contribution_bounded` — ∑_{¬Prime} Λ(n)/n 有界 | ❌ sorry | 需要 Summable.sum_le_tsum + summable_nat_rpow |
+| 11 | `psi_integral_sub_log_isBigO` — ∫ψ/t² - log = O(1) | ❌ sorry | 需要 Abel 求和恒等式 |
+
+**剩余 2 个 sorry 的技术路线**:
+- `primePower_contribution_bounded`: 用 `Summable.of_nonneg_of_le` 比较 `∑ n^{-3/2}` (由 `summable_nat_rpow` 证明收敛)
+- `psi_integral_sub_log_isBigO`: 需要 Mertens 第一定理 + Abel 求和公式
+
+#### IV-D: Euler 乘积 ⏳
 
 | # | 定理 |
 |---|------|
 | 1 | ζ(s) = ∏_p (1 - p^{-s})⁻¹ (Re s > 1) |
 
-#### IV-D: 解析延拓与零区域 ⏳
+#### IV-E: 解析延拓与零区域 ⏳
 
 | # | 定理 |
 |---|------|
@@ -160,13 +187,14 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 leanprove/
 ├── Leanprove.lean              # 入口文件
 ├── Leanprove/
-│   ├── Basic.lean              # 阶段 I: 21 定理
-│   ├── Chebyshev.lean          # 阶段 II: 14 定理
-│   ├── Bertrand.lean           # 阶段 II: 6 定理
-│   ├── PrimeCounting.lean      # 阶段 I-II: 3 定理
-│   ├── PrimeReciprocals.lean   # 阶段 I: 1 定理
-│   ├── Dirichlet.lean          # 阶段 III: 11 定理
-│   ├── VonMangoldt.lean        # 阶段 III: 36 定理/引理
+│   ├── Basic.lean              # 阶段 I: 初等数论 (21 定理)
+│   ├── Chebyshev.lean          # 阶段 II: Chebyshev 界 (14 定理)
+│   ├── Bertrand.lean           # 阶段 II: Bertrand 假设 (6 定理)
+│   ├── PrimeCounting.lean      # 阶段 I-II: 素数计数 (3 定理)
+│   ├── PrimeReciprocals.lean   # 阶段 I: 素数倒数和 (1 定理)
+│   ├── Dirichlet.lean          # 阶段 III: 等差数列素数 (11 定理)
+│   ├── VonMangoldt.lean        # 阶段 III-IV: VonMangoldt + Mertens (30+ 定理/引理)
+│   ├── ZetaIVB.lean            # 阶段 IV-B: ζ 上界 (5 引理, 零 sorry)
 │   ├── Zeta.lean               # 阶段 IV: ζ 函数基础
 │   └── Tests.lean              # 测试与验证
 ├── ROADMAP.md                  # 详细路线图与发展建议
@@ -175,7 +203,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 93 个已证明定理/引理, 零 sorry (Zeta.lean 另有 5 个进行中的定理)
+**总计**: 95+ 个已证明定理/引理, 2 个 sorry (primePower_contribution_bounded, psi_integral_sub_log_isBigO)
 
 ## 技术栈
 

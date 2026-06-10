@@ -4,17 +4,33 @@
 
 ---
 
+### 项目总览
+
+```
+阶段 I   ████████████ 初等数论基础                ✅ 完成
+阶段 II  ████████████ Chebyshev 与素数分布         ✅ 完成
+阶段 III ████████████ 解析数论基础                 ✅ 完成
+阶段 IV  ██████░░░░░░ Zeta 函数系列               🔶 进行中
+  IV-A  ████████████ ζ(s) 定义与绝对收敛           ✅ 完成
+  IV-B  ████████████ (σ-1)ζ(σ) 上界               ✅ 完成
+  IV-C  ██░░░░░░░░░░ Mertens + Abel 求和          🔶 进行中 (2 sorry)
+  IV-D  ░░░░░░░░░░░░ Euler 乘积                   待开始
+  IV-E  ░░░░░░░░░░░░ 解析延拓与零区域             待开始
+阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
+阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
+```
+
+---
+
 ### Mathlib 中已有的关键结果
 
-在推进后续阶段前, 了解 Mathlib 中已有的成果至关重要。以下发现在本项目的调研中确认:
+在推进后续阶段前, 了解 Mathlib 中已有的成果至关重要:
 
-**Dirichlet 定理 (完整)**: `Mathlib.NumberTheory.LSeries.PrimesInAP` 中的 `Nat.forall_exists_prime_gt_and_modEq` 已证明完整的 Dirichlet 定理——对任意 q ≠ 0 和 gcd(a,q) = 1, 存在无穷多素数 p ≡ a (mod q)。这意味着阶段 3 的完整目标在 Mathlib 中已经解决。
+**Dirichlet 定理 (完整)**: `Mathlib.NumberTheory.LSeries.PrimesInAP` 中已证明完整的 Dirichlet 定理。
 
-**p ≡ 1 (mod k)**: `Mathlib.NumberTheory.PrimesCongruentOne` 中的 `Nat.exists_prime_gt_modEq_one` 用分圆多项式方法单独证明了此特殊情形。
+**Chebyshev 函数**: Mathlib 有完整的 θ(x)、ψ(x) 定义, 以及 Chebyshev 界。
 
-**素数计数函数**: Mathlib 有 `Nat.primeCounting` 和 `Nat.tendsto_primeCounting` (π(x) → ∞)。
-
-**Chebyshev 函数**: Mathlib 有完整的 θ(x)、ψ(x) 定义, 以及 Chebyshev 界 (ln2 ≤ liminf ≤ limsup ≤ ln4)。
+**Von Mangoldt 函数**: Mathlib 有 `ArithmeticFunction.vonMangoldt`, 含完整的 Dirichlet 卷积性质。
 
 **尚未在 Mathlib 中形式化的关键结果** (阶段 4-6 所需):
 
@@ -27,103 +43,112 @@
 
 ---
 
-### 阶段 3 的后续方向
+### 当前重点: 阶段 IV-C (Mertens + Abel 求和)
 
-虽然完整 Dirichlet 定理已在 Mathlib 中, 但本项目的阶段 3 仍有扩展空间:
+**文件**: `VonMangoldt.lean`
 
-**已完成的初等证明**:
+**已完成的引理** (全部 sorry-free):
 
-- ✅ p ≡ 1 (mod 4) 素数无穷多 (n² + 1 素因子方法, ZMod val 论证)
-- ✅ p ≡ 3 (mod 4) 素数无穷多 (欧几里得式构造 M = 4P - 1)
-- ✅ p ≡ 5 (mod 6) 素数无穷多 (欧几里得式构造 M = 6P - 1)
-- ✅ `infinite_prime_pairs` 加强为 p ≠ q (两次 Bertrand 假设)
-- ✅ Tests.lean 回归测试文件 (覆盖全部公开定理)
+| # | 引理 | 状态 | 用途 |
+|---|------|------|------|
+| 1 | `vm_nonneg` — Λ(n)/n ≥ 0 | ✅ | 非负性 |
+| 2 | `vm_le_one` — Λ(n)/n ≤ 1 (n≥2) | ✅ | 逐项上界 |
+| 3 | `pow_div_pow_bound` — 1/p^k ≤ (1/2)^{k-2}·1/p^2 | ✅ | 几何级数分解 |
+| 4 | `geom_sum_bound` — ∑_{j=0}^N (1/2)^j ≤ 2 | ✅ | 几何级数上界 |
+| 5 | `geom_tail_Icc_bound` — ∑_{k=2}^M 1/p^k ≤ 2/p^2 | ✅ | 素数幂尾部界 |
+| 6 | `range_sum_le_tsum_of_nonneg` — 部分和 ≤ tsum | ✅ | tsum 界定 |
+| 7 | `log_lt_two_sqrt` — log p < 2√p | ✅ | 对数上界 |
+| 8 | `sqrt_div_sq_eq_rpow` — √p/p² = p^{-3/2} | ✅ | 幂函数转换 |
+| 9 | `log_div_sq_bound_le` — log p/p² ≤ 2p^{-3/2} | ✅ | 素数对数界 |
 
-**可以进一步扩展的方向**:
+**剩余 2 个 sorry**:
 
-- p ≡ a (mod q) 的其他小模数情形 (如 mod 8, mod 12)
-- 算术级数中素数的 Dirichlet 密度 (作为 Mathlib 完整定理的推论提取)
-- Brun 筛法或 Selberg 筛法的形式化
+| # | 定理 | 技术路线 | 难度 |
+|---|------|----------|------|
+| 10 | `primePower_contribution_bounded` | 用 `Summable.of_nonneg_of_le` 比较 `∑ n^{-3/2}` (由 `summable_nat_rpow` 证明收敛) | 中 |
+| 11 | `psi_integral_sub_log_isBigO` | Mertens 第一定理 + Abel 求和公式 | 高 |
 
----
-
-### 阶段 4: 素数定理 (PNT)
-
-**目标**: 证明 π(x) ~ x/ln(x), 即 lim π(x)·ln(x)/x = 1。
-
-**Mathlib 现状**: 这是目前最大的缺口。需要的基础设施包括:
-
-- 黎曼 ζ 函数的解析延拓 (Mathlib 有 `RiemannZeta` 模块, 但仅有 Re(s) > 1 的定义)
-- ζ(s) 在 Re(s) = 1 上不消失
-- 复分析工具: 围道积分、留数定理、Mellin 变换、Perron 公式
-- Wiener-Ikehara 定理 (或 Newman/Zagier 的简化证明路径)
-
-Mathlib 的复分析部分 (`Mathlib.Analysis.Complex`) 在持续增长, 但距离支撑 PNT 还有显著差距。
-
-**建议路线**:
-
-1. 完善复分析基础设施 (围道积分、留数定理), 作为向 Mathlib 的 PR 贡献
-2. ζ 函数解析延拓到 Re(s) > 0 (除了 s=1 处的单极点)
-3. 证明 ζ(1+it) ≠ 0 (经典 Hadamard/de la Vallée Poussin 论证)
-4. 形式化 Tauber 定理 (Wiener-Ikehara 或 Newman)
-5. 组合为 PNT
-
-**替代策略**: Selberg-Erdős 初等证明 (不使用复分析), 但需要大量关于 Λ(n) 的组合估计, 在 Lean 中同样不轻松。
+**技术细节**:
+- `primePower_contribution_bounded`: 需要证明 ∑_{¬Prime} Λ(n)/n 收敛。关键: Λ(n) = 0 对非素数幂, 所以总贡献 = ∑_p log(p)/(p(p-1))。用 `summable_nat_rpow.mpr` (需 `open Real`) 证明 `∑ n^{-3/2}` 收敛, 然后用 `Summable.of_nonneg_of_le` 比较。
+- `psi_integral_sub_log_isBigO`: 需要 Abel 求和恒等式: ∫ψ(t)/t² dt - log x = ψ(x)/x + ∫(∑Λ(n)/n - ψ(t)/t)/t dt。结合 Mertens 第一定理 ∑Λ(n)/n - log x = O(1) 得到结论。
 
 ---
 
-### 阶段 5: ζ 函数与零点理论
+### 已完成阶段详情
 
-**目标**: 研究 ζ(s) 的非平凡零点分布。
+#### 阶段 I: 初等数论基础 ✅
 
-**依赖**: 阶段 4 的全部基础设施, 加上复 Gamma 函数的完整理论、ζ 函数的函数方程、整函数的 Hadamard 因式分解定理。
+**文件**: `Basic.lean`, `PrimeCounting.lean`, `PrimeReciprocals.lean`
 
-**建议路线**:
+21 个定理, 涵盖: 24 | p²-1 的完整证明体系、素数无穷、素数计数上界、Σ 1/p 发散。
 
-1. 补全 ζ 函数的函数方程证明
-2. 证明 N(T) ~ (T/2π)·ln(T/2π) - T/2π (零点计数渐近公式)
-3. 推导 Hadamard 乘积: ξ(s) = e^{A+Bs} ∏_ρ (1 - s/ρ)e^{s/ρ}
-4. 建立 von Mangoldt 显式公式 (素数分布与零点的桥梁)
+#### 阶段 II: Chebyshev 与素数分布 ✅
+
+**文件**: `Chebyshev.lean`, `Bertrand.lean`
+
+14+ 个定理, 涵盖: Chebyshev θ/ψ 函数、Bertrand 假设、素数计数上下界。
+
+#### 阶段 III: 解析数论基础 ✅
+
+**文件**: `Dirichlet.lean`, `VonMangoldt.lean`
+
+11+ 个定理, 涵盖: 等差数列素数、Von Mangoldt 函数、Mertens 第一定理、Stirling 公式。
+
+#### 阶段 IV-A/B: ζ 函数基础 ✅
+
+**文件**: `ZetaIVB.lean`
+
+5 个引理, 全部 sorry-free: rpow_anti, mvt_ineq, n_pow_le_telescope, sum_bound_upper, **zeta_upper_bound** (ζ(σ) ≤ 1 + 1/(σ-1))。
 
 ---
 
-### 阶段 6: 黎曼猜想
+### 后续阶段规划
 
-**目标**: 陈述并 (尝试) 证明黎曼猜想: ζ(s) 的所有非平凡零点在 Re(s) = 1/2 上。
+#### IV-D: Euler 乘积
 
-**现实评估**: 黎曼猜想是 Clay 研究所七大千禧年问题之一, 至今未解决。在 Lean 中形式化陈述是可行的, 但证明需要数学本身的突破。
+ζ(s) = ∏_p (1 - p^{-s})⁻¹ (Re s > 1)
 
-**可以做的事情**:
+**依赖**: Von Mangoldt 函数的 Dirichlet 卷积性质 (已有)。
 
-- 形式化 RH 的等价表述 (Li 准则、Nyman-Beurling 准则)
-- 证明 Hardy 定理 (临界线上有无穷多个零点)
-- 形式化 RH 的推论 (素数分布最优误差项 π(x) = Li(x) + O(√x · ln x))
-- 零点密度估计的已知结果
+#### IV-E: 解析延拓与零区域
+
+ζ(s) - 1/(s-1) 解析延拓到 Re s ≥ 1; ζ(s) ≠ 0 对 Re s ≥ 1。
+
+**依赖**: 复分析基础设施 (围道积分、留数定理)。
+
+#### 阶段 V: 素数定理 (PNT)
+
+**方法**: Newman 证明路径 (复分析 + Tauberian)。
+
+**替代策略**: Selberg-Erdős 初等证明 (不使用复分析)。
+
+#### 阶段 VI: 黎曼猜想
+
+**现实评估**: RH 是千禧年问题之一, 至今未解决。可形式化等价表述和已知推论。
 
 ---
 
 ### 推荐的实施顺序
 
 ```
-近期 ✅
-  ├── ✅ p ≡ 1 (mod 4) 的初等证明 (n² + 1 素因子方法)
-  ├── ✅ p ≡ 5 (mod 6) 的欧几里得式构造
-  ├── ✅ 加强 infinite_prime_pairs (要求 p ≠ q)
-  └── ✅ Tests.lean 回归测试文件
+近期 (当前)
+  ├── ✅ IV-B: (σ-1)ζ(σ) 上界
+  ├── 🔶 IV-C: primePower_contribution_bounded (2 sorry)
+  └── 🔶 IV-C: psi_integral_sub_log_isBigO (Abel 求和)
 
 中期
-  ├── 扩展 PrimeReciprocals.lean (Mertens 定理: Σ 1/p ~ ln ln x)
-  ├── 复分析基础设施补全 (围道积分、留数定理)
-  └── ζ 函数解析延拓
+  ├── IV-D: Euler 乘积
+  ├── IV-E: 解析延拓 (需要复分析基础设施)
+  └── 向 Mathlib 贡献围道积分、留数定理
 
 远期
-  ├── 素数定理 (PNT)
-  ├── ζ 函数零点理论
-  └── 黎曼猜想 (陈述与已知结果)
+  ├── 阶段 V: 素数定理 (PNT)
+  ├── 阶段 VI: ζ 函数零点理论
+  └── 阶段 VI: 黎曼猜想 (陈述与已知结果)
 ```
 
 ---
 
 ### 对 Mathlib 社区的建议
 
-阶段 4 以后的工作高度依赖 Mathlib 中尚不存在的基础设施。建议以向 Mathlib 贡献 PR 的方式推进, 特别是复分析工具和 ζ 函数理论。这样既能推进 leanprove 项目, 又能让整个社区受益。
+阶段 4 以后的工作高度依赖 Mathlib 中尚不存在的基础设施。建议以向 Mathlib 贡献 PR 的方式推进, 特别是复分析工具和 ζ 函数理论。
