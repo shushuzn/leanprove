@@ -13,7 +13,7 @@
 阶段 IV  ██████░░░░░░ Zeta 函数系列               🔶 进行中
   IV-A  ████████████ ζ(s) 定义与绝对收敛           ✅ 完成
   IV-B  ████████████ (σ-1)ζ(σ) 上界               ✅ 完成
-  IV-C  ██░░░░░░░░░░ Mertens + Abel 求和          🔶 进行中 (5 sorry)
+  IV-C  ███░░░░░░░░░ Mertens + Abel 求和          🔶 进行中 (4 sorry)
   IV-D  ░░░░░░░░░░░░ Euler 乘积                   待开始
   IV-E  ░░░░░░░░░░░░ 解析延拓与零区域             待开始
 阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
@@ -61,18 +61,18 @@
 | 8 | `sqrt_div_sq_eq_rpow` — √p/p² = p^{-3/2} | ✅ | 幂函数转换 |
 | 9 | `log_div_sq_bound_le` — log p/p² ≤ 2p^{-3/2} | ✅ | 素数对数界 |
 
-**剩余 5 个 sorry**:
+**剩余 4 个 sorry**:
 
 | # | 定理 | 技术路线 | 难度 |
 |---|------|----------|------|
-| 10 | `primePower_contribution_bounded` | 用 `Summable.of_nonneg_of_le` 比较 `∑ n^{-3/2}` (由 `summable_nat_rpow` 证明收敛) | 中 |
+| 10 | `primePower_contribution_bounded` | ✅ 双重求和法: H(m,j) + Finset.sum_bij + Summable.sum_le_tsum | ✅ |
 | 11 | `psi_integral_sub_log_isBigO` | Mertens 第一定理 + Abel 求和公式 | 高 |
 | 12 | `mertens_abel_identity` | Abel 求和公式应用于 von Mangoldt 函数 | 高 |
 | 13 | `mertens_first_theorem` | ∑_{p≤x} (log p)/p = log x + O(1) | 高 |
 | 14 | `mertens_first_theorem_bounded` | 有界形式 \|∑ - log x\| ≤ C | 中 |
 
 **技术细节**:
-- `primePower_contribution_bounded`: 需要证明 ∑_{¬Prime} Λ(n)/n 收敛。关键: Λ(n) = 0 对非素数幂, 所以总贡献 = ∑_p log(p)/(p(p-1))。用 `summable_nat_rpow.mpr` (需 `open Real`) 证明 `∑ n^{-3/2}` 收敛, 然后用 `Summable.of_nonneg_of_le` 比较。
+- `primePower_contribution_bounded` ✅: 双重求和法。定义 H(m,j) = if m prime then (log m)/m^(j+2) else 0，证明 Summable H (summable_prod_of_nonneg + summable_nat_rpow 比较)。注入 f(n) = (n.minFac, n.factorization n.minFac - 2)，用 Finset.sum_bij + Summable.sum_le_tsum 控制部分和。
 - `psi_integral_sub_log_isBigO`: 需要 Abel 求和恒等式: ∫ψ(t)/t² dt - log x = ψ(x)/x + ∫(∑Λ(n)/n - ψ(t)/t)/t dt。结合 Mertens 第一定理 ∑Λ(n)/n - log x = O(1) 得到结论。
 
 ---
@@ -136,7 +136,7 @@
 ```
 近期 (当前)
   ├── ✅ IV-B: (σ-1)ζ(σ) 上界
-  ├── 🔶 IV-C: primePower_contribution_bounded (5 sorry)
+  ├── ✅ IV-C: primePower_contribution_bounded (双重求和法)
   ├── 🔶 IV-C: psi_integral_sub_log_isBigO (Abel 求和)
   ├── 🔶 IV-C: mertens_abel_identity (Abel 求和恒等式)
   ├── 🔶 IV-C: mertens_first_theorem (Mertens 第一定理)
