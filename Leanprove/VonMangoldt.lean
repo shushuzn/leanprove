@@ -173,3 +173,21 @@ lemma vm_le_one {n : ℕ} (hn : 2 ≤ n) : (vonMangoldt n : ℝ) / (n : ℝ) ≤
 theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → |∑ n ∈ Finset.Icc 2 ⌊x⌋₊ with ¬Nat.Prime n, (vonMangoldt n : ℝ) / (n : ℝ)| ≤ C := by sorry
 
 theorem psi_integral_sub_log_isBigO : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by sorry
+
+/-! === 第七部分: Mertens 定理 (3定理) === -/
+
+-- Mertens Abel 恒等式: Abel 求和公式应用于 von Mangoldt 函数
+theorem mertens_abel_identity (x : ℝ) (hx : 2 ≤ x) :
+    ∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) =
+    ψ x / x + ∫ t in Set.Ioc 2 x, ψ t / (t * t) := by
+  sorry
+
+-- Mertens 第一定理: ∑_{p≤x} (log p)/p = log x + O(1)
+theorem mertens_first_theorem :
+    (fun x : ℝ ↦ ∑ p ∈ Finset.filter Nat.Prime (Finset.Icc 2 ⌊x⌋₊), Real.log ↑p / ↑p - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
+  sorry
+
+-- Mertens 第一定理 (有界形式): |∑_{p≤x} (log p)/p - log x| ≤ C
+theorem mertens_first_theorem_bounded :
+    ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → |∑ p ∈ Finset.filter Nat.Prime (Finset.Icc 2 ⌊x⌋₊), Real.log ↑p / ↑p - Real.log x| ≤ C := by
+  sorry
