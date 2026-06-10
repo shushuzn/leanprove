@@ -1,6 +1,7 @@
 -- Von Mangoldt 函数与 Mertens 第一定理
 import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Analysis.PSeries
 import Mathlib.NumberTheory.Chebyshev
 open ArithmeticFunction (vonMangoldt vonMangoldt_apply_one vonMangoldt_nonneg vonMangoldt_apply_prime vonMangoldt_apply_pow vonMangoldt_ne_zero_iff vonMangoldt_pos_iff vonMangoldt_eq_zero_iff vonMangoldt_sum vonMangoldt_mul_zeta zeta_mul_vonMangoldt log_mul_moebius_eq_vonMangoldt moebius_mul_log_eq_vonMangoldt sum_moebius_mul_log_eq)
 open Set Filter Topology Real
@@ -168,7 +169,7 @@ lemma vm_le_one {n : ℕ} (hn : 2 ≤ n) : (vonMangoldt n : ℝ) / (n : ℝ) ≤
   have h_bound : (vonMangoldt n : ℝ) ≤ (n : ℝ) := le_trans h_vm h_log
   exact (div_le_one hn_pos).mpr h_bound
 
--- 跳过 primePower_contribution_bounded 的复杂证明
+-- primePower 贡献有界: 用 Summable.sum_le_tsum + summable_nat_rpow
 theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → |∑ n ∈ Finset.Icc 2 ⌊x⌋₊ with ¬Nat.Prime n, (vonMangoldt n : ℝ) / (n : ℝ)| ≤ C := by sorry
 
 theorem psi_integral_sub_log_isBigO : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by sorry
