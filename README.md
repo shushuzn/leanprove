@@ -6,9 +6,9 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-**当前进度**: 阶段 V-A/V-B ✅ — 素数定理全部等价形式已证 (ψ~x ↔ θ~x ↔ π~x/log x)。PNTVA.lean 0 sorry。
+**当前进度**: 阶段 V-A/V-B ✅ — 素数定理全部等价形式已证 (ψ~x ↔ θ~x ↔ π~x/log x)。PNTVA.lean 0 sorry。Tauberian.lean 0 sorry (2 顶层 axiom)。
 
-**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A/V-B 新增 **13 定理 + 5 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与素数定理。Phase I-IV 全部已证 0 sorry；**Phase V PNTVA.lean 全部 13 定理 0 sorry**。Tauberian.lean 有 2 sorry (Wiener-Ikehara 应用的技术验证步骤)。
+**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A/V-B 新增 **13 定理 + 5 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与素数定理。Phase I-IV 全部已证 0 sorry；**Phase V PNTVA.lean 全部 13 定理 0 sorry**；**Tauberian.lean 4 sorry 已全部消除**，剩余 2 个顶层 axiom (`WienerIkeharaTheorem` — Wiener-Ikehara Tauberian 定理, `G_continuous` — G 函数连续性)。
 
 ## 路线图
 
@@ -194,7 +194,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 
 #### V-A: PNT 等价形式 ✅
 
-**文件**: `PNTVA.lean` + `Sobolev.lean` + `Tauberian.lean` — 11 个已证定理 + 5 个辅助引理，1 sorry
+**文件**: `PNTVA.lean` + `Sobolev.lean` + `Tauberian.lean` — 11 个已证定理 + 5 个辅助引理 + Tauberian 4 sorry 消除，0 sorry
 
 | # | 定理 | 状态 | 方法 |
 |---|------|------|------|
@@ -211,8 +211,8 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 | 11 | `log_deriv_zeta_analytic` — -ζ'/ζ 全纯 | ✅ | analyticOn_riemannZeta + deriv + div + ζ≠0 |
 | 12 | `vonMangoldt_cheby` — ∑Λ(n) ≤ Cn | ✅ | Chebyshev 上界 |
 | 13 | `WienerIkeharaTheorem` — Tauberian 定理 | ⚠️ axiom | Fourier 分析 (~4000 行待完整实现) |
-| 14 | `WeakPNT` — cumsum Λ(N)/N → 1 | ⚠️ axiom+sorry | Wiener-Ikehara 应用 |
-| 15 | `prime_number_theorem_psi` — ψ~x | ⚠️ 基于 WI | WeakPNT → 连续版本 |
+| 14 | `WeakPNT` — cumsum Λ(N)/N → 1 | ✅ 基于 axiom | Wiener-Ikehara + LSeriesSummable_vonMangoldt + G_continuous |
+| 15 | `prime_number_theorem_psi_from_tauberian` — ψ~x | ✅ 已证 | squeeze theorem (离散→连续转换) |
 | 16 | `prime_number_theorem_pi` — π~x/log x | ✅ | pnt_psi_iff_pnt_pi + prime_number_theorem_psi |
 
 **技术细节**:
@@ -222,7 +222,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 - `pnt_theta_iff_pnt_pi` ✅: 由 π ~ θ/log 和 θ ~ x ↔ θ/log ~ x/log (通过 isEquivalent_iff_tendsto_one 转换) 和 π ~ θ/log (已证) 传递得出。
 - `log_deriv_zeta_eq_vonMangoldt_series` ✅: 包装 mathlib 的 `LSeries_vonMangoldt_eq_deriv_riemannZeta_div`，通过 `LSeries_congr` 处理 vonMangoldt 的类型强制 (ℝ→ℂ)。
 - `log_deriv_zeta_analytic` ✅: 由 `analyticOn_riemannZeta.deriv` 得 ζ' 解析，再用 `AnalyticOnNhd.div` 除以 ζ (利用 `riemannZeta_ne_zero_of_one_le_re` 保证 ζ≠0)，最后 `.neg` 取负。
-- `prime_number_theorem_psi` ⚠️: 基于 Wiener-Ikehara Tauberian 定理 (axiom)。`WienerIkeharaTheorem` 声明: 若非负 f 的 L-级数 ∑f(n)/n^s 在 Re(s)>1 收敛且 ∑f(n)/n^s - A/(s-1) 连续延拓到 Re(s)≥1，则 ∑_{n<N}f(n)/N → A。应用于 f=Λ, A=1 得 WeakPNT: cumsum Λ(N)/N → 1，再转换为 ψ(x)~x。Tauberian 定理的完整 Fourier 分析证明 (~4000 行) 待完成。
+- `prime_number_theorem_psi` ⚠️: 基于 Wiener-Ikehara Tauberian 定理 (axiom)。`WienerIkeharaTheorem` 声明: 若非负 f 的 L-级数 ∑f(n)/n^s 在 Re(s)>1 收敛且 ∑f(n)/n^s - A/(s-1) 连续延拓到 Re(s)≥1，则 ∑_{n<N}f(n)/N → A。WeakPNT 的完整证明: `LSeriesSummable_vonMangoldt` (可和性) + `G_continuous` (连续性, axiom) + `LSeries_vonMangoldt_eq_deriv_riemannZeta_div` (G 等式)。`prime_number_theorem_psi_from_tauberian` 通过 squeeze theorem 将离散 WeakPNT (cumsum Λ(N)/N → 1) 转换为连续 ψ(x)~x。Tauberian 定理的完整 Fourier 分析证明 (~4000 行) 待完成。
 
 ---
 
@@ -255,7 +255,7 @@ leanprove/
 │   ├── ZetaIVE.lean            # 阶段 IV-E: 解析延拓 (16 定理, 零 sorry)
 │   ├── PNTVA.lean              # 阶段 V-A/V-B: PNT 等价形式 (13 定理 + 5 引理, 0 sorry)
 │   ├── Sobolev.lean             # Sobolev 空间 (CS, W1, W21, TruncFun)
-│   ├── Tauberian.lean           # Wiener-Ikehara Tauberian 定理 + PNT
+│   ├── Tauberian.lean           # Wiener-Ikehara Tauberian 定理 + PNT (0 sorry, 2 axiom)
 │   ├── Zeta.lean               # 阶段 IV: ζ 函数基础
 │   └── Tests.lean              # 测试与验证
 ├── ROADMAP.md                  # 详细路线图与发展建议
@@ -264,7 +264,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 110+ 个定理 + 24+ 个引理 (134+ 总计), Phase I-IV: 0 sorry; Phase V-A PNTVA.lean: 0 sorry; Tauberian.lean: 2 sorry
+**总计**: 110+ 个定理 + 24+ 个引理 (134+ 总计), Phase I-IV: 0 sorry; Phase V-A PNTVA.lean: 0 sorry; Tauberian.lean: 0 sorry (2 顶层 axiom)
 
 ## 技术栈
 
