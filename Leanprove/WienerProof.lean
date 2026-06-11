@@ -1177,3 +1177,130 @@ lemma limiting_cor_schwartz (ψ : 𝓢(ℝ, ℂ)) (hf : ∀ (σ' : ℝ), 1 < σ'
     Tendsto (fun x : ℝ ↦ ∑' n, f n / n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * log (n / x)) -
       A * ∫ u in Set.Ici (-log x), 𝓕 (ψ : ℝ → ℂ) (u / (2 * π))) atTop (𝓝 0) :=
   limiting_cor ψ hf hcheby hG hG'
+
+-- Smooth Urysohn lemma: temporarily assume the existence of smooth bump functions
+axiom smooth_urysohn_support_Ioo {a b c d : ℝ} (hab : a < b) (hcd : c < d) :
+    ∃ Ψ : ℝ → ℝ, ContDiff ℝ ∞ Ψ ∧ HasCompactSupport Ψ ∧
+      Set.indicator (Set.Icc a b) 1 ≤ Ψ ∧ Ψ ≤ Set.indicator (Set.Ioo c d) 1 ∧
+      closure (Function.support Ψ) ⊆ Set.Ioi 0
+
+lemma interval_approx_inf (ha : 0 < a) (hab : a < b) :
+    ∀ᶠ ε in 𝓝[>] 0, ∃ ψ : ℝ → ℝ, ContDiff ℝ ∞ ψ ∧ HasCompactSupport ψ ∧
+      closure (Function.support ψ) ⊆ Set.Ioi 0 ∧
+        ψ ≤ indicator (Ico a b) 1 ∧ b - a - ε ≤ ∫ y in Ioi 0, ψ y := by
+
+  have l1 : Iio ((b - a) / 3) ∈ 𝓝[>] 0 := nhdsWithin_le_nhds <| Iio_mem_nhds <| by
+    rw [← sub_pos] at hab ; positivity
+  filter_upwards [self_mem_nhdsWithin, l1] with ε (hε : 0 < ε) (hε' : ε < (b - a) / 3)
+  have l2 : a < a + ε / 2 := by simp [hε]
+  have l3 : b - ε / 2 < b := by simp [hε]
+  obtain ⟨ψ, h1, h2, h3, h4, h5⟩ := smooth_urysohn_support_Ioo l2 l3
+  refine ⟨ψ, h1, h2, ?_, ?_, ?_⟩
+  · simp [h5, hab.ne, Icc_subset_Ioi_iff hab.le, ha]
+  · exact h4.trans <| indicator_le_indicator_of_subset Ioo_subset_Ico_self (by simp)
+  · have l4 : 0 ≤ b - a - ε := by linarith
+    have l5 : Icc (a + ε / 2) (b - ε / 2) ⊆ Ioi 0 := by
+      intro t ht ; simp only [mem_Icc, mem_Ioi] at ht ⊢ ; exact ha.trans <| l2.trans_le <| ht.1
+    have l6 : Icc (a + ε / 2) (b - ε / 2) ∩ Ioi 0 = Icc (a + ε / 2) (b - ε / 2) :=
+      inter_eq_left.mpr l5
+    have l7 : ∫ y in Ioi 0, indicator (Icc (a + ε / 2) (b - ε / 2)) 1 y = b - a - ε := by
+      simp only [measurableSet_Icc, integral_indicator_one, measureReal_restrict_apply, l6,
+        volume_real_Icc]
+      convert max_eq_left l4 using 1 ; ring_nf
+    have l8 : IntegrableOn ψ (Ioi 0) volume :=
+      (h1.continuous.integrable_of_hasCompactSupport h2).integrableOn
+    rw [← l7] ; apply setIntegral_mono ?_ l8 h3
+    rw [IntegrableOn, integrable_indicator_iff measurableSet_Icc]
+    apply IntegrableOn.mono ?_ subset_rfl Measure.restrict_le_self
+    apply integrableOn_const <;> simp
+
+lemma interval_approx_sup (ha : 0 < a) (hab : a < b) :
+    ∀ᶠ ε in 𝓝[>] 0, ∃ ψ : ℝ → ℝ, ContDiff ℝ ∞ ψ ∧ HasCompactSupport ψ ∧
+      closure (Function.support ψ) ⊆ Set.Ioi 0 ∧
+        indicator (Ico a b) 1 ≤ ψ ∧ ∫ y in Ioi 0, ψ y ≤ b - a + ε := by
+
+  have l1 : Iio (a / 2) ∈ 𝓝[>] 0 := nhdsWithin_le_nhds <| Iio_mem_nhds (by linarith)
+  filter_upwards [self_mem_nhdsWithin, l1] with ε (hε : 0 < ε) (hε' : ε < a / 2)
+  have l2 : a - ε / 2 < a := by linarith
+  have l3 : b < b + ε / 2 := by linarith
+  obtain ⟨ψ, h1, h2, h3, h4, h5⟩ := smooth_urysohn_support_Ioo l2 l3
+  refine ⟨ψ, h1, h2, ?_, ?_, ?_⟩
+  · have l4 : a - ε / 2 < b + ε / 2 := by linarith
+    have l5 : ε / 2 < a := by linarith
+    simp [h5, l4.ne, Icc_subset_Ioi_iff l4.le, l5]
+  · apply le_trans ?_ h3
+    apply indicator_le_indicator_of_subset Ico_subset_Icc_self (by simp)
+  · have l4 : 0 ≤ b - a + ε := by linarith
+    have l5 : Ioo (a - ε / 2) (b + ε / 2) ⊆ Ioi 0 := by
+      intro t ht ; simp at ht ⊢ ; linarith
+    have l6 : Ioo (a - ε / 2) (b + ε / 2) ∩ Ioi 0 = Ioo (a - ε / 2) (b + ε / 2) :=
+      inter_eq_left.mpr l5
+    have l7 : ∫ y in Ioi 0, indicator (Ioo (a - ε / 2) (b + ε / 2)) 1 y = b - a + ε := by
+      simp only [measurableSet_Ioo, integral_indicator_one, measureReal_restrict_apply, l6,
+        volume_real_Ioo]
+      convert max_eq_left l4 using 1 ; ring_nf
+    have l8 : IntegrableOn ψ (Ioi 0) volume := (h1.continuous.integrable_of_hasCompactSupport h2).integrableOn
+    rw [← l7]
+    refine setIntegral_mono l8 ?_ h4
+    rw [IntegrableOn, integrable_indicator_iff measurableSet_Ioo]
+    apply IntegrableOn.mono ?_ subset_rfl Measure.restrict_le_self
+    apply integrableOn_const <;> simp
+
+lemma WI_summable {f : ℕ → ℝ} {g : ℝ → ℝ} (hg : HasCompactSupport g) (hx : 0 < x) :
+    Summable (fun n => f n * g (n / x)) := by
+  obtain ⟨M, hM⟩ := hg.bddAbove.mono subset_closure
+  apply summable_of_hasFiniteSupport
+  unfold Function.HasFiniteSupport
+  simp only [Function.support_mul] ; apply Finite.inter_of_right ; rw [finite_iff_bddAbove]
+  exact ⟨Nat.ceil (M * x), fun i hi => by simpa using Nat.ceil_mono ((div_le_iff₀ hx).mp (hM hi))⟩
+
+lemma WI_sum_le {f : ℕ → ℝ} {g₁ g₂ : ℝ → ℝ} (hf : 0 ≤ f) (hg : g₁ ≤ g₂) (hx : 0 < x)
+    (hg₁ : HasCompactSupport g₁) (hg₂ : HasCompactSupport g₂) :
+    (∑' n, f n * g₁ (n / x)) / x ≤ (∑' n, f n * g₂ (n / x)) / x := by
+  apply div_le_div_of_nonneg_right ?_ hx.le
+  exact Summable.tsum_le_tsum (fun n => mul_le_mul_of_nonneg_left (hg _) (hf _))
+    (WI_summable hg₁ hx) (WI_summable hg₂ hx)
+
+lemma le_of_eventually_nhdsWithin {a b : ℝ} (h : ∀ᶠ c in 𝓝[>] b, a ≤ c) : a ≤ b := by
+  apply le_of_forall_gt ; intro d hd
+  have key : ∀ᶠ c in 𝓝[>] b, c < d := by
+    apply eventually_of_mem (U := Iio d) ?_ (fun x hx => hx)
+    rw [mem_nhdsWithin]
+    refine ⟨Iio d, isOpen_Iio, hd, inter_subset_left⟩
+  obtain ⟨x, h1, h2⟩ := (h.and key).exists
+  linarith
+
+lemma ge_of_eventually_nhdsWithin {a b : ℝ} (h : ∀ᶠ c in 𝓝[<] b, c ≤ a) : b ≤ a := by
+  apply le_of_forall_lt ; intro d hd
+  have key : ∀ᶠ c in 𝓝[<] b, c > d := by
+    apply eventually_of_mem (U := Ioi d) ?_ (fun x hx => hx)
+    rw [mem_nhdsWithin]
+    refine ⟨Ioi d, isOpen_Ioi, hd, inter_subset_left⟩
+  obtain ⟨x, h1, h2⟩ := (h.and key).exists
+  linarith
+
+lemma WI_tendsto_aux (a b : ℝ) {A : ℝ} (hA : 0 < A) :
+    Tendsto (fun c => c / A - (b - a)) (𝓝[>] (A * (b - a))) (𝓝[>] 0) := by
+  rw [Metric.tendsto_nhdsWithin_nhdsWithin]
+  intro ε hε
+  refine ⟨A * ε, by positivity, ?_⟩
+  intro x hx1 hx2
+  constructor
+  · simpa [lt_div_iff₀' hA]
+  · simp only [Real.dist_eq, dist_zero_right, Real.norm_eq_abs] at hx2 ⊢
+    have : |x / A - (b - a)| = |x - A * (b - a)| / A := by
+      rw [← abs_eq_self.mpr hA.le, ← abs_div, abs_eq_self.mpr hA.le] ; congr ; field_simp
+    rwa [this, div_lt_iff₀' hA]
+
+lemma WI_tendsto_aux' (a b : ℝ) {A : ℝ} (hA : 0 < A) :
+    Tendsto (fun c => (b - a) - c / A) (𝓝[<] (A * (b - a))) (𝓝[>] 0) := by
+  rw [Metric.tendsto_nhdsWithin_nhdsWithin]
+  intro ε hε
+  refine ⟨A * ε, by positivity, ?_⟩
+  intro x hx1 hx2
+  constructor
+  · simpa [div_lt_iff₀' hA]
+  · simp only [Real.dist_eq, dist_zero_right, norm_eq_abs] at hx2 ⊢
+    have : |(b - a) - x / A| = |A * (b - a) - x| / A := by
+      rw [← abs_eq_self.mpr hA.le, ← abs_div, abs_eq_self.mpr hA.le] ; congr ; field_simp
+    rwa [this, div_lt_iff₀' hA, ← neg_sub, abs_neg]
