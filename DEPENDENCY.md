@@ -40,7 +40,7 @@ PNTVA.lean
        │    └─ mathlib (FourierTransform, LSeries, ...)
        └─ VonMangoldt.lean
             └─ mathlib (Chebyshev, LSeries, ...)
-ZetaVI.lean (阶段 VI)
+ZetaVI.lean (阶段 VI — ξ 对称性 + 临界线实值性)
   └─ ZetaIVE.lean
        └─ mathlib (RiemannZeta, Gamma, ...)
 ```

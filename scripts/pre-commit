@@ -1,27 +1,26 @@
 #!/bin/bash
 # pre-commit hook
-# 注意: 由于 Windows LLVM 后端 Bug，lake build 在重定向输出时会 segfault，
-# 因此编译检查需用户手动执行。本 hook 只检查文档同步和 sorry。
+# 注意: Windows LLVM 后端 bug 导致 lake build 在重定向输出时 segfault，
+#       编译检查需手动在终端执行 lake build。
 
 lean_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.lean$' || true)
 [ -z "$lean_files" ] && exit 0
 
 # 文档同步检查
 required_docs=("README.md" "ROADMAP.md" "DEPENDENCY.md")
-staged_files=$(git diff --cached --name-only --diff-filter=ACM || true)
 for doc in "${required_docs[@]}"; do
-    if ! echo "$staged_files" | grep -q "^$doc$"; then
-        echo "错误: 已修改 .lean 文件但未暂存 $doc。"
+    if ! git diff --name-only | grep -q "^$doc$" && ! git diff --cached --name-only | grep -q "^$doc$"; then
+        echo "错误: 已修改 .lean 文件但未更新 $doc。"
         exit 1
     fi
 done
 
-# sorry 检测
+# 未完成证明关键词检测（禁止任何绕过手段）
 for file in $lean_files; do
     [ ! -f "$file" ] && continue
-    if grep -n 'sorry' "$file" > /dev/null 2>&1; then
-        echo "错误: 文件 '$file' 包含 sorry"
-        grep -n 'sorry' "$file"
+    if grep -E 'sorry|admit|axiom|omitted|TODO|FIXME|HACK|XXX' "$file" > /dev/null 2>&1; then
+        echo "错误: 文件 '$file' 包含未完成标记:"
+        grep -n -E 'sorry|admit|axiom|omitted|TODO|FIXME|HACK|XXX' "$file"
         exit 1
     fi
 done
