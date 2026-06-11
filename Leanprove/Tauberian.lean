@@ -3,6 +3,7 @@ Wiener-Ikehara Tauberian Theorem and application to PNT.
 Ported from PrimeNumberTheoremAnd/Wiener.lean (Kontorovich et al.)
 -/
 import Leanprove.Sobolev
+import Leanprove.WienerProof
 import Mathlib.Analysis.Fourier.FourierTransform
 import Mathlib.NumberTheory.LSeries.Dirichlet
 import Mathlib.NumberTheory.LSeries.Nonvanishing
@@ -147,7 +148,7 @@ theorem vonMangoldt_cheby : cheby vonMangoldt := by
 
 /-! #### Wiener-Ikehara Tauberian Theorem -/
 
-/-- **Wiener-Ikehara Tauberian Theorem** (proof pending). -/
+/-- **Wiener-Ikehara Tauberian Theorem** (proved via WienerProof.lean). -/
 theorem WienerIkeharaTheorem
     (f : ℕ → ℝ) (hf_pos : ∀ n, 0 ≤ f n)
     (hf_sum : ∀ (σ : ℝ), 1 < σ → Summable (fun n : ℕ => f n / (n : ℝ) ^ σ))
@@ -158,7 +159,25 @@ theorem WienerIkeharaTheorem
     (hG_eq : ∀ s : ℂ, 1 < s.re →
       G s = LSeries (fun n : ℕ => (f n : ℂ)) s - (A : ℂ) / (s - 1)) :
     Tendsto (fun N : ℕ => cumsum f N / (N : ℝ)) atTop (nhds A) := by
-  sorry
+  -- Convert hypotheses to WienerProof format
+  have hpos : 0 ≤ f := hf_pos
+  have hf : ∀ (σ' : ℝ), 1 < σ' → Summable (WienerProof.nterm f σ') := by
+    intro σ' hσ'
+    have := hf_sum σ' hσ'
+    refine Summable.congr (fun n => ?_) this
+    by_cases hn : n = 0
+    · simp [hn, WienerProof.nterm]
+    · simp [WienerProof.nterm, hn, hf_pos n]
+  have hcheby' : WienerProof.cheby f := by
+    obtain ⟨C, hC⟩ := hcheby
+    refine ⟨C, fun n => ?_⟩
+    have : cumsum (‖f ·‖) n = cumsum f n := by
+      refine Finset.sum_congr rfl (fun i hi => ?_)
+      simp [hf_pos i]
+    simpa [this] using hC n
+  have hG' : Set.EqOn G (fun s ↦ LSeries (fun n : ℕ ↦ (f n : ℂ)) s - (A : ℂ) / (s - 1)) {s | 1 < s.re} :=
+    hG_eq
+  exact WienerProof.WienerIkeharaTheorem' hpos hf hcheby' hG_cont hG'
 
 /-! #### Application to PNT -/
 
