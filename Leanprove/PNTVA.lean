@@ -457,8 +457,10 @@ open ArithmeticFunction in
 /-- -ζ'(s)/ζ(s) = ∑ Λ(n)/n^s 对 Re(s) > 1 (对数导数公式) -/
 theorem log_deriv_zeta_eq_vonMangoldt_series (s : ℂ) (hs : 1 < s.re) :
     - deriv riemannZeta s / riemannZeta s = LSeries (fun n : ℕ => (vonMangoldt n : ℂ)) s := by
-  -- Wraps mathlib: LSeries_vonMangoldt_eq_deriv_riemannZeta_div
-  sorry
+  -- Direct wrapper around mathlib's LSeries_vonMangoldt_eq_deriv_riemannZeta_div
+  refine (ArithmeticFunction.LSeries_vonMangoldt_eq_deriv_riemannZeta_div hs).symm.trans ?_
+  refine LSeries_congr (fun {n} hn => ?_) s
+  simp
 
 /-- -ζ'(s)/ζ(s) 在 {Re(s) ≥ 1} \ {1} 上全纯
     (由 ζ(s) ≠ 0 和解析性; s=1 处有简单极点) -/

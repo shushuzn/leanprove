@@ -6,9 +6,9 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-**当前进度**: 阶段 V-A/V-B ✅ — PNT 等价形式已证明 (ψ~x ↔ θ~x ↔ π~x/log x)。4 sorry (深层定理待 Tauberian)。
+**当前进度**: 阶段 V-A/V-B ✅ — PNT 等价形式已证明 (ψ~x ↔ θ~x ↔ π~x/log x)。3 sorry (深层定理待 Tauberian)。
 
-**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A/V-B 新增 **7 定理 + 5 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与 PNT 等价形式。Phase I-IV 全部已证 0 sorry；Phase V-A/V-B 已证 7 定理 5 引理，4 sorry (PNT 完整证明待 Tauberian 定理)。
+**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A/V-B 新增 **8 定理 + 5 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与 PNT 等价形式。Phase I-IV 全部已证 0 sorry；Phase V-A/V-B 已证 8 定理 5 引理，3 sorry (PNT 完整证明待 Tauberian 定理)。
 
 ## 路线图
 
@@ -194,7 +194,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 
 #### V-A: PNT 等价形式 ✅
 
-**文件**: `PNTVA.lean` — 7 个已证定理 + 5 个辅助引理，4 sorry (深层定理待 Tauberian)
+**文件**: `PNTVA.lean` — 8 个已证定理 + 5 个辅助引理，3 sorry (深层定理待 Tauberian)
 
 | # | 定理 | 状态 | 方法 |
 |---|------|------|------|
@@ -207,7 +207,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 | 7 | `pi_isEquivalent_theta_div_log` — π~θ/log | ✅ | Abel 求和 + Chebyshev 下界 + 夹逼 |
 | 8 | `pnt_theta_iff_pnt_pi` — θ~x ↔ π~x/log x | ✅ | 由 5+7+IsEquivalent 传递 |
 | 9 | `pnt_psi_iff_pnt_pi` — ψ~x ↔ π~x/log x | ✅ | 由 5+8 传递 |
-| 10 | `log_deriv_zeta_eq_vonMangoldt_series` — -ζ'/ζ = ∑Λ/n^s | ⏳ sorry | LSeries_vonMangoldt_eq_deriv_riemannZeta_div |
+| 10 | `log_deriv_zeta_eq_vonMangoldt_series` — -ζ'/ζ = ∑Λ/n^s | ✅ | mathlib LSeries_vonMangoldt_eq_deriv_riemannZeta_div |
 | 11 | `log_deriv_zeta_analytic` — -ζ'/ζ 全纯 | ⏳ sorry | 需 ζ≠0 + 解析性 |
 | 12 | `prime_number_theorem_psi` — ψ~x | ⏳ sorry | 需 Tauberian 定理 |
 | 13 | `prime_number_theorem_pi` — π~x/log x | ⏳ sorry | 需 Tauberian 定理 |
@@ -217,6 +217,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 - `pnt_psi_iff_pnt_theta` ✅: 利用 IsEquivalent 定义 (u~v ↔ (u-v)=o(v)) 转化为 Tendsto 形式，再由 ψ/x→1 ↔ θ/x→1 得出。
 - `pi_isEquivalent_theta_div_log` ✅: 核心引理。利用 mathlib 的 `primeCounting_sub_theta_div_log_isBigO` (π - θ/log = O(x/log²x)) 与 `theta_ge'` (Chebyshev 下界) 证明 θ(x) ≥ c·x (c > 0)。由 x/log²x =o(θ/log) 和 O·o 传递性得 (π - θ/log) =o(θ/log)，从而 π ~ θ/log。
 - `pnt_theta_iff_pnt_pi` ✅: 由 π ~ θ/log 和 θ ~ x ↔ θ/log ~ x/log (通过 isEquivalent_iff_tendsto_one 转换) 和 π ~ θ/log (已证) 传递得出。
+- `log_deriv_zeta_eq_vonMangoldt_series` ✅: 包装 mathlib 的 `LSeries_vonMangoldt_eq_deriv_riemannZeta_div`，通过 `LSeries_congr` 处理 vonMangoldt 的类型强制 (ℝ→ℂ)。
 
 ---
 
