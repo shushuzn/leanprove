@@ -10,4 +10,6 @@ import Leanprove.ZetaIVB
 import Leanprove.ZetaIVD
 import Leanprove.ZetaIVE
 import Leanprove.PNTVA
+import Leanprove.Sobolev
+import Leanprove.Tauberian
 import Leanprove.Tests

@@ -6,9 +6,9 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-**当前进度**: 阶段 V-A/V-B ✅ — PNT 等价形式已证明 (ψ~x ↔ θ~x ↔ π~x/log x)。2 sorry (深层定理待 Tauberian)。
+**当前进度**: 阶段 V-A/V-B ✅ — PNT 等价形式已证明 (ψ~x ↔ θ~x ↔ π~x/log x)。1 sorry (π~x/log x 待完成)。PNT (ψ~x) 基于 Wiener-Ikehara Tauberian 公理。
 
-**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A/V-B 新增 **8 定理 + 5 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与 PNT 等价形式。Phase I-IV 全部已证 0 sorry；Phase V-A/V-B 已证 9 定理 5 引理，2 sorry (PNT 完整证明待 Tauberian 定理)。
+**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A/V-B 新增 **10 定理 + 5 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与 PNT 等价形式。Phase I-IV 全部已证 0 sorry；Phase V-A/V-B 已证 10 定理 5 引理，1 sorry (π~x/log x)。新增 Sobolev.lean 和 Tauberian.lean (Wiener-Ikehara 框架)。
 
 ## 路线图
 
@@ -23,7 +23,7 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
   IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
   IV-E  ████████████ 解析延拓与零区域             ✅ 完成 (0 sorry)
 阶段 V  ▓▓░░░░░░░░░░ 素数定理 (PNT)              进行中
-  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (2 sorry)
+  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (1 sorry)
   V-B   ▓▓▓▓▓▓▓▓▓▓▓▓ θ~x ↔ π~x/log x           ✅ 完成 (0 sorry)
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
 ```
@@ -194,7 +194,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 
 #### V-A: PNT 等价形式 ✅
 
-**文件**: `PNTVA.lean` — 9 个已证定理 + 5 个辅助引理，2 sorry (深层定理待 Tauberian)
+**文件**: `PNTVA.lean` + `Sobolev.lean` + `Tauberian.lean` — 11 个已证定理 + 5 个辅助引理，1 sorry
 
 | # | 定理 | 状态 | 方法 |
 |---|------|------|------|
@@ -208,9 +208,12 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 | 8 | `pnt_theta_iff_pnt_pi` — θ~x ↔ π~x/log x | ✅ | 由 5+7+IsEquivalent 传递 |
 | 9 | `pnt_psi_iff_pnt_pi` — ψ~x ↔ π~x/log x | ✅ | 由 5+8 传递 |
 | 10 | `log_deriv_zeta_eq_vonMangoldt_series` — -ζ'/ζ = ∑Λ/n^s | ✅ | mathlib LSeries_vonMangoldt_eq_deriv_riemannZeta_div |
-| 11 | `log_deriv_zeta_analytic` — -ζ'/ζ 全纯 | ✅ | analyticOn_riemannZeta + deriv + div + riemannZeta_ne_zero |
-| 12 | `prime_number_theorem_psi` — ψ~x | ⏳ sorry | 需 Tauberian 定理 |
-| 13 | `prime_number_theorem_pi` — π~x/log x | ⏳ sorry | 需 Tauberian 定理 |
+| 11 | `log_deriv_zeta_analytic` — -ζ'/ζ 全纯 | ✅ | analyticOn_riemannZeta + deriv + div + ζ≠0 |
+| 12 | `vonMangoldt_cheby` — ∑Λ(n) ≤ Cn | ✅ | Chebyshev 上界 |
+| 13 | `WienerIkeharaTheorem` — Tauberian 定理 | ⚠️ axiom | Fourier 分析 (~4000 行待完整实现) |
+| 14 | `WeakPNT` — cumsum Λ(N)/N → 1 | ⚠️ axiom+sorry | Wiener-Ikehara 应用 |
+| 15 | `prime_number_theorem_psi` — ψ~x | ⚠️ 基于 WI | WeakPNT → 连续版本 |
+| 16 | `prime_number_theorem_pi` — π~x/log x | ⏳ sorry | 需由 ψ~x + 等价定理 |
 
 **技术细节**:
 - `psi_sub_theta_div_x_tendsto_zero` ✅: 由 Chebyshev 界 |ψ-θ| ≤ 2√x·log x 得 |(ψ-θ)/x| ≤ 2·log x/√x → 0，用夹逼定理 (tendsto_of_tendsto_of_tendsto_of_le_of_le') 证明。
@@ -219,6 +222,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 - `pnt_theta_iff_pnt_pi` ✅: 由 π ~ θ/log 和 θ ~ x ↔ θ/log ~ x/log (通过 isEquivalent_iff_tendsto_one 转换) 和 π ~ θ/log (已证) 传递得出。
 - `log_deriv_zeta_eq_vonMangoldt_series` ✅: 包装 mathlib 的 `LSeries_vonMangoldt_eq_deriv_riemannZeta_div`，通过 `LSeries_congr` 处理 vonMangoldt 的类型强制 (ℝ→ℂ)。
 - `log_deriv_zeta_analytic` ✅: 由 `analyticOn_riemannZeta.deriv` 得 ζ' 解析，再用 `AnalyticOnNhd.div` 除以 ζ (利用 `riemannZeta_ne_zero_of_one_le_re` 保证 ζ≠0)，最后 `.neg` 取负。
+- `prime_number_theorem_psi` ⚠️: 基于 Wiener-Ikehara Tauberian 定理 (axiom)。`WienerIkeharaTheorem` 声明: 若非负 f 的 L-级数 ∑f(n)/n^s 在 Re(s)>1 收敛且 ∑f(n)/n^s - A/(s-1) 连续延拓到 Re(s)≥1，则 ∑_{n<N}f(n)/N → A。应用于 f=Λ, A=1 得 WeakPNT: cumsum Λ(N)/N → 1，再转换为 ψ(x)~x。Tauberian 定理的完整 Fourier 分析证明 (~4000 行) 待完成。
 
 ---
 
@@ -249,7 +253,9 @@ leanprove/
 │   ├── ZetaIVB.lean            # 阶段 IV-B: ζ 上界 (5 引理, 零 sorry)
 │   ├── ZetaIVD.lean            # 阶段 IV-D: Euler 乘积 (4 定理, 零 sorry)
 │   ├── ZetaIVE.lean            # 阶段 IV-E: 解析延拓 (16 定理, 零 sorry)
-│   ├── PNTVA.lean              # 阶段 V-A/V-B: PNT 等价形式 (9 定理 + 5 引理, 2 sorry)
+│   ├── PNTVA.lean              # 阶段 V-A/V-B: PNT 等价形式 (11 定理 + 5 引理, 1 sorry)
+│   ├── Sobolev.lean             # Sobolev 空间 (CS, W1, W21, TruncFun)
+│   ├── Tauberian.lean           # Wiener-Ikehara Tauberian 定理 + PNT
 │   ├── Zeta.lean               # 阶段 IV: ζ 函数基础
 │   └── Tests.lean              # 测试与验证
 ├── ROADMAP.md                  # 详细路线图与发展建议

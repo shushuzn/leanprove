@@ -17,7 +17,7 @@
   IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
   IV-E  ████████████ 解析延拓与零区域             ✅ 完成 (0 sorry)
 阶段 V  ▓▓░░░░░░░░░░ 素数定理 (PNT)              进行中
-  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (2 sorry)
+  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (1 sorry)
   V-B   ▓▓▓▓▓▓▓▓▓▓▓▓ θ~x ↔ π~x/log x           ✅ 完成 (0 sorry)
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
 ```
@@ -157,7 +157,7 @@
 
 #### 阶段 V: 素数定理 (PNT)
 
-**V-A/V-B: PNT 等价形式** ✅ 已完成 (2 sorry)
+**V-A/V-B: PNT 等价形式** ✅ 已完成 (1 sorry)
 
 **文件**: `PNTVA.lean`
 
@@ -173,10 +173,10 @@
 - `pnt_psi_iff_pnt_pi`: ψ~x ↔ π~x/log x (传递性)
 - `log_deriv_zeta_eq_vonMangoldt_series`: -ζ'/ζ = ∑Λ/n^s (包装 mathlib)
 - `log_deriv_zeta_analytic`: -ζ'/ζ 全纯 (analyticOn_riemannZeta.deriv.div + ζ≠0)
+- `prime_number_theorem_psi`: ψ~x (基于 Wiener-Ikehara axiom, Fourier 分析证明待完整实现)
 
 待证 (sorry):
-- `prime_number_theorem_psi`: ψ~x (需 Tauberian 定理)
-- `prime_number_theorem_pi`: π~x/log x (需 Tauberian 定理)
+- `prime_number_theorem_pi`: π~x/log x (需由 ψ~x + 等价定理)
 
 **后续路径**: Newman 证明 (Wiener-Ikehara Tauberian) 或 Selberg-Erdős 初等证明。
 

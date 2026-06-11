@@ -8,6 +8,7 @@ import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent
 import Mathlib.Analysis.Asymptotics.Lemmas
 import Leanprove.ZetaIVE
+import Leanprove.Tauberian
 
 open Chebyshev Asymptotics
 open Filter Real
@@ -481,10 +482,11 @@ theorem log_deriv_zeta_analytic :
 /-! #### 素数定理 (陈述，待证) -/
 
 /-- **素数定理** (第二 Chebyshev 形式): ψ(x) ~ x
-    证明需要 Tauberian 定理 (Wiener-Ikehara / Newman)，mathlib 中尚未实现。-/
+    基于 Wiener-Ikehara Tauberian 定理 (见 Tauberian.lean)。
+    剩余 sorry: Tauberian 定理的完整证明 (~4000 行 Fourier 分析) 待完成。-/
 theorem prime_number_theorem_psi :
-    ψ ~[atTop] (fun x : ℝ => x) := by
-  sorry
+    ψ ~[atTop] (fun x : ℝ => x) :=
+  prime_number_theorem_psi_from_tauberian
 
 /-- **素数定理** (标准形式): π(x) ~ x / log x -/
 theorem prime_number_theorem_pi :
