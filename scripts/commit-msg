@@ -4,48 +4,64 @@
 
 msg_file="$1"
 
-# 读取 commit message（跳过注释行）
-msg=$(grep -v '^#' "$msg_file" | head -1)
+# 读取所有非注释行
+all_lines=$(grep -v '^#' "$msg_file")
+title=$(echo "$all_lines" | head -1)
+body=$(echo "$all_lines" | tail -n +2 | sed '/^$/d')  # body 去掉空行
 
-# 检查是否为空
-if [ -z "$msg" ]; then
+# 检查标题是否为空
+if [ -z "$title" ]; then
     echo ""
-    echo "错误: Commit message 不能为空。"
-    echo "格式: \"动词 + 模块: 具体描述\""
-    echo "示例: \"Add zeta_bound_at_two: |ζ(2+it)| ≤ ζ(2)\""
-    echo "      \"AGENT.md: remove fallback clause from rule 20\""
+    echo "错误: Commit 标题不能为空。"
+    echo "格式: \"模块: 具体描述\" + 空行 + body"
+    echo "示例:"
+    echo "  ZetaVI.lean: add zeta_bound_at_two lemma"
+    echo ""
+    echo "  prove |ζ(2+it)| ≤ ζ(2) using Dirichlet series"
     echo ""
     exit 1
 fi
 
-# 检查长度（至少 15 个字符）
-char_count=${#msg}
+# 检查标题长度（至少 15 个字符）
+char_count=${#title}
 if [ "$char_count" -lt 15 ]; then
     echo ""
-    echo "错误: Commit message 太短（${char_count} 字符），至少需要 15 个字符。"
-    echo "当前: $msg"
-    echo "格式: \"动词 + 模块: 具体描述\""
+    echo "错误: Commit 标题太短（${char_count} 字符），至少需要 15 个字符。"
+    echo "当前标题: $title"
     echo ""
     exit 1
 fi
 
-# 检查是否包含冒号（分隔模块和描述）
-if ! echo "$msg" | grep -q ':'; then
+# 检查标题是否包含冒号（分隔模块和描述）
+if ! echo "$title" | grep -q ':'; then
     echo ""
-    echo "错误: Commit message 缺少冒号分隔符，无法区分模块和描述。"
-    echo "格式: \"动词 + 模块: 具体描述\""
-    echo "示例: \"Add zeta_bound_at_two: |ζ(2+it)| ≤ ζ(2)\""
+    echo "错误: Commit 标题缺少冒号分隔符，无法区分模块和描述。"
+    echo "格式: \"模块: 具体描述\""
+    echo "示例: \"ZetaVI.lean: add zeta_bound_at_two\""
     echo ""
     exit 1
 fi
 
-# 检查冒号后的描述部分长度
-after_colon=$(echo "$msg" | sed 's/^[^:]*: *//')
-after_len=${#after_colon}
-if [ "$after_len" -lt 10 ]; then
+# 检查 body 是否存在（必须有描述正文）
+body_word_count=$(echo "$body" | wc -w)
+if [ -z "$body" ] || [ "$body_word_count" -lt 5 ]; then
     echo ""
-    echo "错误: 冒号后的描述太短（${after_len} 字符），至少需要 10 个字符描述具体变更。"
-    echo "当前: $msg"
+    echo "错误: Commit 缺少 body 描述。标题下一行必须是空行，然后是 body。"
+    echo "标题只说明改了哪里，body 说明为什么改、怎么改。"
+    echo ""
+    echo "格式:"
+    echo "  模块: 标题"
+    echo ""
+    echo "  body 描述..."
+    echo ""
+    echo "示例:"
+    echo "  ZetaVI.lean: add zeta_bound_at_two lemma"
+    echo ""
+    echo "  prove |ζ(2+it)| ≤ ζ(2) using Dirichlet series."
+    echo "  Uses zeta_eq_tsum_one_div_nat_cpow for the series"
+    echo "  representation and norm_tsum_le_tsum_norm."
+    echo ""
+    echo "当前 body 为空或不足 5 个词。"
     echo ""
     exit 1
 fi
