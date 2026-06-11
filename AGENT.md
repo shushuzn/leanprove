@@ -45,6 +45,7 @@
 29. **禁止提交含 sorry 的定理**。任何提交到 git 的 .lean 文件不得包含 `sorry` 或未完成的证明。所有定理必须完全证明后才能提交。pre-commit hook 会自动检查此规则，拒绝包含 `sorry` 的提交。
 30. **禁止提交未通过编译的证明**。提交前必须运行 `lake build` 确认编译通过。pre-commit hook 会自动执行编译检查，编译失败则拒绝提交。禁止使用 `--no-verify` 绕过此检查。
 31. **推送的代码必须零问题**。任何提交推送的代码必须同时满足：编译通过（lake build 无 error）、零 sorry、零类型错误、零 lint 警告。推送前需确认 `lake build` 完整运行且无报错，不得推送任何有已知问题的代码。
+32. **修改 .lean 必须同步更新文档**。任何提交若包含 `.lean` 文件的变更，必须同时同步更新 README.md、ROADMAP.md、DEPENDENCY.md 三个文档，反映最新的项目状态和依赖链。pre-commit hook 会自动检查此规则，拒绝未同步文档的提交。
 
 ---
 

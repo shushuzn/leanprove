@@ -1,5 +1,5 @@
 #!/bin/bash
-# pre-commit hook: 禁止提交含有 sorry / 编译失败 / 有 lint 警告的代码
+# pre-commit hook: 禁止提交有问题的代码，并强制同步文档更新
 # 安装: 将此文件放在 .git/hooks/pre-commit 并赋予执行权限
 
 set -e
@@ -10,7 +10,27 @@ if [ -z "$lean_files" ]; then
     exit 0
 fi
 
-# ---- 检查 1: sorry 检测 ----
+# ---- 检查 1: 文档同步检查 ----
+# 修改 .lean 时必须同步更新 README.md / ROADMAP.md / DEPENDENCY.md
+required_docs=("README.md" "ROADMAP.md" "DEPENDENCY.md")
+staged_files=$(git diff --cached --name-only --diff-filter=ACM || true)
+missing_docs=0
+
+for doc in "${required_docs[@]}"; do
+    if ! echo "$staged_files" | grep -q "^$doc$"; then
+        echo "错误: 已修改 .lean 文件但未暂存 $doc。"
+        echo "  请先更新 $doc 并 git add"
+        missing_docs=1
+    fi
+done
+
+if [ $missing_docs -eq 1 ]; then
+    echo ""
+    echo "提交被拒绝: .lean 文件变更必须同步更新 README.md、ROADMAP.md、DEPENDENCY.md。"
+    exit 1
+fi
+
+# ---- 检查 2: sorry 检测 ----
 found_sorry=0
 for file in $lean_files; do
     if [ ! -f "$file" ]; then continue; fi
@@ -28,17 +48,14 @@ if [ $found_sorry -eq 1 ]; then
     exit 1
 fi
 
-# ---- 检查 2: 编译 + lint 检查 ----
+# ---- 检查 3: 编译 + lint 检查 ----
 echo "正在编译检查... (lake build)"
 
-# stash 未暂存修改，确保编译只检查暂存内容
 git stash --keep-index --include-untracked -q 2>/dev/null || true
 
-# 运行 lake build，捕获输出
 build_output=$(lake build 2>&1)
 build_exit=$?
 
-# 恢复 stash
 git stash pop -q 2>/dev/null || true
 
 if [ $build_exit -ne 0 ]; then
@@ -48,7 +65,6 @@ if [ $build_exit -ne 0 ]; then
     exit 1
 fi
 
-# 检查是否有 warning（lint 警告）
 if echo "$build_output" | grep -qi "warning:"; then
     echo ""
     echo "错误: 存在 lint 警告，禁止提交。警告信息:"
