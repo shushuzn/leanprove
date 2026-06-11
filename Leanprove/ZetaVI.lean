@@ -103,3 +103,43 @@ lemma zeta_bound_at_two (t : ℝ) : ‖riemannZeta (2 + I * t)‖ ≤ riemannZet
       have h2 : 1 < (2 : ℂ).re := by norm_num
       rw [zeta_eq_tsum_one_div_nat_cpow h2]
       simp [div_eq_inv_mul]
+
+/-- 通过函数方程：|ζ(-1 + it)| ≤ C_t * |ζ(2 + it)|，其中 C_t 多项式增长 -/
+lemma zeta_bound_at_neg_one (t : ℝ) : ‖riemannZeta (-1 + I * t)‖ ≤
+    ‖2 * ((2 * π : ℂ) ^ (-(2 - I * t))) * Gamma (2 - I * t) * cos (π * (2 - I * t) / 2)‖ *
+    ‖riemannZeta (2 + I * t)‖ := by
+  have hs : ∀ n : ℕ, (2 - I * t) ≠ -n := by
+    intro n h
+    have : ((2 - I * t) + n).re = 0 := by simpa [h] using rfl
+    simp at this
+  have hs' : (2 - I * t) ≠ 1 := by
+    intro h; have : (2 - I * t).im = 1.im := by simpa [h]
+    simp at this
+  have h_func : riemannZeta (-1 + I * t) =
+      2 * ((2 * π : ℂ) ^ (-(2 - I * t))) * Gamma (2 - I * t) * cos (π * (2 - I * t) / 2) *
+      riemannZeta (2 + I * t) := by
+    calc
+      riemannZeta (-1 + I * t) = riemannZeta (1 - (2 - I * t)) := by ring
+      _ = 2 * ((2 * π : ℂ) ^ (-(2 - I * t))) * Gamma (2 - I * t) *
+          cos (π * (2 - I * t) / 2) * riemannZeta (2 - I * t) := by
+        rw [riemannZeta_one_sub hs hs']
+      _ = 2 * ((2 * π : ℂ) ^ (-(2 - I * t))) * Gamma (2 - I * t) *
+          cos (π * (2 - I * t) / 2) * riemannZeta (2 + I * t) := by
+        simp [riemannZeta_conj, conj_I, map_sub, add_comm]
+  rw [h_func]
+  calc
+    ‖2 * ((2 * π : ℂ) ^ (-(2 - I * t))) * Gamma (2 - I * t) * cos (π * (2 - I * t) / 2) *
+      riemannZeta (2 + I * t)‖
+        ≤ ‖2 * ((2 * π : ℂ) ^ (-(2 - I * t))) * Gamma (2 - I * t) * cos (π * (2 - I * t) / 2)‖ *
+          ‖riemannZeta (2 + I * t)‖ :=
+      norm_mul_le _ _
+    _ = ‖2 * ((2 * π : ℂ) ^ (-(2 - I * t))) * Gamma (2 - I * t) * cos (π * (2 - I * t) / 2)‖ *
+      ‖riemannZeta (2 + I * t)‖ := rfl
+
+/-- ξ(s) 在实轴上取实值 -/
+lemma riemannXi_real_on_real (s : ℝ) : riemannXi (s : ℂ) ∈ ℝ := by
+  have : (s : ℂ).conj = (s : ℂ) := by simp
+  simpa [this] using (riemannXi_conj (s : ℂ)).symm ▸ (conj_eq_self.mp ?_)
+  calc
+    conj (riemannXi (s : ℂ)) = riemannXi (conj (s : ℂ)) := (riemannXi_conj (s : ℂ)).symm
+    _ = riemannXi (s : ℂ) := by simp
