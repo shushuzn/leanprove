@@ -774,9 +774,21 @@ theorem limiting_fourier_lim2 (A : ℝ) (ψ : W21) (hx : 1 ≤ x) :
           simp [hσ'.1]
 
 lemma W21_norm_fourier_integral_le (ψ : W21) (hc : c ≠ 0) :
-    ∫ u, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ (C := ψ.w21norm) * ∫ u, (1 + (u / c) ^ 2)⁻¹ := by
-  obtain ⟨C, hC⟩ := decay_bounds_cor ψ
-  sorry
+    ∫ u, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ ψ.w21norm * ∫ u, (1 + (u / c) ^ 2)⁻¹ := by
+  have hbound : ∀ u, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ ψ.w21norm / (1 + (u / c) ^ 2) := by
+    intro u
+    simpa [div_eq_mul_inv] using decay_bounds_key ψ (u / c)
+  have hint : Integrable (fun u : ℝ => ψ.w21norm / (1 + (u / c) ^ 2)) := by
+    simpa [div_eq_mul_inv] using
+      ((integrable_inv_one_add_sq.comp_div hc).const_mul ψ.w21norm)
+  have hmeas : AEStronglyMeasurable (fun u : ℝ => ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖) :=
+    ((continuous_FourierIntegral ψ).comp (continuous_id.div_const c)).norm.aestronglyMeasurable
+  have h_int_norm : ∫ u, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ ∫ u, ψ.w21norm / (1 + (u / c) ^ 2) :=
+    integral_mono (hint.mono' hmeas (Eventually.of_forall hbound)).norm hint hbound
+  calc
+    ∫ u, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ ∫ u, ψ.w21norm / (1 + (u / c) ^ 2) := h_int_norm
+    _ = ψ.w21norm * ∫ u, (1 + (u / c) ^ 2)⁻¹ := by
+      simp [div_eq_mul_inv, mul_comm, integral_const_mul]
 
 /-! #### First Fourier identity -/
 

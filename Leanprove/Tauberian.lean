@@ -117,16 +117,46 @@ lemma WienerIkeharaInterval {f : ℕ → ℝ} (hpos : 0 ≤ f)
     (hcheby : cheby f) (hG : ContinuousOn G {s : ℂ | 1 ≤ s.re})
     (hG' : ∀ s : ℂ, 1 < s.re → G s = LSeries (fun n => (f n : ℂ)) s - (A : ℂ) / (s - 1))
     (ha : 0 < a) (hb : a ≤ b) :
-    Tendsto (fun x : ℝ => (∑' n, f n * indicator (Ioc a b) 1 (n / x)) / x) atTop (nhds (A * (b - a))) := by
-  sorry
+    Tendsto (fun x : ℝ => (∑' n, f n * indicator (Ico a b) 1 (n / x)) / x) atTop (nhds (A * (b - a))) :=
+  WienerProof.WienerIkeharaInterval hpos
+    (by
+      intro σ' hσ'
+      have := hf σ' hσ'
+      refine Summable.congr (fun n => ?_) this
+      by_cases hn : n = 0
+      · simp [hn, WienerProof.nterm]
+      · simp [WienerProof.nterm, hn, hpos n])
+    (by
+      obtain ⟨C, hC⟩ := hcheby
+      refine ⟨C, fun n => ?_⟩
+      have : cumsum (‖f ·‖) n = cumsum f n := by
+        refine Finset.sum_congr rfl (fun i hi => ?_)
+        simp [hpos i]
+      simpa [this] using hC n)
+    hG (fun s hs => hG' s hs) ha hb
 
 lemma WienerIkeharaInterval_discrete' {f : ℕ → ℝ} (hpos : 0 ≤ f)
     (hf : ∀ (σ : ℝ), 1 < σ → Summable (fun n => f n / (n : ℝ) ^ σ))
     (hcheby : cheby f) (hG : ContinuousOn G {s : ℂ | 1 ≤ s.re})
     (hG' : ∀ s : ℂ, 1 < s.re → G s = LSeries (fun n => (f n : ℂ)) s - (A : ℂ) / (s - 1))
     (ha : 0 < a) (hb : a ≤ b) :
-    Tendsto (fun N : ℕ => (∑ n in Finset.Ico a' b', f n) / N) atTop (nhds (A * (b - a))) := by
-  sorry
+    Tendsto (fun N : ℕ => (∑ n in Finset.Ico ⌈a*N⌉₊ ⌈b*N⌉₊, f n) / N) atTop (nhds (A * (b - a))) :=
+  WienerProof.WienerIkeharaInterval_discrete' hpos
+    (by
+      intro σ' hσ'
+      have := hf σ' hσ'
+      refine Summable.congr (fun n => ?_) this
+      by_cases hn : n = 0
+      · simp [hn, WienerProof.nterm]
+      · simp [WienerProof.nterm, hn, hpos n])
+    (by
+      obtain ⟨C, hC⟩ := hcheby
+      refine ⟨C, fun n => ?_⟩
+      have : cumsum (‖f ·‖) n = cumsum f n := by
+        refine Finset.sum_congr rfl (fun i hi => ?_)
+        simp [hpos i]
+      simpa [this] using hC n)
+    hG (fun s hs => hG' s hs) ha hb
 
 /-- von Mangoldt satisfies Chebyshev bound: ∑_{n<N} Λ(n) ≤ C*N -/
 theorem vonMangoldt_cheby : cheby vonMangoldt := by
