@@ -32,3 +32,25 @@ lemma riemannXi_eq_riemannXi_one_sub (s : ℂ) : riemannXi s = riemannXi (1 - s)
       simp [hΛ]
       ring
     _ = riemannXi (1 - s) := rfl
+
+/-- ξ 函数与复共轭交换: ξ(s̅) = ξ(s)̅ -/
+lemma riemannXi_conj (s : ℂ) : riemannXi (conj s) = conj (riemannXi s) := by
+  dsimp [riemannXi, completedZeta]
+  simp [map_mul, map_add, map_sub, conj_pow, conj_neg, conj_ofReal, Gamma_conj, riemannZeta_conj]
+
+/-- 在临界线上 ξ(1/2 + it) 是实值函数 -/
+lemma riemannXi_real_on_critical_line (t : ℝ) : riemannXi (1/2 + I * t) ∈ ℝ := by
+  have h_symm : riemannXi (1/2 + I * t) = riemannXi (1/2 - I * t) := by
+    calc
+      riemannXi (1/2 + I * t) = riemannXi (1 - (1/2 + I * t)) := riemannXi_eq_riemannXi_one_sub _
+      _ = riemannXi (1/2 - I * t) := by ring
+  have h_conj : riemannXi (1/2 - I * t) = conj (riemannXi (1/2 + I * t)) := by
+    calc
+      riemannXi (1/2 - I * t) = riemannXi (conj (1/2 + I * t)) := by simp
+      _ = conj (riemannXi (1/2 + I * t)) := riemannXi_conj _
+  rw [h_symm, h_conj]
+  exact conj_eq_self.mp rfl
+
+-- TODO: 证明 ξ 是整函数（ζ 在 s=1 的极点被 s(s-1) 抵消）
+-- lemma riemannXi_isEntire : Entire ℂ riemannXi := by
+--   admit
