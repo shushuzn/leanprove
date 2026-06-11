@@ -8,4 +8,5 @@ import Leanprove.VonMangoldt
 import Leanprove.MathlibTest
 import Leanprove.ZetaIVB
 import Leanprove.ZetaIVD
+import Leanprove.ZetaIVE
 import Leanprove.Tests

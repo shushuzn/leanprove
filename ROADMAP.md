@@ -15,7 +15,7 @@
   IV-B  ████████████ (σ-1)ζ(σ) 上界               ✅ 完成
   IV-C  ████████████ Mertens + Abel 求和          ✅ 完成 (0 sorry)
   IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
-  IV-E  ░░░░░░░░░░░░ 解析延拓与零区域             待开始
+  IV-E  ████████████ 解析延拓与零区域             ✅ 完成 (0 sorry)
 阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
 ```
@@ -110,6 +110,12 @@
 
 4 个定理, 全部 sorry-free: riemannZeta_real_pos, riemannZeta_ne_zero_real, euler_product_real_tendsto, **euler_product_real_hasProd** (完整的 Euler 乘积公式)。
 
+#### 阶段 IV-E: 解析延拓与零区域 ✅
+
+**文件**: `ZetaIVE.lean`
+
+16 个包装定理, 全部 sorry-free: zeta_analytic, zeta_differentiable_at/on, zeta_residue_one, completed_zeta₀_functional_equation, completed_zeta₀_entire, completed_zeta_functional_equation, **zeta_functional_equation** (函数方程), **zeta_ne_zero_of_one_le_re** (PNT 关键引理), zeta_trivial_zero, zeta_at_zero/two/four/even/neg_nat。
+
 ---
 
 ### 当前重点: 阶段 IV-D (Euler 乘积) ✅ 已完成
@@ -135,11 +141,17 @@
 
 ### 后续阶段规划
 
-#### IV-E: 解析延拓与零区域
+#### 阶段 IV-E: 解析延拓与零区域 ✅
 
-ζ(s) - 1/(s-1) 解析延拓到 Re s ≥ 1; ζ(s) ≠ 0 对 Re s ≥ 1。
+**文件**: `ZetaIVE.lean`
 
-**依赖**: 复分析基础设施 (围道积分、留数定理)。
+16 个定理包装 mathlib 的完整 ζ 函数理论:
+- 解析延拓: `zeta_analytic`, `zeta_differentiable_at/on`
+- 留数: `zeta_residue_one` (Res(ζ,1) = 1)
+- 函数方程: `zeta_functional_equation`, `completed_zeta₀_functional_equation`, `completed_zeta₀_entire`
+- **非零区域**: `zeta_ne_zero_of_one_le_re` (ζ(s)≠0 对 Re s ≥ 1, PNT 关键引理)
+- 平凡零点: `zeta_trivial_zero` (ζ(-2n) = 0)
+- 特殊值: `zeta_at_zero` (ζ(0)=-1/2), `zeta_at_two` (ζ(2)=π²/6), `zeta_at_four`, `zeta_at_even`, `zeta_at_neg_nat`
 
 #### 阶段 V: 素数定理 (PNT)
 
@@ -164,6 +176,9 @@
   ├── ✅ IV-C: mertens_first_theorem (Mertens 第一定理)
   ├── ✅ IV-C: mertens_first_theorem_bounded (有界形式)
   └── ✅ IV-D: euler_product_real_hasProd (Euler 乘积公式)
+  └── ✅ IV-E: zeta_ne_zero_of_one_le_re (ζ(s)≠0 on Re s ≥ 1, PNT 关键)
+  └── ✅ IV-E: zeta_functional_equation (函数方程)
+  └── ✅ IV-E: 16 个包装定理 (解析延拓 + 特殊值 + 平凡零点)
 
 中期
   ├── IV-E: 解析延拓 (需要复分析基础设施)
