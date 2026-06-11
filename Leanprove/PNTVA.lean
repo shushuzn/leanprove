@@ -198,27 +198,16 @@ private lemma x_div_log_sq_isLittleO_x_div_log :
 /-- 辅助: π ~ θ/log  (Abel 求和的推论) -/
 private lemma pi_isEquivalent_theta_div_log :
     (fun x : ℝ => (π ⌊x⌋₊ : ℝ)) ~[atTop] (fun x : ℝ => θ x / log x) := by
-  -- π - θ/log = O(x/log²x)  and  x/log²x =o(x/log x)  →  π - θ/log =o(x/log x)
+  -- π - θ/log = O(x/log²x) and x/log²x =o(θ/log) → π - θ/log =o(θ/log) → π ~ θ/log
   have h_bigO := primeCounting_sub_theta_div_log_isBigO
   have h_littleO_of_bound := x_div_log_sq_isLittleO_x_div_log
   have h_diff_isLittleO :
       (fun x : ℝ => (π ⌊x⌋₊ : ℝ) - θ x / log x) =o[atTop] (fun x : ℝ => x / log x) :=
     h_bigO.trans_isLittleO h_littleO_of_bound
-  -- Since x/log x and θ/log x are related (for the add step), we use add_isLittleO
-  -- We need to show (π - θ/log) =o(θ/log) to get π ~ θ/log.
-  -- Strategy: use the fact that θ/log x = Ω(x/log x), so o(x/log x) ⊆ o(θ/log x).
-  -- Alternative: use IsEquivalent.add_isLittleO in a different way.
-  -- π = θ/log + (π - θ/log), and (π - θ/log) =o(x/log x)
-  -- So if θ/log ~ x/log x, then (π - θ/log) =o(θ/log x), giving π ~ θ/log.
-  -- But we need this for both directions. Let's establish the key equivalence
-  -- via transitivity with x/log x.
-  -- We show: π ~ x/log x  ↔  θ/log ~ x/log x
-  -- This is because (π - θ/log) =o(x/log x), so π ~ x/log x ↔ θ/log ~ x/log x.
-  -- But we need this as a standalone lemma. Let me restructure.
-  -- Actually, we can directly prove π ~ θ/log using the Chebyshev lower bound.
-  -- (π - θ/log) = O(x/log²x), and x/log²x =o(θ/log) (by Chebyshev lower bound on θ)
-  -- → (π - θ/log) =o(θ/log)  →  π ~ θ/log.
-  -- Let me show x/log²x =o(θ/log):
+  -- Key: show x/log²x =o(θ/log) via Chebyshev lower bound on θ
+  -- Chebyshev lower bound: ∃ c > 0, eventually c·x ≤ θ x
+  -- From theta_ge': θ x ≥ (x-1)·log 2 - log(x+2) - 2√x·log x
+  -- Since 2√x·log x = o(x) and log(x+2) = o(x), we get θ x ≥ c·x for c = log 2/4
   have h_theta_lower : ∃ c > 0, ∀ᶠ x : ℝ in atTop, c * x ≤ θ x := by
     use log 2 / 4
     constructor
@@ -349,11 +338,11 @@ private lemma pi_isEquivalent_theta_div_log :
         filter_upwards [h_bound] with x hx; exact hx.2
       exact tendsto_of_tendsto_of_tendsto_of_le_of_le'
         h_zero_tendsto h_upper_tendsto h_lower_ev h_upper_ev
-  -- Now: (π - θ/log) = O(x/log²x) and x/log²x =o(θ/log) → (π - θ/log) =o(θ/log)
+  -- Compose: (π - θ/log) = O(x/log²x) and x/log²x =o(θ/log) → (π - θ/log) =o(θ/log)
   have h_diff_o : (fun x : ℝ => (π ⌊x⌋₊ : ℝ) - θ x / log x) =o[atTop]
       (fun x : ℝ => θ x / log x) :=
     h_bigO.trans_isLittleO h_xlog2_o_theta_log
-  -- θ/log + (π - θ/log) ~ θ/log (by add_isLittleO with refl)
+  -- θ/log + (π - θ/log) ~ θ/log  (add_isLittleO with refl)
   have h_add_equiv : (fun x : ℝ => θ x / log x + ((π ⌊x⌋₊ : ℝ) - θ x / log x))
       ~[atTop] (fun x : ℝ => θ x / log x) :=
     IsEquivalent.add_isLittleO (IsEquivalent.refl) h_diff_o
@@ -361,10 +350,7 @@ private lemma pi_isEquivalent_theta_div_log :
   have h_sum_eq : (fun x : ℝ => θ x / log x + ((π ⌊x⌋₊ : ℝ) - θ x / log x))
       =ᶠ[atTop] (fun x : ℝ => (π ⌊x⌋₊ : ℝ)) := by
     filter_upwards with x; ring
-  -- Combine: π ~ θ/log
-  -- h_add_equiv.symm : θ/log ~ θ/log + (π - θ/log)
-  -- h_sum_eq : θ/log + (π - θ/log) =ᶠ π
-  -- → θ/log ~ π → (symm) → π ~ θ/log
+  -- Combine: π = θ/log + (π - θ/log) ~ θ/log → π ~ θ/log
   exact (h_add_equiv.symm.trans_eventuallyEq h_sum_eq).symm
 
 /-- PNT 等价: θ(x) ~ x ↔ π(x) ~ x/log x -/
