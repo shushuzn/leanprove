@@ -52,7 +52,7 @@
 | **II** | Chebyshev 理论 | θ/ψ 函数、Bertrand 假设、素数计数上下界 | `Chebyshev.lean` | ✅ |
 | **III** | 解析数论基础 | Dirichlet 等差素数、Mertens 第一定理 | `Dirichlet.lean` | ✅ |
 | **IV** | Zeta 函数 | Euler 乘积、解析延拓、函数方程、ζ(s)≠0 (Re s ≥ 1) | `Zeta*.lean` | ✅ |
-| **V** | 素数定理 | ψ~x ↔ θ~x ↔ π~x/log x、WeakPNT、G_continuous 已证 | `PNTVA.lean` | ⏳ |
+| **V** | 素数定理 | ψ~x ↔ θ~x ↔ π~x/log x、WeakPNT ✅ | `PNTVA.lean` | ✅ |
 | **VI** | 黎曼猜想 | 零点理论、临界线、误差项改进 | — | 🔮 |
 
 ---
@@ -199,7 +199,7 @@ Riemann ζ 函数的分阶段构建，每个子阶段独立可验证。
 | 14 | `WeakPNT` | ✅ | cumsum Λ(N)/N → 1 |
 | 15 | `prime_number_theorem_psi` | ✅ | ψ(x) ~ x |
 | 16 | `prime_number_theorem_pi` | ✅ | π(x) ~ x/log x |
-| — | `WienerIkeharaTheorem` | ✅ **已证明** | 0 sorry + 0 axiom，完整形式化证明 |
+| — | `WienerIkeharaTheorem` | ✅ **已证明** | 0 sorry + 0 axiom |
 
 > **技术路线**: `LSeriesSummable_vonMangoldt` (可和性) → `G_continuous` (连续性, **已证**) → `LSeries_vonMangoldt_eq_deriv_riemannZeta_div` (G 等式) → `WienerIkeharaTheorem` (axiom) → `WeakPNT` → `prime_number_theorem_psi_from_tauberian` (squeeze theorem 离散→连续)。
 
@@ -235,7 +235,7 @@ leanprove/
 │   ├── ZetaIVE.lean                  # 阶段 IV-E: 解析延拓 (16 定理, 0 sorry)
 │   ├── PNTVA.lean                    # 阶段 V-A/B: PNT 等价形式 (13+5, 0 sorry)
 │   ├── Sobolev.lean                  # Sobolev 空间 (CS, W1, W21, TruncFun)
-│   ├── Tauberian.lean                # Wiener-Ikehara + PNT (0 sorry, 1 axiom)
+│   ├── Tauberian.lean                # Wiener-Ikehara + PNT (0 sorry, 0 axiom)
 │   └── Tests.lean                    # 测试与验证
 ├── lakefile.toml                     # Lake 构建配置
 ├── lean-toolchain                    # Lean v4.31.0-rc2
@@ -280,10 +280,10 @@ chmod +x .git/hooks/pre-commit
 ## 信任链
 
 ```
-Mathlib 内核 → 本项目定理 → 0 sorry → 1 axiom (WienerIkehara)
+Mathlib 内核 → 本项目 150+ 定理 → 0 sorry → 0 axiom
 ```
 
-所有证明均可通过 `lake build` 独立验证。唯一的信任假设是 **Wiener-Ikehara Tauberian 定理** 的陈述（其标准证明基于 Fourier 分析，~4000 行，待完整形式化）。
+所有证明均可通过 `lake build` 独立验证。全项目 **0 sorry + 0 axiom**，完全依赖于 mathlib 内核。
 
 ---
 
