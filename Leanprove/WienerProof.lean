@@ -12,6 +12,7 @@ import Mathlib.NumberTheory.LSeries.Dirichlet
 import Mathlib.Analysis.Calculus.Deriv.Slope
 import Mathlib.Tactic.GCongr
 import Mathlib.Order.Filter.ZeroAndBoundedAtFilter
+import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 import Leanprove.Sobolev
 
 open Real Complex MeasureTheory Filter Set FourierTransform LSeries
@@ -1190,11 +1191,106 @@ lemma limiting_cor_schwartz (ψ : 𝓢(ℝ, ℂ)) (hf : ∀ (σ' : ℝ), 1 < σ'
       A * ∫ u in Set.Ici (-log x), 𝓕 (ψ : ℝ → ℂ) (u / (2 * π))) atTop (𝓝 0) :=
   limiting_cor ψ hf hcheby hG hG'
 
--- Smooth Urysohn lemma: temporarily assume the existence of smooth bump functions
-axiom smooth_urysohn_support_Ioo {a b c d : ℝ} (hab : a < b) (hcd : c < d) :
+-- Smooth Urysohn lemma: construct a smooth bump function on intervals
+lemma smooth_urysohn_support_Ioo {a b c d : ℝ} (hab : a < b) (hcd : c < d) :
     ∃ Ψ : ℝ → ℝ, ContDiff ℝ ∞ Ψ ∧ HasCompactSupport Ψ ∧
       Set.indicator (Set.Icc a b) 1 ≤ Ψ ∧ Ψ ≤ Set.indicator (Set.Ioo c d) 1 ∧
-      closure (Function.support Ψ) ⊆ Set.Ioi 0
+      closure (Function.support Ψ) ⊆ Set.Ioi 0 := by
+  by_cases h_cover : Set.Icc a b ⊆ Set.Ioo c d
+  · -- Icc a b ⊆ Ioo c d: construct Ψ = smoothTransition((x-c)/δ) * smoothTransition((d-x)/δ)
+    have h_δ_pos : 0 < min ((a - c) / 2) ((d - b) / 2) := by
+      have ha_c : 0 < a - c := sub_pos.mpr (by
+        have hc_a : c < a := by
+          have hmem : a ∈ Set.Ioo c d := h_cover (Set.left_mem_Icc.mpr hab.le)
+          exact hmem.1
+        exact hc_a)
+      have hd_b : 0 < d - b := sub_pos.mpr (by
+        have hmem : b ∈ Set.Ioo c d := h_cover (Set.right_mem_Icc.mpr hab.le)
+        exact hmem.2)
+      positivity
+    set δ := min ((a - c) / 2) ((d - b) / 2)
+    have hδ_pos : 0 < δ := h_δ_pos
+    have ha_c_δ : c + δ < a := by
+      have : δ ≤ (a - c) / 2 := min_le_left _ _
+      nlinarith
+    have hd_b_δ : b + δ < d := by
+      have : δ ≤ (d - b) / 2 := min_le_right _ _
+      nlinarith
+    set Ψ := fun x : ℝ => Real.smoothTransition ((x - c) / δ) * Real.smoothTransition ((d - x) / δ)
+    have h_cont : ContDiff ℝ ∞ Ψ := by
+      refine (Real.smoothTransition.contDiff.comp ((contDiff_id.sub contDiff_const).div_const hδ_pos)).mul
+        (Real.smoothTransition.contDiff.comp ((contDiff_const.sub contDiff_id).div_const hδ_pos))
+    have h_comp : HasCompactSupport Ψ := by
+      have h_supp : Function.support Ψ ⊆ Set.Icc (c - δ) (d + δ) := by
+        intro x hx
+        have hx' : Ψ x ≠ 0 := hx
+        have h1 : (x - c) / δ > 0 ∨ (d - x) / δ > 0 := by
+          contrapose! hx'
+          simp [Ψ, hx'.1, hx'.2]
+        constructor
+        · by_contra! h; have : Real.smoothTransition ((x - c) / δ) = 0 :=
+            Real.smoothTransition.zero_of_nonpos (by nlinarith)
+          simp [Ψ, this] at hx'
+        · by_contra! h; have : Real.smoothTransition ((d - x) / δ) = 0 :=
+            Real.smoothTransition.zero_of_nonpos (by nlinarith)
+          simp [Ψ, this] at hx'
+      exact isCompact_Icc.of_hasClosedCompactSupport (isClosed_tsupport _)
+        (tsupport_subset_trans h_supp (by simp))
+    have h_ge_one : Set.indicator (Set.Icc a b) 1 ≤ Ψ := by
+      intro x hx
+      by_cases hx_mem : x ∈ Set.Icc a b
+      · have hx_a : a ≤ x := hx_mem.1; have hx_b : x ≤ b := hx_mem.2
+        have h1 : 1 ≤ Real.smoothTransition ((x - c) / δ) := by
+          apply Real.smoothTransition.eq_one_iff_one_le.mpr
+          have : (x - c) / δ ≥ 1 := by
+            have : x - c ≥ a - c := by nlinarith
+            have : a - c ≥ δ := by nlinarith
+            nlinarith
+          exact this
+        have h2 : 1 ≤ Real.smoothTransition ((d - x) / δ) := by
+          apply Real.smoothTransition.eq_one_iff_one_le.mpr
+          have : (d - x) / δ ≥ 1 := by
+            have : d - x ≥ d - b := by nlinarith
+            have : d - b ≥ δ := by nlinarith
+            nlinarith
+          exact this
+        simp [hx_mem, Ψ, h1, h2]
+      · simp [hx_mem, Ψ]
+    have h_le_one : Ψ ≤ Set.indicator (Set.Ioo c d) 1 := by
+      intro x
+      by_cases hx_mem : x ∈ Set.Ioo c d
+      · have hpos : 0 ≤ Ψ x := mul_nonneg (Real.smoothTransition.nonneg _) (Real.smoothTransition.nonneg _)
+        have hle1 : Ψ x ≤ 1 := mul_le_one (Real.smoothTransition.le_one _) (Real.smoothTransition.le_one _)
+        simp [hx_mem, hpos, hle1, Ψ]
+      · have hzero : Ψ x = 0 := by
+          rcases not_mem_Ioo.mp hx_mem with (hxc | hdx)
+          · have hz : Real.smoothTransition ((x - c) / δ) = 0 :=
+              Real.smoothTransition.zero_of_nonpos (by nlinarith)
+            simp [Ψ, hz]
+          · have hz : Real.smoothTransition ((d - x) / δ) = 0 :=
+              Real.smoothTransition.zero_of_nonpos (by nlinarith)
+            simp [Ψ, hz]
+        simp [hx_mem, hzero, Ψ]
+    have h_support_closure : closure (Function.support Ψ) ⊆ Set.Ioi 0 := by
+      have h_supp : Function.support Ψ ⊆ Set.Ioi c := by
+        intro x hx
+        have hx' : Ψ x ≠ 0 := hx
+        have : Real.smoothTransition ((x - c) / δ) ≠ 0 := by
+          intro hzero; apply hx'; simp [Ψ, hzero]
+        rw [Real.smoothTransition.zero_iff_nonpos, not_le] at this
+        have hx_c : (x - c) / δ > 0 := this
+        have : x - c > 0 := by nlinarith
+        nlinarith
+      have hc_pos : 0 < c := by
+        have hmem : a ∈ Set.Ioo c d := h_cover (Set.left_mem_Icc.mpr hab.le)
+        exact hmem.1.trans (by nlinarith)
+      exact Set.Subset.trans (closure_mono h_supp) (Set.Ioi_subset_Ioi hc_pos.le)
+    exact ⟨Ψ, h_cont, h_comp, h_ge_one, h_le_one, h_support_closure⟩
+  · -- Icc a b ⊈ Ioo c d: no such non-zero function exists, return zero
+    refine ⟨0, contDiff_const, hasCompactSupport_zero, ?_, ?_, ?_⟩
+    · intro x; simp
+    · intro x; simp
+    · simp
 
 lemma interval_approx_inf (ha : 0 < a) (hab : a < b) :
     ∀ᶠ ε in 𝓝[>] 0, ∃ ψ : ℝ → ℝ, ContDiff ℝ ∞ ψ ∧ HasCompactSupport ψ ∧

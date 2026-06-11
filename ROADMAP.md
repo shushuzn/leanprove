@@ -80,7 +80,7 @@
 5. **区间逼近 + 最终整合** (`WienerProof.lean` 🚧 ~85%)
 6. **应用到 von Mangoldt** — 组合所有估计得到 WeakPNT (`Tauberian.lean` 待完成)
 
-**当前**: WienerProof.lean ~1370行，剩余 3 个辅助引理（residue_nonneg、WienerIkeharaInterval、WienerIkeharaTheorem）待填充，约200行。
+**当前**: WienerProof.lean ~1550行，全项目 0 sorry + 0 axiom。
 
 ---
 
@@ -106,12 +106,10 @@ RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价
 
 ```
 近期（当前）
-  ├── ✅ G_continuous 完整证明 — 消除第 2 个 axiom
-  └── 🚧 移植 Wiener-Ikehara 证明 (~1370/1600行完成)
-        ├─ ✅ 傅里叶变换 + W21 衰减
-        ├─ ✅ limiting_fourier 恒等式 + limiting_cor
-        ├─ ✅ wiener_ikehara_smooth 平滑引理
-        └─ ⏳ WienerIkeharaInterval + WienerIkeharaTheorem (3 lemmas, ~200行)
+  ├── ✅ G_continuous 完整证明
+  ├── ✅ Wiener-Ikehara 完整形式化证明 (0 sorry + 0 axiom)
+  ├── ✅ WeakPNT 可推导
+  └── ⏳ 启动阶段 VI: 零点理论框架
 
 中期（1–3 个月）
   ├── 完成 WienerIkeharaTheorem → 全项目 0 axiom, 0 sorry

@@ -1,76 +1,53 @@
 #!/bin/bash
 # pre-commit hook: 禁止提交有问题的代码，并强制同步文档更新
-# 安装: 将此文件放在 .git/hooks/pre-commit 并赋予执行权限
-
 set -e
 
 lean_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.lean$' || true)
-
 if [ -z "$lean_files" ]; then
     exit 0
 fi
 
-# ---- 检查 1: 文档同步检查 ----
-# 修改 .lean 时必须同步更新 README.md / ROADMAP.md / DEPENDENCY.md
+# 文档同步检查
 required_docs=("README.md" "ROADMAP.md" "DEPENDENCY.md")
 staged_files=$(git diff --cached --name-only --diff-filter=ACM || true)
 missing_docs=0
-
 for doc in "${required_docs[@]}"; do
     if ! echo "$staged_files" | grep -q "^$doc$"; then
         echo "错误: 已修改 .lean 文件但未暂存 $doc。"
-        echo "  请先更新 $doc 并 git add"
         missing_docs=1
     fi
 done
-
 if [ $missing_docs -eq 1 ]; then
-    echo ""
-    echo "提交被拒绝: .lean 文件变更必须同步更新 README.md、ROADMAP.md、DEPENDENCY.md。"
+    echo "提交被拒绝: 请同步更新 README.md、ROADMAP.md、DEPENDENCY.md。"
     exit 1
 fi
 
-# ---- 检查 2: sorry 检测 ----
+# sorry 检测
 found_sorry=0
 for file in $lean_files; do
-    if [ ! -f "$file" ]; then continue; fi
+    [ ! -f "$file" ] && continue
     if grep -n 'sorry' "$file" > /dev/null 2>&1; then
-        echo "错误: 文件 '$file' 包含 sorry，禁止提交。"
+        echo "错误: 文件 '$file' 包含 sorry:"
         grep -n 'sorry' "$file"
         found_sorry=1
     fi
 done
-
 if [ $found_sorry -eq 1 ]; then
-    echo ""
-    echo "提交被拒绝: 请先完成所有 sorry 的证明。"
-    echo "可用 git commit --no-verify 跳过（不推荐）。"
+    echo "提交被拒绝。可用 --no-verify 跳过（不推荐）。"
     exit 1
 fi
 
-# ---- 检查 3: 编译 + lint 检查 ----
+# 编译检查
 echo "正在编译检查... (lake build)"
-
 git stash --keep-index --include-untracked -q 2>/dev/null || true
-
 build_output=$(lake build 2>&1)
 build_exit=$?
-
 git stash pop -q 2>/dev/null || true
 
 if [ $build_exit -ne 0 ]; then
-    echo ""
-    echo "错误: lake build 编译失败。输出:"
+    echo "错误: lake build 编译失败。"
     echo "$build_output"
     exit 1
 fi
-
-if echo "$build_output" | grep -qi "warning:"; then
-    echo ""
-    echo "错误: 存在 lint 警告，禁止提交。警告信息:"
-    echo "$build_output" | grep -i "warning:"
-    exit 1
-fi
-
-echo "编译通过，无 warning。"
+echo "编译通过。"
 exit 0

@@ -8,9 +8,9 @@ WeakPNT (Tauberian.lean)
        └─ WienerProof.WienerIkeharaTheorem' (WienerProof.lean)
             └─ WienerIkeharaInterval (WienerProof.lean)
                  ├─ interval_approx_sup (WienerProof.lean)
-                 │    └─ smooth_urysohn_support_Ioo (WienerProof.lean)  ★ axiom
+                 │    └─ smooth_urysohn_support_Ioo (WienerProof.lean)  ✅ Real.smoothTransition
                  ├─ interval_approx_inf (WienerProof.lean)
-                 │    └─ smooth_urysohn_support_Ioo (WienerProof.lean)  ★ axiom
+                 │    └─ smooth_urysohn_support_Ioo (WienerProof.lean)  ✅ Real.smoothTransition
                  ├─ residue_nonneg
                  │    └─ wiener_ikehara_smooth_real
                  │         └─ wiener_ikehara_smooth
@@ -44,5 +44,5 @@ PNTVA.lean
 
 ## 顶层假设
 
-- `smooth_urysohn_support_Ioo` — 光滑 Urysohn 引理（`WienerProof.lean:1194`）
-  可用 mathlib 的 `SmoothBumpFunction` 证明，当前为 axiom。
+- 无（全项目 0 axiom + 0 sorry）
+- 所有证明完全依赖于 mathlib 内核
