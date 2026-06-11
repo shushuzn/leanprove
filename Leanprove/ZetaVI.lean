@@ -252,3 +252,100 @@ lemma gamma_it_sq_norm (t : ℝ) (ht : t ≠ 0) : ‖Gamma (I * (t : ℂ))‖ ^ 
   have h_nonneg : 0 ≤ ‖Gamma (I * (t : ℂ))‖ := norm_nonneg _
   field_simp [hpos.ne.symm]
   nlinarith
+
+/-! ### 零点计数函数 N(T) -/
+
+/-- Riemann ξ 函数的零点集 -/
+def riemannXiZeros : Set ℂ := {z | riemannXi z = 0}
+
+/-- 高度为 T 的临界带区域：{z ∈ ℂ | 0 ≤ Re(z) ≤ 1, 0 ≤ Im(z) ≤ T} -/
+def criticalStrip (T : ℝ) : Set ℂ := {z | 0 ≤ z.re ∧ z.re ≤ 1 ∧ 0 ≤ z.im ∧ z.im ≤ T}
+
+/-- 零点计数函数 N(T) = #{ρ ∈ criticalStrip T | ξ(ρ) = 0} -/
+def xiZeroCount (T : ℝ) : ℕ := Nat.card (riemannXiZeros ∩ criticalStrip T)
+
+/-! #### criticalStrip 的基本性质 -/
+
+lemma criticalStrip_mono {T₁ T₂ : ℝ} (h : T₁ ≤ T₂) :
+    criticalStrip T₁ ⊆ criticalStrip T₂ := by
+  intro z hz
+  simp only [criticalStrip, Set.mem_setOf_eq] at hz ⊢
+  exact ⟨hz.1, hz.2.1, hz.2.2.1, le_trans hz.2.2.2 h⟩
+
+lemma criticalStrip_isClosed (T : ℝ) : IsClosed (criticalStrip T) := by
+  have h1 : IsClosed {z : ℂ | 0 ≤ z.re} := isClosed_le continuous_const continuous_re
+  have h2 : IsClosed {z : ℂ | z.re ≤ 1} := isClosed_le continuous_re continuous_const
+  have h3 : IsClosed {z : ℂ | 0 ≤ z.im} := isClosed_le continuous_const continuous_im
+  have h4 : IsClosed {z : ℂ | z.im ≤ T} := isClosed_le continuous_im continuous_const
+  simpa [criticalStrip] using h1.inter (h2.inter (h3.inter h4))
+
+lemma criticalStrip_bounded (T : ℝ) : Metric.Bounded (criticalStrip T) := by
+  apply Metric.Bounded.subset_ball (0 : ℂ) (max 1 (|T| + 1))
+  intro z hz
+  have h₁ : 0 ≤ z.re := hz.1
+  have h₂ : z.re ≤ 1 := hz.2.1
+  have h₃ : 0 ≤ z.im := hz.2.2.1
+  have h₄ : z.im ≤ T := hz.2.2.2
+  have h₅ : |z.re| ≤ 1 := by
+    rw [abs_of_nonneg h₁] <;> linarith
+  have h₆ : |z.im| ≤ |T| := by
+    have h₇ : 0 ≤ z.im := h₃
+    rw [abs_of_nonneg h₇]
+    cases' le_total 0 T with hT hT <;> rw [abs_of_nonneg hT] <;> linarith
+  have h₇ : ‖z‖ ≤ max 1 (|T| + 1) := by
+    have h₈ : ‖z‖ ≤ |z.re| + |z.im| := Complex.norm_le_abs_re_add_abs_im z
+    linarith
+  exact Metric.mem_ball'.mpr h₇
+
+lemma criticalStrip_isCompact (T : ℝ) : IsCompact (criticalStrip T) := by
+  exact HeineBorel.isCompact_iff_isClosed_isBounded.mpr
+    ⟨criticalStrip_isClosed T, criticalStrip_bounded T⟩
+
+/-! #### riemannXiZeros 的基本性质 -/
+
+lemma zero_notin_riemannXiZeros : (0 : ℂ) ∉ riemannXiZeros := by
+  simpa [riemannXiZeros, riemannXi_zero] using show (1 : ℂ) ≠ 0 from by norm_num
+
+lemma one_notin_riemannXiZeros : (1 : ℂ) ∉ riemannXiZeros := by
+  simpa [riemannXiZeros, riemannXi_one] using show (1 : ℂ) ≠ 0 from by norm_num
+
+lemma riemannXiZeros_symm_one_sub : ∀ z ∈ riemannXiZeros, 1 - z ∈ riemannXiZeros := by
+  intro z hz
+  have h1 : riemannXi z = 0 := hz
+  have h2 : riemannXi (1 - z) = riemannXi z := riemannXi_eq_riemannXi_one_sub z
+  simpa [riemannXiZeros, h2, h1] using rfl
+
+lemma riemannXiZeros_symm_conj : ∀ z ∈ riemannXiZeros, conj z ∈ riemannXiZeros := by
+  intro z hz
+  have h1 : riemannXi z = 0 := hz
+  have h2 : riemannXi (conj z) = conj (riemannXi z) := riemannXi_conj z
+  simpa [riemannXiZeros, h2, h1] using by simp
+
+/-! #### xiZeroCount (N(T)) 的基本性质 -/
+
+lemma xiZeroCount_mono {T₁ T₂ : ℝ} (h : T₁ ≤ T₂) :
+    xiZeroCount T₁ ≤ xiZeroCount T₂ := by
+  apply Nat.card_le_card (Set.inter_subset_inter_right _ (criticalStrip_mono h))
+
+/-- 当 ξ(z) = 0 且 z ≠ 0,1 时，有 ζ(z) = 0。
+    即 ξ 的非平凡零点即为 ζ 的非平凡零点。 -/
+lemma riemannXi_zero_implies_zeta_zero {z : ℂ} (hz : z ∈ riemannXiZeros) (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
+    riemannZeta z = 0 := by
+  have h1 : riemannXi z = 0 := hz
+  have h2 : riemannXi z = z * (z - 1) * completedZeta z := by rfl
+  rw [h2] at h1
+  have h3 : z * (z - 1) ≠ 0 := by
+    simp [hz0, hz1, sub_ne_zero.mpr]
+    <;> tauto
+  have h4 : completedZeta z = 0 := (mul_eq_zero.mp h1).resolve_left h3
+  have h5 : (π : ℂ) ^ (-z / 2) ≠ 0 := by
+    exact pow_ne_zero _ _
+  have h6 : Gamma (z / 2) ≠ 0 := by
+    exact Complex.Gamma_ne_zero (z / 2)
+  simpa [completedZeta, h5, h6] using mul_eq_zero.mp (mul_eq_zero.mp h4)
+
+/-- `xiZeroCount` 即解析数论中的零点计数函数 N(T)。
+    它计数临界带 {0 ≤ Re ≤ 1, 0 ≤ Im ≤ T} 中 ξ(z) 的零点数（即 ζ 的非平凡零点数）。 -/
+lemma xiZeroCount_eq_NT (T : ℝ) :
+    xiZeroCount T = Nat.card {ρ ∈ criticalStrip T | riemannXi ρ = 0} := by
+  rfl
