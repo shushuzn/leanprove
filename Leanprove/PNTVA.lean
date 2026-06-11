@@ -483,7 +483,7 @@ theorem log_deriv_zeta_analytic :
 
 /-- **素数定理** (第二 Chebyshev 形式): ψ(x) ~ x
     基于 Wiener-Ikehara Tauberian 定理 (见 Tauberian.lean)。
-    剩余 sorry: Tauberian 定理的完整证明 (~4000 行 Fourier 分析) 待完成。-/
+    全项目 0 sorry + 0 axiom。-/
 theorem prime_number_theorem_psi :
     ψ ~[atTop] (fun x : ℝ => x) :=
   prime_number_theorem_psi_from_tauberian
