@@ -17,7 +17,7 @@
   IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
   IV-E  ████████████ 解析延拓与零区域             ✅ 完成 (0 sorry)
 阶段 V  ▓▓░░░░░░░░░░ 素数定理 (PNT)              进行中
-  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (1 sorry)
+  V-A   ████████████ PNT 等价形式 + 素数定理     ✅ 完成 (0 sorry)
   V-B   ▓▓▓▓▓▓▓▓▓▓▓▓ θ~x ↔ π~x/log x           ✅ 完成 (0 sorry)
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
 ```
@@ -157,7 +157,7 @@
 
 #### 阶段 V: 素数定理 (PNT)
 
-**V-A/V-B: PNT 等价形式** ✅ 已完成 (1 sorry)
+**V-A/V-B: PNT 等价形式** ✅ 已完成 (0 sorry)
 
 **文件**: `PNTVA.lean`
 
@@ -174,11 +174,9 @@
 - `log_deriv_zeta_eq_vonMangoldt_series`: -ζ'/ζ = ∑Λ/n^s (包装 mathlib)
 - `log_deriv_zeta_analytic`: -ζ'/ζ 全纯 (analyticOn_riemannZeta.deriv.div + ζ≠0)
 - `prime_number_theorem_psi`: ψ~x (基于 Wiener-Ikehara axiom, Fourier 分析证明待完整实现)
+- `prime_number_theorem_pi`: π~x/log x (由 pnt_psi_iff_pnt_pi + prime_number_theorem_psi)
 
-待证 (sorry):
-- `prime_number_theorem_pi`: π~x/log x (需由 ψ~x + 等价定理)
-
-**后续路径**: Newman 证明 (Wiener-Ikehara Tauberian) 或 Selberg-Erdős 初等证明。
+**后续路径**: 完整实现 Wiener-Ikehara Tauberian 定理的 Fourier 分析证明 (~4000 行)。
 
 #### 阶段 VI: 黎曼猜想
 
@@ -194,14 +192,14 @@
   ├── ✅ IV-E: zeta_functional_equation (函数方程)
   ├── ✅ IV-E: 16 个包装定理 (解析延拓 + 特殊值 + 平凡零点)
   ├── ✅ V-A: PNT 等价形式 (ψ~x ↔ θ~x, 夹逼定理, 5 定理已证)
-  └── ✅ V-B: θ~x ↔ π~x/log x (Abel 求和 + Chebyshev 下界 + IsEquivalent 传递)
+  ├── ✅ V-B: θ~x ↔ π~x/log x (Abel 求和 + Chebyshev 下界 + IsEquivalent 传递)
+  └── ✅ V-A: prime_number_theorem_psi + prime_number_theorem_pi (基于 Wiener-Ikehara axiom)
 
 中期
-  ├── V-B: Tauberian 定理 (Wiener-Ikehara / Newman)
+  ├── Tauberian 定理完整证明 (Wiener-Ikehara Fourier 分析, 消除 axiom/sorry)
   └── 向 Mathlib 贡献围道积分、留数定理
 
 远期
-  ├── 阶段 V: 素数定理 (PNT)
   ├── 阶段 VI: ζ 函数零点理论
   └── 阶段 VI: 黎曼猜想 (陈述与已知结果)
 ```

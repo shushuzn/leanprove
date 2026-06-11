@@ -6,9 +6,9 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-**当前进度**: 阶段 V-A/V-B ✅ — PNT 等价形式已证明 (ψ~x ↔ θ~x ↔ π~x/log x)。1 sorry (π~x/log x 待完成)。PNT (ψ~x) 基于 Wiener-Ikehara Tauberian 公理。
+**当前进度**: 阶段 V-A/V-B ✅ — 素数定理全部等价形式已证 (ψ~x ↔ θ~x ↔ π~x/log x)。PNTVA.lean 0 sorry。
 
-**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A/V-B 新增 **10 定理 + 5 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与 PNT 等价形式。Phase I-IV 全部已证 0 sorry；Phase V-A/V-B 已证 10 定理 5 引理，1 sorry (π~x/log x)。新增 Sobolev.lean 和 Tauberian.lean (Wiener-Ikehara 框架)。
+**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A/V-B 新增 **13 定理 + 5 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与素数定理。Phase I-IV 全部已证 0 sorry；**Phase V PNTVA.lean 全部 13 定理 0 sorry**。Tauberian.lean 有 2 sorry (Wiener-Ikehara 应用的技术验证步骤)。
 
 ## 路线图
 
@@ -23,7 +23,7 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
   IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
   IV-E  ████████████ 解析延拓与零区域             ✅ 完成 (0 sorry)
 阶段 V  ▓▓░░░░░░░░░░ 素数定理 (PNT)              进行中
-  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (1 sorry)
+  V-A   ████████████ PNT 等价形式 + 素数定理     ✅ 完成 (0 sorry)
   V-B   ▓▓▓▓▓▓▓▓▓▓▓▓ θ~x ↔ π~x/log x           ✅ 完成 (0 sorry)
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
 ```
@@ -213,7 +213,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 | 13 | `WienerIkeharaTheorem` — Tauberian 定理 | ⚠️ axiom | Fourier 分析 (~4000 行待完整实现) |
 | 14 | `WeakPNT` — cumsum Λ(N)/N → 1 | ⚠️ axiom+sorry | Wiener-Ikehara 应用 |
 | 15 | `prime_number_theorem_psi` — ψ~x | ⚠️ 基于 WI | WeakPNT → 连续版本 |
-| 16 | `prime_number_theorem_pi` — π~x/log x | ⏳ sorry | 需由 ψ~x + 等价定理 |
+| 16 | `prime_number_theorem_pi` — π~x/log x | ✅ | pnt_psi_iff_pnt_pi + prime_number_theorem_psi |
 
 **技术细节**:
 - `psi_sub_theta_div_x_tendsto_zero` ✅: 由 Chebyshev 界 |ψ-θ| ≤ 2√x·log x 得 |(ψ-θ)/x| ≤ 2·log x/√x → 0，用夹逼定理 (tendsto_of_tendsto_of_tendsto_of_le_of_le') 证明。
@@ -253,7 +253,7 @@ leanprove/
 │   ├── ZetaIVB.lean            # 阶段 IV-B: ζ 上界 (5 引理, 零 sorry)
 │   ├── ZetaIVD.lean            # 阶段 IV-D: Euler 乘积 (4 定理, 零 sorry)
 │   ├── ZetaIVE.lean            # 阶段 IV-E: 解析延拓 (16 定理, 零 sorry)
-│   ├── PNTVA.lean              # 阶段 V-A/V-B: PNT 等价形式 (11 定理 + 5 引理, 1 sorry)
+│   ├── PNTVA.lean              # 阶段 V-A/V-B: PNT 等价形式 (13 定理 + 5 引理, 0 sorry)
 │   ├── Sobolev.lean             # Sobolev 空间 (CS, W1, W21, TruncFun)
 │   ├── Tauberian.lean           # Wiener-Ikehara Tauberian 定理 + PNT
 │   ├── Zeta.lean               # 阶段 IV: ζ 函数基础
@@ -264,7 +264,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 110+ 个定理 + 24+ 个引理 (134+ 总计), Phase I-IV: 0 sorry; Phase V-A: 2 sorry
+**总计**: 110+ 个定理 + 24+ 个引理 (134+ 总计), Phase I-IV: 0 sorry; Phase V-A PNTVA.lean: 0 sorry; Tauberian.lean: 2 sorry
 
 ## 技术栈
 

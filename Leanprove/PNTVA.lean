@@ -491,4 +491,4 @@ theorem prime_number_theorem_psi :
 /-- **素数定理** (标准形式): π(x) ~ x / log x -/
 theorem prime_number_theorem_pi :
     (fun x : ℝ => (π ⌊x⌋₊ : ℝ) / (x / log x)) ~[atTop] fun _ : ℝ => (1 : ℝ) := by
-  sorry
+  exact (pnt_psi_iff_pnt_pi.mp prime_number_theorem_psi)
