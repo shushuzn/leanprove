@@ -1,213 +1,156 @@
-## leanprove 项目路线图
+## leanprove 路线图
 
-本文档是 leanprove 项目的前瞻性规划。项目现状与已完成定理清单见 [README.md](README.md)。
+> 前瞻性规划与战略路径。项目现状与完整定理清单见 [README.md](README.md)。
 
 ---
 
-### 项目总览
+## 项目总览
 
 ```
-阶段 I   ████████████ 初等数论基础                ✅ 完成
-阶段 II  ████████████ Chebyshev 与素数分布         ✅ 完成
-阶段 III ████████████ 解析数论基础                 ✅ 完成
-阶段 IV  ████████████ Zeta 函数系列               ✅ 完成
-  IV-A  ████████████ ζ(s) 定义与绝对收敛           ✅ 完成
-  IV-B  ████████████ (σ-1)ζ(σ) 上界               ✅ 完成
-  IV-C  ████████████ Mertens + Abel 求和          ✅ 完成 (0 sorry)
-  IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
-  IV-E  ████████████ 解析延拓与零区域             ✅ 完成 (0 sorry)
-阶段 V  ▓▓░░░░░░░░░░ 素数定理 (PNT)              进行中
-  V-A   ████████████ PNT 等价形式 + 素数定理     ✅ 完成 (0 sorry)
-  V-B   ▓▓▓▓▓▓▓▓▓▓▓▓ θ~x ↔ π~x/log x           ✅ 完成 (0 sorry)
-阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
-```
-
----
-
-### Mathlib 中已有的关键结果
-
-在推进后续阶段前, 了解 Mathlib 中已有的成果至关重要:
-
-**Dirichlet 定理 (完整)**: `Mathlib.NumberTheory.LSeries.PrimesInAP` 中已证明完整的 Dirichlet 定理。
-
-**Chebyshev 函数**: Mathlib 有完整的 θ(x)、ψ(x) 定义, 以及 Chebyshev 界。
-
-**Von Mangoldt 函数**: Mathlib 有 `ArithmeticFunction.vonMangoldt`, 含完整的 Dirichlet 卷积性质。
-
-**尚未在 Mathlib 中形式化的关键结果** (阶段 4-6 所需):
-
-- ζ 函数的解析延拓 (仅有 Re(s) > 1 的定义)
-- ζ(1+it) ≠ 0 (PNT 的关键步骤)
-- PNT 本身 (π(x) ~ x/ln(x))
-- ζ 函数的函数方程
-- 零点计数函数 N(T) 和 Hadamard 乘积
-- 黎曼猜想的任何非平凡结果
-
----
-
-### 当前重点: 阶段 IV-C (Mertens + Abel 求和) ✅ 已完成
-
-**文件**: `VonMangoldt.lean`
-
-**已完成的引理** (全部 sorry-free):
-
-| # | 引理 | 状态 | 用途 |
-|---|------|------|------|
-| 1 | `vm_nonneg` — Λ(n)/n ≥ 0 | ✅ | 非负性 |
-| 2 | `vm_le_one` — Λ(n)/n ≤ 1 (n≥2) | ✅ | 逐项上界 |
-| 3 | `pow_div_pow_bound` — 1/p^k ≤ (1/2)^{k-2}·1/p^2 | ✅ | 几何级数分解 |
-| 4 | `geom_sum_bound` — ∑_{j=0}^N (1/2)^j ≤ 2 | ✅ | 几何级数上界 |
-| 5 | `geom_tail_Icc_bound` — ∑_{k=2}^M 1/p^k ≤ 2/p^2 | ✅ | 素数幂尾部界 |
-| 6 | `range_sum_le_tsum_of_nonneg` — 部分和 ≤ tsum | ✅ | tsum 界定 |
-| 7 | `log_lt_two_sqrt` — log p < 2√p | ✅ | 对数上界 |
-| 8 | `sqrt_div_sq_eq_rpow` — √p/p² = p^{-3/2} | ✅ | 幂函数转换 |
-| 9 | `log_div_sq_bound_le` — log p/p² ≤ 2p^{-3/2} | ✅ | 素数对数界 |
-
-**全部已证 (0 sorry)**:
-
-| # | 定理 | 技术路线 | 状态 |
-|---|------|----------|------|
-| 10 | `primePower_contribution_bounded` | ✅ 双重求和法: H(m,j) + Finset.sum_bij + Summable.sum_le_tsum | ✅ |
-| 11 | `psi_integral_sub_log_isBigO` | ✅ Abel 求和 + setIntegral_union + integrableOn_of_bounded | ✅ |
-| 12 | `mertens_abel_identity` | ✅ sum_mul_eq_sub_integral_mul₁ + deriv_inv' + integral_congr | ✅ |
-| 13 | `mertens_first_theorem` | ✅ 由 mertens_first_theorem_bounded 推出 | ✅ |
-| 14 | `mertens_first_theorem_bounded` | ✅ vm_div_sum_sub_log_bound + primePower_contribution_bounded + 三角不等式 | ✅ |
-
-**技术细节**:
-- `primePower_contribution_bounded` ✅: 双重求和法。定义 H(m,j) = if m prime then (log m)/m^(j+2) else 0，证明 Summable H (summable_prod_of_nonneg + summable_nat_rpow 比较)。注入 f(n) = (n.minFac, n.factorization n.minFac - 2)，用 Finset.sum_bij + Summable.sum_le_tsum 控制部分和。
-- `mertens_abel_identity` ✅: 应用 `sum_mul_eq_sub_integral_mul₁` (c = Λ, f(t) = t⁻¹)。可微性由 `fun_prop` + `z ≥ 2 → z ≠ 0` 证明；可积性通过 `deriv_inv'` 展开后用 `ContinuousOn.div` + `ContinuousOn.pow` 证明。积分内用 `congr_fun deriv_inv'` + `Chebyshev.psi_eq_sum_Icc` 简化被积函数。
-- `psi_integral_sub_log_isBigO` ✅: 应用 Abel 求和恒等式 (mertens_abel_identity) 将积分拆分为 ∑Λ(n)/n - ψ(x)/x。用 setIntegral_union 将 (1,x] 积分拆为 (1,2] + (2,x]，其中 (1,2] 积分为零 (ψ t = 0 for t < 2)。可积性通过 MeasureTheory.volume.integrableOn_of_bounded + psi_bounded 证明。结合 Mertens 第一定理有界形式与三角不等式得到 O(1) 估计。
-
----
-
-### 已完成阶段详情
-
-#### 阶段 I: 初等数论基础 ✅
-
-**文件**: `Basic.lean`, `PrimeCounting.lean`, `PrimeReciprocals.lean`
-
-21 个定理, 涵盖: 24 | p²-1 的完整证明体系、素数无穷、素数计数上界、Σ 1/p 发散。
-
-#### 阶段 II: Chebyshev 与素数分布 ✅
-
-**文件**: `Chebyshev.lean`, `Bertrand.lean`
-
-14+ 个定理, 涵盖: Chebyshev θ/ψ 函数、Bertrand 假设、素数计数上下界。
-
-#### 阶段 III: 解析数论基础 ✅
-
-**文件**: `Dirichlet.lean`, `VonMangoldt.lean`
-
-11+ 个定理, 涵盖: 等差数列素数、Von Mangoldt 函数、Mertens 第一定理、Stirling 公式。
-
-#### 阶段 IV-A/B: ζ 函数基础 ✅
-
-**文件**: `ZetaIVB.lean`
-
-5 个引理, 全部 sorry-free: rpow_anti, mvt_ineq, n_pow_le_telescope, sum_bound_upper, **zeta_upper_bound** (ζ(σ) ≤ 1 + 1/(σ-1))。
-
-#### 阶段 IV-D: Euler 乘积 ✅
-
-**文件**: `ZetaIVD.lean`
-
-4 个定理, 全部 sorry-free: riemannZeta_real_pos, riemannZeta_ne_zero_real, euler_product_real_tendsto, **euler_product_real_hasProd** (完整的 Euler 乘积公式)。
-
-#### 阶段 IV-E: 解析延拓与零区域 ✅
-
-**文件**: `ZetaIVE.lean`
-
-16 个包装定理, 全部 sorry-free: zeta_analytic, zeta_differentiable_at/on, zeta_residue_one, completed_zeta₀_functional_equation, completed_zeta₀_entire, completed_zeta_functional_equation, **zeta_functional_equation** (函数方程), **zeta_ne_zero_of_one_le_re** (PNT 关键引理), zeta_trivial_zero, zeta_at_zero/two/four/even/neg_nat。
-
----
-
-### 当前重点: 阶段 IV-D (Euler 乘积) ✅ 已完成
-
-**文件**: `ZetaIVD.lean`
-
-**已完成的定理** (全部 sorry-free):
-
-| # | 定理 | 状态 | 技术路线 |
-|---|------|------|----------|
-| 1 | `riemannZeta_real_pos` — ζ(σ) > 0 (σ > 1) | ✅ | riemannZeta_def + tsum_pos |
-| 2 | `riemannZeta_ne_zero_real` — ζ(σ) ≠ 0 (σ > 1) | ✅ | ne_of_gt + riemannZeta_real_pos |
-| 3 | `euler_product_real_tendsto` — ∏_p (1 - p^{-σ})⁻¹ → ζ(σ) | ✅ | HasProd.tendsto_partialProd |
-| 4 | `euler_product_real_hasProd` — Euler 乘积公式 | ✅ | euler_product_real_tendsto + HasProd |
-
-**技术细节**:
-- `riemannZeta_real_pos` ✅: ζ(σ) 定义为 ∑ 1/n^σ，所有项为正，故和为正。使用 `tsum_pos` 证明。
-- `riemannZeta_ne_zero_real` ✅: 由正性直接推出非零 (`ne_of_gt`)。
-- `euler_product_real_tendsto` ✅: 证明部分乘积 ∏_{p≤N} (1 - p^{-σ})⁻¹ 趋于 ζ(σ)。使用 `HasProd.tendsto_partialProd`。
-- `euler_product_real_hasProd` ✅: 完整的 Euler 乘积公式，由 `euler_product_real_tendsto` 和 `HasProd` 构造得出。
-
----
-
-### 后续阶段规划
-
-#### 阶段 IV-E: 解析延拓与零区域 ✅
-
-**文件**: `ZetaIVE.lean`
-
-16 个定理包装 mathlib 的完整 ζ 函数理论:
-- 解析延拓: `zeta_analytic`, `zeta_differentiable_at/on`
-- 留数: `zeta_residue_one` (Res(ζ,1) = 1)
-- 函数方程: `zeta_functional_equation`, `completed_zeta₀_functional_equation`, `completed_zeta₀_entire`
-- **非零区域**: `zeta_ne_zero_of_one_le_re` (ζ(s)≠0 对 Re s ≥ 1, PNT 关键引理)
-- 平凡零点: `zeta_trivial_zero` (ζ(-2n) = 0)
-- 特殊值: `zeta_at_zero` (ζ(0)=-1/2), `zeta_at_two` (ζ(2)=π²/6), `zeta_at_four`, `zeta_at_even`, `zeta_at_neg_nat`
-
-#### 阶段 V: 素数定理 (PNT)
-
-**V-A/V-B: PNT 等价形式** ✅ 已完成 (0 sorry)
-
-**文件**: `PNTVA.lean`
-
-已证:
-- `two_log_div_sqrt_tendsto_zero`: 2·log x / √x → 0 (isLittleO + tendsto_div_nhds_zero)
-- `psi_sub_theta_div_x_tendsto_zero`: (ψ-θ)/x → 0 (Chebyshev 界 + 夹逼定理)
-- `psi_div_x_iff_theta_div_x`: ψ/x→1 ↔ θ/x→1
-- `isEquivalent_id_iff_tendsto_div_one`: u~id ↔ u/x→1
-- `pnt_psi_iff_pnt_theta`: ψ~x ↔ θ~x
-- `x_div_log_sq_isLittleO_x_div_log`: x/log²x =o(x/log x) (V-B 辅助)
-- `pi_isEquivalent_theta_div_log`: π~θ/log (V-B 核心引理, Abel 求和 + Chebyshev 下界)
-- `pnt_theta_iff_pnt_pi`: θ~x ↔ π~x/log x (V-B, 由上述引理传递)
-- `pnt_psi_iff_pnt_pi`: ψ~x ↔ π~x/log x (传递性)
-- `log_deriv_zeta_eq_vonMangoldt_series`: -ζ'/ζ = ∑Λ/n^s (包装 mathlib)
-- `log_deriv_zeta_analytic`: -ζ'/ζ 全纯 (analyticOn_riemannZeta.deriv.div + ζ≠0)
-- `prime_number_theorem_psi`: ψ~x (基于 Wiener-Ikehara axiom, **G_continuous 已完整证明**)
-- `prime_number_theorem_pi`: π~x/log x (由 pnt_psi_iff_pnt_pi + prime_number_theorem_psi)
-
-**后续路径**: 完整实现 Wiener-Ikehara Tauberian 定理的 Fourier 分析证明 (~4000 行)，以消除最后 1 个顶层 axiom (`WienerIkeharaTheorem`)。`G_continuous` 已通过 H(s)=(s-1)ζ(s) 的局部分析完整证明。
-
-#### 阶段 VI: 黎曼猜想
-
-**现实评估**: RH 是千禧年问题之一, 至今未解决。可形式化等价表述和已知推论。
-
----
-
-### 推荐的实施顺序
-
-```
-近期 (当前)
-  ├── ✅ IV-E: zeta_ne_zero_of_one_le_re (ζ(s)≠0 on Re s ≥ 1, PNT 关键)
-  ├── ✅ IV-E: zeta_functional_equation (函数方程)
-  ├── ✅ IV-E: 16 个包装定理 (解析延拓 + 特殊值 + 平凡零点)
-  ├── ✅ V-A: PNT 等价形式 (ψ~x ↔ θ~x, 夹逼定理, 5 定理已证)
-  ├── ✅ V-B: θ~x ↔ π~x/log x (Abel 求和 + Chebyshev 下界 + IsEquivalent 传递)
-  ├── ✅ V-A: prime_number_theorem_psi + prime_number_theorem_pi (基于 Wiener-Ikehara axiom)
-  ├── ✅ V-B: Tauberian.lean 4 sorry 全部消除 (WeakPNT + psi_from_tauberian)
-  └── ✅ G_continuous 完整证明 (H(s)=(s-1)ζ(s) 局部分析, 消除第2个axiom)
-
-中期
-  ├── Tauberian 定理完整证明 (Wiener-Ikehara Fourier 分析, 消除最后 1 个顶层 axiom: WienerIkeharaTheorem)
-  └── 向 Mathlib 贡献围道积分、留数定理
-
-远期
-  ├── 阶段 VI: ζ 函数零点理论
-  └── 阶段 VI: 黎曼猜想 (陈述与已知结果)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  已完成                              进行中                    待启动
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  阶段 I    初等数论基础              阶段 V-C  Wiener-Ikehara    阶段 VI  黎曼猜想
+  阶段 II   Chebyshev 与素数分布                (1 axiom 待消)
+  阶段 III  解析数论基础
+  阶段 IV   Zeta 函数理论
+    ├─ IV-A  ζ(s) 定义与收敛
+    ├─ IV-B  (σ−1)ζ(σ) 上界
+    ├─ IV-C  Mertens + Abel 求和
+    ├─ IV-D  Euler 乘积
+    └─ IV-E  解析延拓与零区域
+  阶段 V-A  PNT 等价形式 (ψ~x ↔ θ~x ↔ π~x/log x)
+  阶段 V-B  θ~x ↔ π~x/log x
+  G_continuous 完整证明 (H(s)=(s−1)ζ(s) 局部分析)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
 
-### 对 Mathlib 社区的建议
+## 已完成成果
 
-阶段 4 以后的工作高度依赖 Mathlib 中尚不存在的基础设施。建议以向 Mathlib 贡献 PR 的方式推进, 特别是复分析工具和 ζ 函数理论。
+### 阶段 I–IV：基础架构 ✅
+
+| 阶段 | 文件 | 定理数 | 关键成果 |
+|:----:|:-----|:------:|:---------|
+| I | `Basic.lean` | 21 | `24 ∣ p²−1` 体系、素数无穷、Σ 1/p 发散 |
+| II | `Chebyshev.lean` | 20 | θ/ψ 函数、Bertrand 假设、素数计数界 |
+| III | `Dirichlet.lean` | 11 | 等差素数、Mertens 第一定理 |
+| IV-A | `Zeta.lean` | 3 | ζ(s) 定义与绝对收敛 |
+| IV-B | `ZetaIVB.lean` | 5 | ζ(σ) ≤ 1 + 1/(σ−1) |
+| IV-C | `VonMangoldt.lean` | 14 | Mertens 恒等式、Abel 求和、有界形式 |
+| IV-D | `ZetaIVD.lean` | 4 | Euler 乘积公式 |
+| IV-E | `ZetaIVE.lean` | 16 | 解析延拓、函数方程、ζ(s)≠0 (Re s ≥ 1) |
+
+### 阶段 V-A/B：PNT 等价形式 ✅
+
+| 定理 | 技术要点 |
+|------|----------|
+| `psi_sub_theta_div_x_tendsto_zero` | Chebyshev 界 + 夹逼定理 |
+| `pnt_psi_iff_pnt_theta` | IsEquivalent ↔ Tendsto 转换 |
+| `pi_isEquivalent_theta_div_log` | Abel 求和 + O·o 传递性 |
+| `pnt_theta_iff_pnt_pi` | IsEquivalent 传递链 |
+| `log_deriv_zeta_analytic` | analyticOn_riemannZeta.deriv.div |
+
+### G_continuous 证明 ✅
+
+通过 `H(s) = (s−1)·ζ(s)` 构造，利用 `riemannZeta_residue_one` 和 `tendsto_riemannZeta_sub_one_div` 证明可去奇点，极限为 **−γ**（负 Euler-Mascheroni 常数）。
+
+---
+
+## 进行中：阶段 V-C
+
+### 目标：消除最后 1 个顶层公理
+
+```
+当前信任链:
+  Mathlib 内核 ──→ 本项目 134+ 定理 ──→ 0 sorry ──→ 1 axiom
+                                                          │
+                                                          ▼
+                                            WienerIkeharaTheorem
+                                            (Fourier 分析证明 ~4000 行)
+```
+
+**Wiener-Ikehara Tauberian 定理** 的标准证明路线：
+
+1. **Sobolev 空间与截断函数** (`Sobolev.lean` 已就绪)
+2. **Fourier 变换估计** — 控制 L¹ 范数
+3. **Wiener 定理** — 非零 Fourier 乘子的可逆性
+4. **Ikehara 引理** — 从 L-级数的解析性质推出部分和的渐近
+5. **应用到 von Mangoldt** — 组合所有估计得到 WeakPNT
+
+**参考实现**: [PrimeNumberTheoremAnd](https://github.com/AlexKontorovich/PrimeNumberTheoremAnd) (Kontorovich & Tao, 2024) 已完整形式化此证明，待评估移植可行性或等待 Mathlib 合并。
+
+---
+
+## 待启动：阶段 VI · 黎曼猜想
+
+### 现实评估
+
+RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价表述**和**已知推论**，而非证明本身。
+
+### 潜在方向
+
+| 优先级 | 主题 | 可行性 | 说明 |
+|:------:|:-----|:------:|:-----|
+| 高 | 零点计数函数 N(T) | ✅ 可形式化 | 定义与基本性质 |
+| 高 | 临界线 Re(s)=1/2 | ✅ 可形式化 | Hardy 定理（临界线上无穷多零点）|
+| 中 | 显式公式 | ✅ 可形式化 | ψ(x) 的 Riemann 显式公式 |
+| 中 | 误差项改进 | ⚠️ 依赖 PNT+ | 若 PNT 误差项形式化完成 |
+| 低 | RH 本身 | 🔮 开放问题 | 仅形式化陈述 |
+
+---
+
+## 实施路径
+
+```
+近期（当前）
+  ├── ✅ G_continuous 完整证明 — 消除第 2 个 axiom
+  └── ⏳ 评估 Wiener-Ikehara 移植策略
+        ├─ 方案 A: 研究 PNT+ Wiener.lean，制定移植计划
+        ├─ 方案 B: 等待 Mathlib 合并 PNT+ 成果
+        └─ 方案 C: 自行从头形式化 (~4000 行)
+
+中期（1–3 个月）
+  ├── 消除 WienerIkeharaTheorem axiom → 全项目 0 axiom
+  ├── 启动阶段 VI: 零点理论框架
+  └── 向 Mathlib 贡献独立成果（Mertens 初等证明、Dirichlet 构造等）
+
+远期（3–12 个月）
+  ├── 阶段 VI: ζ 函数零点理论 + 显式公式
+  ├── 阶段 VI: Hardy 定理（临界线上无穷多零点）
+  └── 黎曼猜想等价表述的形式化库
+```
+
+---
+
+## 外部生态
+
+### Mathlib 中已有的关键基础设施
+
+| 成果 | 位置 | 状态 |
+|------|------|------|
+| Dirichlet 定理 | `Mathlib.NumberTheory.LSeries.PrimesInAP` | ✅ 完整 |
+| Chebyshev 函数 | `Mathlib.NumberTheory.Chebyshev` | ✅ 完整 |
+| Von Mangoldt | `Mathlib.ArithmeticFunction.vonMangoldt` | ✅ 完整 |
+| ζ 函数解析延拓 | `Mathlib.NumberTheory.LSeries.RiemannZeta` | ✅ 完整 |
+| ζ(s)≠0 (Re s ≥ 1) | `Mathlib.NumberTheory.LSeries.Nonvanishing` | ✅ 完整 |
+
+### 相关项目
+
+- **[PrimeNumberTheoremAnd](https://github.com/AlexKontorovich/PrimeNumberTheoremAnd)** — Kontorovich & Tao 的 PNT 完整形式化（含 Wiener-Ikehara），待合并入 Mathlib
+- **[mathlib](https://github.com/leanprover-community/mathlib4)** — Lean 4 社区数学库，本项目的基础依赖
+
+---
+
+## 对 Mathlib 社区的建议
+
+阶段 IV 以后的工作高度依赖 Mathlib 中尚不存在的基础设施。建议以**向 Mathlib 贡献 PR** 的方式推进，特别是：
+
+- 复分析工具（围道积分、留数定理的强化）
+- ζ 函数理论的独立模块
+- 初等数论成果的规范化（Mertens 第一定理的初等证明路径）
+
+---
+
+*路线图最后更新: 2025-06 — G_continuous 已证，1 axiom 剩余。*
