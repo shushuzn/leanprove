@@ -41,6 +41,92 @@ def chebyWith (C : ℝ) (f : ℕ → ℝ) : Prop := ∀ n, cumsum f n ≤ C * n
 
 def cheby (f : ℕ → ℝ) : Prop := ∃ C, chebyWith C f
 
+/-- `nterm`: term of the Dirichlet series used for summability testing.
+    For `f : ℕ → ℝ` and `0 ≤ f`, we have `nterm f σ n = f n / n ^ σ`. -/
+def nterm (f : ℕ → ℝ) (σ : ℝ) (n : ℕ) : ℝ := if n = 0 then 0 else f n / (n : ℝ) ^ σ
+
+/-- `term f s n` is the complex term of the Dirichlet series of `f` at `s`. -/
+def term (f : ℕ → ℝ) (s : ℂ) (n : ℕ) : ℂ := if n = 0 then 0 else (f n : ℂ) / n ^ s
+
+/-- `term` agrees with `LSeries.term` applied to the complexified `f`. -/
+lemma term_eq_LSeries_term (f : ℕ → ℝ) (s : ℂ) (n : ℕ) :
+    term f s n = LSeries.term (fun n => (f n : ℂ)) s n := by
+  by_cases h : n = 0
+  · simp [h, term, LSeries.term]
+  · simp [h, term, LSeries.term, h.ne]
+
+/-- The Dirichlet series of `f` equals the sum of `term f s n`. -/
+theorem LSeries_eq_tsum_term (f : ℕ → ℝ) (s : ℂ) :
+    LSeries (fun n => (f n : ℂ)) s = ∑' n, term f s n := by
+  simp [LSeries, LSeries.term, term_eq_LSeries_term, tsum_congr fun n => ?_]
+
+/-- `S f ε N`: weighted average over `[⌈ε * N⌉₊, N)`. -/
+noncomputable def S (f : ℕ → ℝ) (ε : ℝ) (N : ℕ) : ℝ :=
+  (∑ n in Finset.Ico ⌈ε * N⌉₊ N, f n) / N
+
+/-- Auxiliary tendsto lemma for `S` function -/
+lemma tendsto_mul_ceil_div :
+    Tendsto (fun (p : ℝ × ℕ) => ⌈p.1 * p.2⌉₊ / (p.2 : ℝ)) (𝓝[>] 0 ×ˢ atTop) (𝓝 0) := by
+  rw [Metric.tendsto_nhds] ; intro δ hδ
+  have l1 : ∀ᶠ ε : ℝ in 𝓝[>] 0, ε ∈ Ioo 0 (δ / 2) := inter_mem_nhdsWithin _ (Iio_mem_nhds (by positivity))
+  have l2 : ∀ᶠ N : ℕ in atTop, 1 ≤ δ / 2 * N := by
+    apply Tendsto.eventually_ge_atTop
+    exact tendsto_natCast_atTop_atTop.const_mul_atTop (by positivity)
+  filter_upwards [l1.prod_mk l2] with (ε, N) ⟨⟨hε, h1⟩, h2⟩ ; dsimp only at *
+  have l3 : 0 < (N : ℝ) := by
+    simp only [Nat.cast_pos, Nat.pos_iff_ne_zero] ; rintro rfl ; simp [zero_lt_one.not_ge] at h2
+  have l5 : 0 ≤ ε * ↑N := by positivity
+  have l6 : ε * N ≤ δ / 2 * N := mul_le_mul h1.le le_rfl (by positivity) (by positivity)
+  simp only [dist_zero_right, norm_div, RCLike.norm_natCast, div_lt_iff₀ l3, gt_iff_lt]
+  convert (Nat.ceil_lt_add_one l5).trans_le (add_le_add l6 h2) using 1 ; ring
+
+lemma S_sub_S {f : ℕ → ℝ} {ε : ℝ} {N : ℕ} (hε : ε ≤ 1) :
+    S f 0 N - S f ε N = cumsum f ⌈ε * N⌉₊ / N := by
+  have hceilN : ⌈ε * N⌉₊ ≤ N := by
+    simp only [Nat.ceil_le]
+    exact mul_le_of_le_one_left N.cast_nonneg hε
+  have r1 : Finset.range N = Finset.range ⌈ε * N⌉₊ ∪ Finset.Ico ⌈ε * N⌉₊ N := by
+    ext n
+    simp only [Finset.mem_range, Finset.mem_union, Finset.mem_Ico]
+    omega
+  have r2 : Disjoint (Finset.range ⌈ε * N⌉₊) (Finset.Ico ⌈ε * N⌉₊ N) := by
+    rw [Finset.range_eq_Ico] ; apply Finset.Ico_disjoint_Ico_consecutive
+  simp [S, r1, Finset.sum_union r2, cumsum, add_div]
+
+lemma tendsto_S_S_zero {f : ℕ → ℝ} (hpos : 0 ≤ f) (hcheby : cheby f) :
+    TendstoUniformlyOnFilter (S f) (S f 0) (𝓝[>] 0) atTop := by
+  rw [Metric.tendstoUniformlyOnFilter_iff] ; intro δ hδ
+  obtain ⟨C, hC⟩ := hcheby
+  have l1 : ∀ᶠ (p : ℝ × ℕ) in 𝓝[>] 0 ×ˢ atTop, C * ⌈p.1 * p.2⌉₊ / p.2 < δ := by
+    have r1 := tendsto_mul_ceil_div.const_mul C
+    simp only [mul_div_assoc', mul_zero] at r1 ; exact r1 (Iio_mem_nhds hδ)
+  have : Ioc 0 1 ∈ 𝓝[>] (0 : ℝ) := inter_mem_nhdsWithin _ (Iic_mem_nhds zero_lt_one)
+  filter_upwards [l1, Eventually.prod_inl this _] with (ε, N) h1 h2
+  have l2 : ‖cumsum f ⌈ε * ↑N⌉₊ / ↑N‖ ≤ C * ⌈ε * N⌉₊ / N := by
+    have r1 := hC ⌈ε * N⌉₊
+    have r2 : 0 ≤ cumsum f ⌈ε * N⌉₊ := by apply cumsum_nonneg hpos
+    simp only [norm_real, norm_of_nonneg (hpos _), norm_div,
+      norm_of_nonneg r2, Real.norm_natCast] at r1 ⊢
+    apply div_le_div_of_nonneg_right r1 (by positivity)
+  simpa [← S_sub_S h2.2] using l2.trans_lt h1
+
+/-- Wiener-Ikehara for an interval indicator -/
+lemma WienerIkeharaInterval {f : ℕ → ℝ} (hpos : 0 ≤ f)
+    (hf : ∀ (σ : ℝ), 1 < σ → Summable (fun n => f n / (n : ℝ) ^ σ))
+    (hcheby : cheby f) (hG : ContinuousOn G {s : ℂ | 1 ≤ s.re})
+    (hG' : ∀ s : ℂ, 1 < s.re → G s = LSeries (fun n => (f n : ℂ)) s - (A : ℂ) / (s - 1))
+    (ha : 0 < a) (hb : a ≤ b) :
+    Tendsto (fun x : ℝ => (∑' n, f n * indicator (Ioc a b) 1 (n / x)) / x) atTop (nhds (A * (b - a))) := by
+  sorry
+
+lemma WienerIkeharaInterval_discrete' {f : ℕ → ℝ} (hpos : 0 ≤ f)
+    (hf : ∀ (σ : ℝ), 1 < σ → Summable (fun n => f n / (n : ℝ) ^ σ))
+    (hcheby : cheby f) (hG : ContinuousOn G {s : ℂ | 1 ≤ s.re})
+    (hG' : ∀ s : ℂ, 1 < s.re → G s = LSeries (fun n => (f n : ℂ)) s - (A : ℂ) / (s - 1))
+    (ha : 0 < a) (hb : a ≤ b) :
+    Tendsto (fun N : ℕ => (∑ n in Finset.Ico a' b', f n) / N) atTop (nhds (A * (b - a))) := by
+  sorry
+
 /-- von Mangoldt satisfies Chebyshev bound: ∑_{n<N} Λ(n) ≤ C*N -/
 theorem vonMangoldt_cheby : cheby vonMangoldt := by
   refine ⟨Real.log 4 + 4, fun n => ?_⟩
@@ -61,16 +147,18 @@ theorem vonMangoldt_cheby : cheby vonMangoldt := by
 
 /-! #### Wiener-Ikehara Tauberian Theorem -/
 
-/-- **Wiener-Ikehara Tauberian Theorem** (axiom-based, pending full proof). -/
-axiom WienerIkeharaTheorem
+/-- **Wiener-Ikehara Tauberian Theorem** (proof pending). -/
+theorem WienerIkeharaTheorem
     (f : ℕ → ℝ) (hf_pos : ∀ n, 0 ≤ f n)
     (hf_sum : ∀ (σ : ℝ), 1 < σ → Summable (fun n : ℕ => f n / (n : ℝ) ^ σ))
+    (hcheby : cheby f)
     (A : ℝ)
     (G : ℂ → ℂ)
     (hG_cont : ContinuousOn G {s : ℂ | 1 ≤ s.re})
     (hG_eq : ∀ s : ℂ, 1 < s.re →
       G s = LSeries (fun n : ℕ => (f n : ℂ)) s - (A : ℂ) / (s - 1)) :
-    Tendsto (fun N : ℕ => cumsum f N / (N : ℝ)) atTop (nhds A)
+    Tendsto (fun N : ℕ => cumsum f N / (N : ℝ)) atTop (nhds A) := by
+  sorry
 
 /-! #### Application to PNT -/
 
@@ -249,7 +337,7 @@ theorem G_continuous : ContinuousOn G_weakPNT {s : ℂ | 1 ≤ s.re} := by
 /-- The weak PNT: (1/N)∑_{n<N} Λ(n) → 1 -/
 theorem WeakPNT : Tendsto (fun N : ℕ => cumsum vonMangoldt N / (N : ℝ))
     atTop (nhds 1) := by
-  refine WienerIkeharaTheorem vonMangoldt (fun n => @vonMangoldt_nonneg n) ?_ 1 G_weakPNT G_continuous ?_
+  refine WienerIkeharaTheorem vonMangoldt (fun n => @vonMangoldt_nonneg n) ?_ vonMangoldt_cheby 1 G_weakPNT G_continuous ?_
   · -- Summability: ∑ Λ(n)/n^σ converges for σ > 1
     intro σ hσ
     have hσc : (1 : ℝ) < ((σ : ℂ)).re := by simp [hσ]
