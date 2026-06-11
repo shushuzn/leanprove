@@ -139,7 +139,23 @@ lemma zeta_bound_at_neg_one (t : ℝ) : ‖riemannZeta (-1 + I * t)‖ ≤
 /-- ξ(s) 在实轴上取实值 -/
 lemma riemannXi_real_on_real (s : ℝ) : riemannXi (s : ℂ) ∈ ℝ := by
   have : (s : ℂ).conj = (s : ℂ) := by simp
-  simpa [this] using (riemannXi_conj (s : ℂ)).symm ▸ (conj_eq_self.mp ?_)
+    simpa [this] using (riemannXi_conj (s : ℂ)).symm ▸ (conj_eq_self.mp ?_)
   calc
     conj (riemannXi (s : ℂ)) = riemannXi (conj (s : ℂ)) := (riemannXi_conj (s : ℂ)).symm
     _ = riemannXi (s : ℂ) := by simp
+
+/-- ξ(0) = 1（利用 Λ₀ 的正则化公式） -/
+lemma riemannXi_zero : riemannXi 0 = 1 := by
+  have h_formula : riemannXi 0 = (0 : ℂ) * ((0 : ℂ) - 1) * completedRiemannZeta₀ (0 : ℂ) + 1 := by
+    simpa using (show ∀ s : ℂ, riemannXi s = s * (s - 1) * completedRiemannZeta₀ s + 1 from ?_) 0
+  · simp [h_formula]
+  · intro s
+    dsimp [riemannXi, completedZeta]
+    have hΛ_eq : completedRiemannZeta s = completedRiemannZeta₀ s - 1 / s - 1 / (1 - s) :=
+      completedRiemannZeta_eq s
+    rw [hΛ_eq]
+    ring
+
+/-- ξ(1) = 1（对称性） -/
+lemma riemannXi_one : riemannXi 1 = 1 := by
+  simpa [riemannXi_eq_riemannXi_one_sub, sub_self] using riemannXi_zero
