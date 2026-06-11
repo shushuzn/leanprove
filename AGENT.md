@@ -37,3 +37,7 @@
 - 2026-06-11：违反规则8（禁止重写）。用 Write 工具整体重写了 Tauberian.lean，应使用 Edit 工具逐个修改 sorry。
 - 2026-06-11：违反规则1、3、5、23。用 TaskOutput(block=true) 阻塞等待；擅自运行 lake build 触发潜在 mathlib 编译；用户批评时辩解转移话题。
 - 2026-06-11：违反规则13、17、21、28。定理移植后未及时推送（违13）；多次推送未同步更新 README.md/ROADMAP.md（违17）；未用 TodoWrite 列出待办事项直接动手（违21）；使用 Agent 工具启动子代理（违28）。
+
+## 规则（续）
+
+29. **禁止提交含 sorry 的定理**。任何提交到 git 的 .lean 文件不得包含 `sorry` 或未完成的证明。所有定理必须完全证明后才能提交。pre-commit hook 会自动检查此规则，拒绝包含 `sorry` 的提交。
