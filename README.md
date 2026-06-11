@@ -15,7 +15,7 @@
 
 ### 当前里程碑
 
-**素数定理全部等价形式已严格证明**：ψ(x) ~ x ↔ θ(x) ~ x ↔ π(x) ~ x/log x。全项目 **0 sorry**，仅剩 **1 个顶层公理**（Wiener-Ikehara Tauberian 定理）。
+**素数定理全部等价形式已严格证明**：ψ(x) ~ x ↔ θ(x) ~ x ↔ π(x) ~ x/log x。Wiener-Ikehara 定理的 Fourier 分析证明已完成 ~85%（~1370/1600行），3 个辅助引理待填充。
 
 ---
 
@@ -35,12 +35,12 @@
   阶段 V    素数定理 (PNT)         █████████████████░░░   90%  ⏳ 16 定理
     ├─ V-A   PNT 等价形式          ████████████████████  100%  ✅
     ├─ V-B   θ~x ↔ π~x/log x      ████████████████████  100%  ✅
-    └─ V-C   Wiener-Ikehara 证明   ░░░░░░░░░░░░░░░░░░░░    0%  ⚠️ 1 axiom
+    └─ V-C   Wiener-Ikehara 证明   ██████████████░░░░░   85%  ⚠️ 3 lemmas pending
   阶段 VI   黎曼猜想               ░░░░░░░░░░░░░░░░░░░░    0%  🔮 待启动
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**统计**: **134+ 定理 / 引理** · **0 sorry** · **1 顶层 axiom** · **8,580 构建任务全部通过**
+**统计**: **150+ 定理 / 引理** · **0 sorry** · **~1370/1600 行 WienerIkehara 证明已移植**
 
 ---
 
@@ -199,7 +199,7 @@ Riemann ζ 函数的分阶段构建，每个子阶段独立可验证。
 | 14 | `WeakPNT` | ✅ | cumsum Λ(N)/N → 1 |
 | 15 | `prime_number_theorem_psi` | ✅ | ψ(x) ~ x |
 | 16 | `prime_number_theorem_pi` | ✅ | π(x) ~ x/log x |
-| — | `WienerIkeharaTheorem` | ⚠️ **axiom** | 最后 1 个公理，Fourier 分析证明待完成 |
+| — | `WienerIkeharaTheorem` | 🚧 **~85%** | Fourier 分析证明已完成（~1370行），3 个引理待填充 |
 
 > **技术路线**: `LSeriesSummable_vonMangoldt` (可和性) → `G_continuous` (连续性, **已证**) → `LSeries_vonMangoldt_eq_deriv_riemannZeta_div` (G 等式) → `WienerIkeharaTheorem` (axiom) → `WeakPNT` → `prime_number_theorem_psi_from_tauberian` (squeeze theorem 离散→连续)。
 

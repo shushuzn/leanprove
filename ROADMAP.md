@@ -71,15 +71,16 @@
                                             (Fourier 分析证明 ~4000 行)
 ```
 
-**Wiener-Ikehara Tauberian 定理** 的标准证明路线：
+**Wiener-Ikehara Tauberian 定理** 的移植进展：
 
-1. **Sobolev 空间与截断函数** (`Sobolev.lean` 已就绪)
-2. **Fourier 变换估计** — 控制 L¹ 范数
-3. **Wiener 定理** — 非零 Fourier 乘子的可逆性
-4. **Ikehara 引理** — 从 L-级数的解析性质推出部分和的渐近
-5. **应用到 von Mangoldt** — 组合所有估计得到 WeakPNT
+1. **Sobolev 空间与截断函数** (`Sobolev.lean` ✅)
+2. **Fourier 变换估计** — W21 衰减 (`WienerProof.lean` ✅)
+3. **limiting_fourier / limiting_cor** 核心恒等式 (`WienerProof.lean` ✅)
+4. **wiener_ikehara_smooth** 平滑引理 (`WienerProof.lean` ✅)
+5. **区间逼近 + 最终整合** (`WienerProof.lean` 🚧 ~85%)
+6. **应用到 von Mangoldt** — 组合所有估计得到 WeakPNT (`Tauberian.lean` 待完成)
 
-**参考实现**: [PrimeNumberTheoremAnd](https://github.com/AlexKontorovich/PrimeNumberTheoremAnd) (Kontorovich & Tao, 2024) 已完整形式化此证明，待评估移植可行性或等待 Mathlib 合并。
+**当前**: WienerProof.lean ~1370行，剩余 3 个辅助引理（residue_nonneg、WienerIkeharaInterval、WienerIkeharaTheorem）待填充，约200行。
 
 ---
 
@@ -106,13 +107,14 @@ RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价
 ```
 近期（当前）
   ├── ✅ G_continuous 完整证明 — 消除第 2 个 axiom
-  └── ⏳ 评估 Wiener-Ikehara 移植策略
-        ├─ 方案 A: 研究 PNT+ Wiener.lean，制定移植计划
-        ├─ 方案 B: 等待 Mathlib 合并 PNT+ 成果
-        └─ 方案 C: 自行从头形式化 (~4000 行)
+  └── 🚧 移植 Wiener-Ikehara 证明 (~1370/1600行完成)
+        ├─ ✅ 傅里叶变换 + W21 衰减
+        ├─ ✅ limiting_fourier 恒等式 + limiting_cor
+        ├─ ✅ wiener_ikehara_smooth 平滑引理
+        └─ ⏳ WienerIkeharaInterval + WienerIkeharaTheorem (3 lemmas, ~200行)
 
 中期（1–3 个月）
-  ├── 消除 WienerIkeharaTheorem axiom → 全项目 0 axiom
+  ├── 完成 WienerIkeharaTheorem → 全项目 0 axiom, 0 sorry
   ├── 启动阶段 VI: 零点理论框架
   └── 向 Mathlib 贡献独立成果（Mertens 初等证明、Dirichlet 构造等）
 
@@ -153,4 +155,4 @@ RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价
 
 ---
 
-*路线图最后更新: 2025-06 — G_continuous 已证，1 axiom 剩余。*
+*路线图最后更新: 2026-06-11 — WienerIkehara 证明移植 ~85%，3 lemmas pending。*
