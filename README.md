@@ -258,9 +258,21 @@ leanprove/
 ## 构建
 
 ```bash
-lake build              # 构建全部 (8580 jobs)
+lake build              # 构建全部
 lake build Leanprove    # 构建主入口
 lean --run <file>       # 运行单个文件
+```
+
+### pre-commit hook
+
+项目提供了一个 pre-commit hook 用于在提交前自动检查：
+- **sorry 检查**：禁止提交含 `sorry` 的 `.lean` 文件
+- **编译检查**：提交前自动运行 `lake build`，编译失败则拒绝提交
+
+安装方式：
+```bash
+cp scripts/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
 ```
 
 ---

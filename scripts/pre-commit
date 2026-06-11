@@ -1,0 +1,58 @@
+#!/bin/bash
+# pre-commit hook: 禁止提交含有 sorry 的 .lean 文件 及 未通过编译的代码
+# 安装: 将此文件放在 .git/hooks/pre-commit 并赋予执行权限
+
+set -e
+
+# ---- 检查 1: sorry 检测 ----
+lean_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.lean$' || true)
+
+if [ -n "$lean_files" ]; then
+    found_sorry=0
+    for file in $lean_files; do
+        if [ ! -f "$file" ]; then
+            continue
+        fi
+        if grep -n 'sorry' "$file" > /dev/null 2>&1; then
+            echo "错误: 文件 '$file' 包含 sorry，禁止提交。"
+            echo "发现 sorry 的位置:"
+            grep -n 'sorry' "$file"
+            found_sorry=1
+        fi
+    done
+
+    if [ $found_sorry -eq 1 ]; then
+        echo ""
+        echo "提交被拒绝: 请先完成所有 sorry 的证明再提交。"
+        echo "如有必要，可以使用 'git commit --no-verify' 跳过此检查（不推荐）。"
+        exit 1
+    fi
+fi
+
+# ---- 检查 2: 编译检查 ----
+# 只对暂存的 .lean 文件做增量编译
+if [ -n "$lean_files" ]; then
+    echo "正在检查编译... (lake build)"
+
+    # 保存当前 stash 以防止未暂存的修改影响编译
+    git stash --keep-index --include-untracked -q 2>/dev/null || true
+
+    # 运行 lake build
+    if lake build 2>&1; then
+        echo "编译通过。"
+        build_ok=0
+    else
+        echo ""
+        echo "错误: 编译失败。请修复编译错误后再提交。"
+        build_ok=1
+    fi
+
+    # 恢复 stash
+    git stash pop -q 2>/dev/null || true
+
+    if [ $build_ok -ne 0 ]; then
+        exit 1
+    fi
+fi
+
+exit 0
