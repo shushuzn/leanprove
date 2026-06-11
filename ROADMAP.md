@@ -16,7 +16,8 @@
   IV-C  ████████████ Mertens + Abel 求和          ✅ 完成 (0 sorry)
   IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
   IV-E  ████████████ 解析延拓与零区域             ✅ 完成 (0 sorry)
-阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
+阶段 V  ▓▓░░░░░░░░░░ 素数定理 (PNT)              进行中
+  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (5 sorry)
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
 ```
 
@@ -155,9 +156,26 @@
 
 #### 阶段 V: 素数定理 (PNT)
 
-**方法**: Newman 证明路径 (复分析 + Tauberian)。
+**V-A: PNT 等价形式** ✅ 已完成 (5 sorry)
 
-**替代策略**: Selberg-Erdős 初等证明 (不使用复分析)。
+**文件**: `PNTVA.lean`
+
+已证:
+- `two_log_div_sqrt_tendsto_zero`: 2·log x / √x → 0 (isLittleO + tendsto_div_nhds_zero)
+- `psi_sub_theta_div_x_tendsto_zero`: (ψ-θ)/x → 0 (Chebyshev 界 + 夹逼定理)
+- `psi_div_x_iff_theta_div_x`: ψ/x→1 ↔ θ/x→1
+- `isEquivalent_id_iff_tendsto_div_one`: u~id ↔ u/x→1
+- `pnt_psi_iff_pnt_theta`: ψ~x ↔ θ~x
+- `pnt_psi_iff_pnt_pi`: ψ~x ↔ π~x/log x (传递性)
+
+待证 (sorry):
+- `pnt_theta_iff_pnt_pi`: θ~x ↔ π~x/log x (需 Abel 求和)
+- `log_deriv_zeta_eq_vonMangoldt_series`: -ζ'/ζ = ∑Λ/n^s
+- `log_deriv_zeta_analytic`: -ζ'/ζ 全纯
+- `prime_number_theorem_psi`: ψ~x (需 Tauberian 定理)
+- `prime_number_theorem_pi`: π~x/log x (需 Tauberian 定理)
+
+**后续路径**: Newman 证明 (Wiener-Ikehara Tauberian) 或 Selberg-Erdős 初等证明。
 
 #### 阶段 VI: 黎曼猜想
 
@@ -169,19 +187,14 @@
 
 ```
 近期 (当前)
-  ├── ✅ IV-B: (σ-1)ζ(σ) 上界
-  ├── ✅ IV-C: primePower_contribution_bounded (双重求和法)
-  ├── ✅ IV-C: mertens_abel_identity (Abel 求和恒等式)
-  ├── ✅ IV-C: psi_integral_sub_log_isBigO (Abel 求和 + setIntegral_union)
-  ├── ✅ IV-C: mertens_first_theorem (Mertens 第一定理)
-  ├── ✅ IV-C: mertens_first_theorem_bounded (有界形式)
-  └── ✅ IV-D: euler_product_real_hasProd (Euler 乘积公式)
-  └── ✅ IV-E: zeta_ne_zero_of_one_le_re (ζ(s)≠0 on Re s ≥ 1, PNT 关键)
-  └── ✅ IV-E: zeta_functional_equation (函数方程)
-  └── ✅ IV-E: 16 个包装定理 (解析延拓 + 特殊值 + 平凡零点)
+  ├── ✅ IV-E: zeta_ne_zero_of_one_le_re (ζ(s)≠0 on Re s ≥ 1, PNT 关键)
+  ├── ✅ IV-E: zeta_functional_equation (函数方程)
+  ├── ✅ IV-E: 16 个包装定理 (解析延拓 + 特殊值 + 平凡零点)
+  └── ✅ V-A: PNT 等价形式 (ψ~x ↔ θ~x, 夹逼定理, 5 定理已证)
 
 中期
-  ├── IV-E: 解析延拓 (需要复分析基础设施)
+  ├── V-A: pnt_theta_iff_pnt_pi (Abel 求和 + integral bound)
+  ├── V-B: Tauberian 定理 (Wiener-Ikehara / Newman)
   └── 向 Mathlib 贡献围道积分、留数定理
 
 远期

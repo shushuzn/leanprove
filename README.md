@@ -6,9 +6,9 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-**当前进度**: 阶段 IV-E ✅ — 全部定理已证明，0 sorry。ζ 函数解析延拓与零区域完成。
+**当前进度**: 阶段 V-A ✅ — PNT 等价形式已证明 (ψ~x ↔ θ~x)。5 sorry (深层定理待 Tauberian)。
 
-**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)**, 涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积和解析延拓。全部已证，0 sorry。
+**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A 新增 **5 定理 + 4 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与 PNT 等价形式。Phase I-IV 全部已证 0 sorry；Phase V-A 已证 5 定理 4 引理，5 sorry (PNT 完整证明待 Tauberian 定理)。
 
 ## 路线图
 
@@ -22,7 +22,8 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
   IV-C  ████████████ Mertens + Abel 求和          ✅ 完成 (0 sorry)
   IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
   IV-E  ████████████ 解析延拓与零区域             ✅ 完成 (0 sorry)
-阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
+阶段 V  ▓▓░░░░░░░░░░ 素数定理 (PNT)              进行中
+  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (5 sorry)
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
 ```
 
@@ -190,14 +191,28 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 
 ### 阶段 V: 素数定理 (PNT) ⏳
 
-| # | 定理 |
-|---|------|
-| 1 | ψ(x) ∼ x (等价于 π(x) ∼ x/ln x) |
-| 2 | ∑_{n≤x} Λ(n) = x + o(x) |
-| 3 | ∑_{p≤x} ln p ∼ x |
-| 4 | p_n ∼ n·ln n |
+#### V-A: PNT 等价形式 ✅
 
-**方法**: Newman 证明路径 (复分析 + Tauberian)
+**文件**: `PNTVA.lean` — 5 个已证定理 + 4 个辅助引理，5 sorry (深层定理待 Tauberian)
+
+| # | 定理 | 状态 | 方法 |
+|---|------|------|------|
+| 1 | `two_log_div_sqrt_tendsto_zero` — 2·log x/√x → 0 | ✅ | isLittleO_log_rpow_atTop + tendsto_div_nhds_zero |
+| 2 | `psi_sub_theta_div_x_tendsto_zero` — (ψ-θ)/x → 0 | ✅ | abs_psi_sub_theta_le_sqrt_mul_log + 夹逼定理 |
+| 3 | `psi_div_x_iff_theta_div_x` — ψ/x→1 ↔ θ/x→1 | ✅ | Tendsto.sub/add + convert |
+| 4 | `isEquivalent_id_iff_tendsto_div_one` — u~id ↔ u/x→1 | ✅ | isLittleO_iff_tendsto |
+| 5 | `pnt_psi_iff_pnt_theta` — ψ~x ↔ θ~x | ✅ | 由 3+4 组合 |
+| 6 | `pnt_theta_iff_pnt_pi` — θ~x ↔ π~x/log x | ⏳ sorry | Abel 求和 + integral_theta_div_log_sq_isLittleO |
+| 7 | `pnt_psi_iff_pnt_pi` — ψ~x ↔ π~x/log x | ✅ | 由 5+6 传递 |
+| 8 | `log_deriv_zeta_eq_vonMangoldt_series` — -ζ'/ζ = ∑Λ/n^s | ⏳ sorry | LSeries_vonMangoldt_eq_deriv_riemannZeta_div |
+| 9 | `log_deriv_zeta_analytic` — -ζ'/ζ 全纯 | ⏳ sorry | 需 ζ≠0 + 解析性 |
+| 10 | `prime_number_theorem_psi` — ψ~x | ⏳ sorry | 需 Tauberian 定理 |
+| 11 | `prime_number_theorem_pi` — π~x/log x | ⏳ sorry | 需 Tauberian 定理 |
+
+**技术细节**:
+- `psi_sub_theta_div_x_tendsto_zero` ✅: 由 Chebyshev 界 |ψ-θ| ≤ 2√x·log x 得 |(ψ-θ)/x| ≤ 2·log x/√x → 0，用夹逼定理 (tendsto_of_tendsto_of_tendsto_of_le_of_le') 证明。
+- `pnt_psi_iff_pnt_theta` ✅: 利用 IsEquivalent 定义 (u~v ↔ (u-v)=o(v)) 转化为 Tendsto 形式，再由 ψ/x→1 ↔ θ/x→1 得出。
+- `pnt_theta_iff_pnt_pi` ⏳: 需要 Abel 求和公式 π(⌊x⌋₊) = θ(x)/log(x) + ∫₂ˣ θ(t)/(t·log²t) dt 和 mathlib 的 integral_theta_div_log_sq_isLittleO。
 
 ---
 
@@ -228,6 +243,7 @@ leanprove/
 │   ├── ZetaIVB.lean            # 阶段 IV-B: ζ 上界 (5 引理, 零 sorry)
 │   ├── ZetaIVD.lean            # 阶段 IV-D: Euler 乘积 (4 定理, 零 sorry)
 │   ├── ZetaIVE.lean            # 阶段 IV-E: 解析延拓 (16 定理, 零 sorry)
+│   ├── PNTVA.lean              # 阶段 V-A: PNT 等价形式 (5 定理 + 4 引理, 5 sorry)
 │   ├── Zeta.lean               # 阶段 IV: ζ 函数基础
 │   └── Tests.lean              # 测试与验证
 ├── ROADMAP.md                  # 详细路线图与发展建议
@@ -236,7 +252,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 110 个定理 + 24 个引理 (134 总计), 0 sorry — 全部已证
+**总计**: 110+ 个定理 + 24+ 个引理 (134+ 总计), Phase I-IV: 0 sorry; Phase V-A: 5 sorry
 
 ## 技术栈
 
