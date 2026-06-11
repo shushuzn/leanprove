@@ -8,7 +8,7 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 **当前进度**: 阶段 IV-C ✅ — 全部定理已证明，0 sorry。Mertens 第一定理完成。
 
-**注**: 全项目共 **95+ 个定理/引理**, 涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理和 ζ 函数基础。
+**注**: 全项目共 **110+ 个定理/引理**, 涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理和 ζ 函数基础。全部已证，0 sorry。
 
 ## 路线图
 
@@ -120,9 +120,9 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 | 4 | `sum_bound_upper` — 有限和上界 | div_le_iff + linarith |
 | 5 | **`zeta_upper_bound`** — ζ(σ) ≤ 1 + 1/(σ-1) | le_of_tendsto + Eventually.of_forall |
 
-#### IV-C: Mertens + Abel 求和 🔶
+#### IV-C: Mertens + Abel 求和 ✅
 
-**文件**: `VonMangoldt.lean` — 逐步构建中
+**文件**: `VonMangoldt.lean` — 14 个定理全部证明，0 sorry
 
 | # | 定理 | 状态 | 方法 |
 |---|------|------|------|
@@ -207,7 +207,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 98+ 个已声明定理/引理, 0 sorry — 全部已证
+**总计**: 110+ 个已声明定理/引理, 0 sorry — 全部已证
 
 ## 技术栈
 
