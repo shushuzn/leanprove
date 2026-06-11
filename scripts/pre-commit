@@ -1,18 +1,17 @@
 #!/bin/bash
 # pre-commit hook
-# 注意: Windows LLVM 后端 bug 导致 lake build 在重定向输出时 segfault，
-#       编译检查需手动在终端执行 lake build。
+# 注意: 由于 Windows LLVM 后端 Bug，lake build 在重定向输出时会 segfault，
+# 因此编译检查需用户手动执行。本 hook 只检查文档同步和 sorry。
 
 lean_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.lean$' || true)
 [ -z "$lean_files" ] && exit 0
 
-# 文档同步检查: 当 .lean 文件被暂存时，检查三个文档是否有未暂存的修改
-# （hook 不强制文档必须暂存，但必须已被修改并反映项目变化）
+# 文档同步检查
 required_docs=("README.md" "ROADMAP.md" "DEPENDENCY.md")
+staged_files=$(git diff --cached --name-only --diff-filter=ACM || true)
 for doc in "${required_docs[@]}"; do
-    # 如果文档有未暂存的修改或者已被暂存，说明已更新
-    if ! git diff --name-only | grep -q "^$doc$" && ! git diff --cached --name-only | grep -q "^$doc$"; then
-        echo "错误: 已修改 .lean 文件但未更新 $doc。"
+    if ! echo "$staged_files" | grep -q "^$doc$"; then
+        echo "错误: 已修改 .lean 文件但未暂存 $doc。"
         exit 1
     fi
 done
