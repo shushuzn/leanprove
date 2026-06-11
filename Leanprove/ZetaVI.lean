@@ -50,3 +50,16 @@ lemma riemannXi_real_on_critical_line (t : ℝ) : riemannXi (1/2 + I * t) ∈ �
       _ = conj (riemannXi (1/2 + I * t)) := riemannXi_conj _
   rw [h_symm, h_conj]
   exact conj_eq_self.mp rfl
+
+/-- ξ 是整函数（利用 Λ₀ 的整函数性）-/
+lemma riemannXi_isEntire : Differentiable ℂ riemannXi := by
+  have h_formula : ∀ s : ℂ, riemannXi s = s * (s - 1) * completedRiemannZeta₀ s + 1 := by
+    intro s
+    dsimp [riemannXi, completedZeta]
+    have hΛ_eq : completedRiemannZeta s = completedRiemannZeta₀ s - 1 / s - 1 / (1 - s) :=
+      completedRiemannZeta_eq s
+    rw [hΛ_eq]
+    ring
+  refine (Differentiable.mul ?_ ?_).add (differentiable_const 1)
+  · exact differentiable_id.mul (differentiable_id.sub differentiable_const)
+  · exact differentiable_completedZeta₀
