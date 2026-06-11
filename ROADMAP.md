@@ -17,7 +17,8 @@
   IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
   IV-E  ████████████ 解析延拓与零区域             ✅ 完成 (0 sorry)
 阶段 V  ▓▓░░░░░░░░░░ 素数定理 (PNT)              进行中
-  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (5 sorry)
+  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (4 sorry)
+  V-B   ▓▓▓▓▓▓▓▓▓▓▓▓ θ~x ↔ π~x/log x           ✅ 完成 (0 sorry)
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
 ```
 
@@ -156,7 +157,7 @@
 
 #### 阶段 V: 素数定理 (PNT)
 
-**V-A: PNT 等价形式** ✅ 已完成 (5 sorry)
+**V-A/V-B: PNT 等价形式** ✅ 已完成 (4 sorry)
 
 **文件**: `PNTVA.lean`
 
@@ -166,10 +167,12 @@
 - `psi_div_x_iff_theta_div_x`: ψ/x→1 ↔ θ/x→1
 - `isEquivalent_id_iff_tendsto_div_one`: u~id ↔ u/x→1
 - `pnt_psi_iff_pnt_theta`: ψ~x ↔ θ~x
+- `x_div_log_sq_isLittleO_x_div_log`: x/log²x =o(x/log x) (V-B 辅助)
+- `pi_isEquivalent_theta_div_log`: π~θ/log (V-B 核心引理, Abel 求和 + Chebyshev 下界)
+- `pnt_theta_iff_pnt_pi`: θ~x ↔ π~x/log x (V-B, 由上述引理传递)
 - `pnt_psi_iff_pnt_pi`: ψ~x ↔ π~x/log x (传递性)
 
 待证 (sorry):
-- `pnt_theta_iff_pnt_pi`: θ~x ↔ π~x/log x (需 Abel 求和)
 - `log_deriv_zeta_eq_vonMangoldt_series`: -ζ'/ζ = ∑Λ/n^s
 - `log_deriv_zeta_analytic`: -ζ'/ζ 全纯
 - `prime_number_theorem_psi`: ψ~x (需 Tauberian 定理)
@@ -190,10 +193,10 @@
   ├── ✅ IV-E: zeta_ne_zero_of_one_le_re (ζ(s)≠0 on Re s ≥ 1, PNT 关键)
   ├── ✅ IV-E: zeta_functional_equation (函数方程)
   ├── ✅ IV-E: 16 个包装定理 (解析延拓 + 特殊值 + 平凡零点)
-  └── ✅ V-A: PNT 等价形式 (ψ~x ↔ θ~x, 夹逼定理, 5 定理已证)
+  ├── ✅ V-A: PNT 等价形式 (ψ~x ↔ θ~x, 夹逼定理, 5 定理已证)
+  └── ✅ V-B: θ~x ↔ π~x/log x (Abel 求和 + Chebyshev 下界 + IsEquivalent 传递)
 
 中期
-  ├── V-A: pnt_theta_iff_pnt_pi (Abel 求和 + integral bound)
   ├── V-B: Tauberian 定理 (Wiener-Ikehara / Newman)
   └── 向 Mathlib 贡献围道积分、留数定理
 
