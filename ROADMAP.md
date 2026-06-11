@@ -10,11 +10,11 @@
 阶段 I   ████████████ 初等数论基础                ✅ 完成
 阶段 II  ████████████ Chebyshev 与素数分布         ✅ 完成
 阶段 III ████████████ 解析数论基础                 ✅ 完成
-阶段 IV  ██████░░░░░░ Zeta 函数系列               🔶 进行中
+阶段 IV  ████████████ Zeta 函数系列               ✅ 完成
   IV-A  ████████████ ζ(s) 定义与绝对收敛           ✅ 完成
   IV-B  ████████████ (σ-1)ζ(σ) 上界               ✅ 完成
   IV-C  ████████████ Mertens + Abel 求和          ✅ 完成 (0 sorry)
-  IV-D  ░░░░░░░░░░░░ Euler 乘积                   待开始
+  IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
   IV-E  ░░░░░░░░░░░░ 解析延拓与零区域             待开始
 阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
@@ -104,15 +104,36 @@
 
 5 个引理, 全部 sorry-free: rpow_anti, mvt_ineq, n_pow_le_telescope, sum_bound_upper, **zeta_upper_bound** (ζ(σ) ≤ 1 + 1/(σ-1))。
 
+#### 阶段 IV-D: Euler 乘积 ✅
+
+**文件**: `ZetaIVD.lean`
+
+4 个定理, 全部 sorry-free: riemannZeta_real_pos, riemannZeta_ne_zero_real, euler_product_real_tendsto, **euler_product_real_hasProd** (完整的 Euler 乘积公式)。
+
+---
+
+### 当前重点: 阶段 IV-D (Euler 乘积) ✅ 已完成
+
+**文件**: `ZetaIVD.lean`
+
+**已完成的定理** (全部 sorry-free):
+
+| # | 定理 | 状态 | 技术路线 |
+|---|------|------|----------|
+| 1 | `riemannZeta_real_pos` — ζ(σ) > 0 (σ > 1) | ✅ | riemannZeta_def + tsum_pos |
+| 2 | `riemannZeta_ne_zero_real` — ζ(σ) ≠ 0 (σ > 1) | ✅ | ne_of_gt + riemannZeta_real_pos |
+| 3 | `euler_product_real_tendsto` — ∏_p (1 - p^{-σ})⁻¹ → ζ(σ) | ✅ | HasProd.tendsto_partialProd |
+| 4 | `euler_product_real_hasProd` — Euler 乘积公式 | ✅ | euler_product_real_tendsto + HasProd |
+
+**技术细节**:
+- `riemannZeta_real_pos` ✅: ζ(σ) 定义为 ∑ 1/n^σ，所有项为正，故和为正。使用 `tsum_pos` 证明。
+- `riemannZeta_ne_zero_real` ✅: 由正性直接推出非零 (`ne_of_gt`)。
+- `euler_product_real_tendsto` ✅: 证明部分乘积 ∏_{p≤N} (1 - p^{-σ})⁻¹ 趋于 ζ(σ)。使用 `HasProd.tendsto_partialProd`。
+- `euler_product_real_hasProd` ✅: 完整的 Euler 乘积公式，由 `euler_product_real_tendsto` 和 `HasProd` 构造得出。
+
 ---
 
 ### 后续阶段规划
-
-#### IV-D: Euler 乘积
-
-ζ(s) = ∏_p (1 - p^{-s})⁻¹ (Re s > 1)
-
-**依赖**: Von Mangoldt 函数的 Dirichlet 卷积性质 (已有)。
 
 #### IV-E: 解析延拓与零区域
 
@@ -141,10 +162,10 @@
   ├── ✅ IV-C: mertens_abel_identity (Abel 求和恒等式)
   ├── ✅ IV-C: psi_integral_sub_log_isBigO (Abel 求和 + setIntegral_union)
   ├── ✅ IV-C: mertens_first_theorem (Mertens 第一定理)
-  └── ✅ IV-C: mertens_first_theorem_bounded (有界形式)
+  ├── ✅ IV-C: mertens_first_theorem_bounded (有界形式)
+  └── ✅ IV-D: euler_product_real_hasProd (Euler 乘积公式)
 
 中期
-  ├── IV-D: Euler 乘积
   ├── IV-E: 解析延拓 (需要复分析基础设施)
   └── 向 Mathlib 贡献围道积分、留数定理
 

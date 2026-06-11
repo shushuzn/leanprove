@@ -6,9 +6,9 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-**当前进度**: 阶段 IV-C ✅ — 全部定理已证明，0 sorry。Mertens 第一定理完成。
+**当前进度**: 阶段 IV-D ✅ — 全部定理已证明，0 sorry。Euler 乘积完成。
 
-**注**: 全项目共 **110+ 个定理/引理**, 涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理和 ζ 函数基础。全部已证，0 sorry。
+**注**: 全项目共 **94 个定理 + 24 个引理 (118 总计)**, 涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础和 Euler 乘积。全部已证，0 sorry。
 
 ## 路线图
 
@@ -16,11 +16,11 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 阶段 I   ████████████ 初等数论基础                ✅ 完成
 阶段 II  ████████████ Chebyshev 与素数分布         ✅ 完成
 阶段 III ████████████ 解析数论基础                 ✅ 完成
-阶段 IV  ██████░░░░░░ Zeta 函数系列               🔶 进行中
+阶段 IV  ████████████ Zeta 函数系列               ✅ 完成
   IV-A  ████████████ ζ(s) 定义与绝对收敛           ✅ 完成
   IV-B  ████████████ (σ-1)ζ(σ) 上界               ✅ 完成
   IV-C  ████████████ Mertens + Abel 求和          ✅ 完成 (0 sorry)
-  IV-D  ░░░░░░░░░░░░ Euler 乘积                   待开始
+  IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
   IV-E  ░░░░░░░░░░░░ 解析延拓与零区域             待开始
 阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
@@ -94,7 +94,7 @@ Chebyshev θ(x) 和 ψ(x) 函数、Bertrand 假设、素数计数函数的上下
 
 ---
 
-### 阶段 IV: Zeta 函数系列 🔶
+### 阶段 IV: Zeta 函数系列 ✅
 
 **文件**: `Zeta.lean`, `ZetaIVB.lean`, `VonMangoldt.lean`
 
@@ -146,11 +146,22 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 - `mertens_first_theorem` ✅: 由 mertens_first_theorem_bounded 推出
 - `mertens_first_theorem_bounded` ✅: vm_div_sum_sub_log_bound + primePower_contribution_bounded + 三角不等式
 
-#### IV-D: Euler 乘积 ⏳
+#### IV-D: Euler 乘积 ✅
 
-| # | 定理 |
-|---|------|
-| 1 | ζ(s) = ∏_p (1 - p^{-s})⁻¹ (Re s > 1) |
+**文件**: `ZetaIVD.lean` — 4 个定理全部证明，0 sorry
+
+| # | 定理 | 状态 | 方法 |
+|---|------|------|------|
+| 1 | `riemannZeta_real_pos` — ζ(σ) > 0 (σ > 1) | ✅ | riemannZeta_def + tsum_pos |
+| 2 | `riemannZeta_ne_zero_real` — ζ(σ) ≠ 0 (σ > 1) | ✅ | ne_of_gt + riemannZeta_real_pos |
+| 3 | `euler_product_real_tendsto` — ∏_p (1 - p^{-σ})⁻¹ → ζ(σ) | ✅ | HasProd.tendsto_partialProd |
+| 4 | `euler_product_real_hasProd` — Euler 乘积公式 | ✅ | euler_product_real_tendsto + HasProd |
+
+**IV-D 全部完成，0 sorry**:
+- `riemannZeta_real_pos` ✅: ζ(σ) 定义为正项级数，和为正
+- `riemannZeta_ne_zero_real` ✅: 由正性直接推出非零
+- `euler_product_real_tendsto` ✅: 部分乘积趋于 ζ(σ)
+- `euler_product_real_hasProd` ✅: 完整的 Euler 乘积公式
 
 #### IV-E: 解析延拓与零区域 ⏳
 
@@ -199,6 +210,7 @@ leanprove/
 │   ├── Dirichlet.lean          # 阶段 III: 等差数列素数 (11 定理)
 │   ├── VonMangoldt.lean        # 阶段 III-IV: VonMangoldt + Mertens (30+ 定理/引理)
 │   ├── ZetaIVB.lean            # 阶段 IV-B: ζ 上界 (5 引理, 零 sorry)
+│   ├── ZetaIVD.lean            # 阶段 IV-D: Euler 乘积 (4 定理, 零 sorry)
 │   ├── Zeta.lean               # 阶段 IV: ζ 函数基础
 │   └── Tests.lean              # 测试与验证
 ├── ROADMAP.md                  # 详细路线图与发展建议
@@ -207,7 +219,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 110+ 个已声明定理/引理, 0 sorry — 全部已证
+**总计**: 94 个定理 + 24 个引理 (118 总计), 0 sorry — 全部已证
 
 ## 技术栈
 

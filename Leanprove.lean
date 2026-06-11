@@ -6,4 +6,6 @@ import Leanprove.PrimeCounting
 import Leanprove.PrimeReciprocals
 import Leanprove.VonMangoldt
 import Leanprove.MathlibTest
+import Leanprove.ZetaIVB
+import Leanprove.ZetaIVD
 import Leanprove.Tests
