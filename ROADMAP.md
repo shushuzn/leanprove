@@ -13,7 +13,7 @@
 阶段 IV  ██████░░░░░░ Zeta 函数系列               🔶 进行中
   IV-A  ████████████ ζ(s) 定义与绝对收敛           ✅ 完成
   IV-B  ████████████ (σ-1)ζ(σ) 上界               ✅ 完成
-  IV-C  █████░░░░░░░ Mertens + Abel 求和          🔶 进行中 (2 sorry)
+  IV-C  ████████████ Mertens + Abel 求和          ✅ 完成 (0 sorry)
   IV-D  ░░░░░░░░░░░░ Euler 乘积                   待开始
   IV-E  ░░░░░░░░░░░░ 解析延拓与零区域             待开始
 阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
@@ -43,7 +43,7 @@
 
 ---
 
-### 当前重点: 阶段 IV-C (Mertens + Abel 求和)
+### 当前重点: 阶段 IV-C (Mertens + Abel 求和) ✅ 已完成
 
 **文件**: `VonMangoldt.lean`
 
@@ -61,15 +61,15 @@
 | 8 | `sqrt_div_sq_eq_rpow` — √p/p² = p^{-3/2} | ✅ | 幂函数转换 |
 | 9 | `log_div_sq_bound_le` — log p/p² ≤ 2p^{-3/2} | ✅ | 素数对数界 |
 
-**剩余 2 个 sorry**:
+**全部已证 (0 sorry)**:
 
-| # | 定理 | 技术路线 | 难度 |
+| # | 定理 | 技术路线 | 状态 |
 |---|------|----------|------|
 | 10 | `primePower_contribution_bounded` | ✅ 双重求和法: H(m,j) + Finset.sum_bij + Summable.sum_le_tsum | ✅ |
-| 11 | `psi_integral_sub_log_isBigO` | ✅ Mertens 第一定理 + Abel 求和 + setIntegral_union + integrableOn_of_bounded | ✅ |
+| 11 | `psi_integral_sub_log_isBigO` | ✅ Abel 求和 + setIntegral_union + integrableOn_of_bounded | ✅ |
 | 12 | `mertens_abel_identity` | ✅ sum_mul_eq_sub_integral_mul₁ + deriv_inv' + integral_congr | ✅ |
-| 13 | `mertens_first_theorem` | ∑_{p≤x} (log p)/p = log x + O(1) | 高 |
-| 14 | `mertens_first_theorem_bounded` | 有界形式 \|∑ - log x\| ≤ C | 中 |
+| 13 | `mertens_first_theorem` | ✅ 由 mertens_first_theorem_bounded 推出 | ✅ |
+| 14 | `mertens_first_theorem_bounded` | ✅ vm_div_sum_sub_log_bound + primePower_contribution_bounded + 三角不等式 | ✅ |
 
 **技术细节**:
 - `primePower_contribution_bounded` ✅: 双重求和法。定义 H(m,j) = if m prime then (log m)/m^(j+2) else 0，证明 Summable H (summable_prod_of_nonneg + summable_nat_rpow 比较)。注入 f(n) = (n.minFac, n.factorization n.minFac - 2)，用 Finset.sum_bij + Summable.sum_le_tsum 控制部分和。
@@ -140,8 +140,8 @@
   ├── ✅ IV-C: primePower_contribution_bounded (双重求和法)
   ├── ✅ IV-C: mertens_abel_identity (Abel 求和恒等式)
   ├── ✅ IV-C: psi_integral_sub_log_isBigO (Abel 求和 + setIntegral_union)
-  ├── 🔶 IV-C: mertens_first_theorem (Mertens 第一定理)
-  └── 🔶 IV-C: mertens_first_theorem_bounded (有界形式)
+  ├── ✅ IV-C: mertens_first_theorem (Mertens 第一定理)
+  └── ✅ IV-C: mertens_first_theorem_bounded (有界形式)
 
 中期
   ├── IV-D: Euler 乘积

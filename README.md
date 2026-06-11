@@ -6,7 +6,7 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-**当前进度**: 阶段 IV-C 🔶 — psi_integral_sub_log_isBigO 已证明，剩余 2 个 sorry (Mertens 定理)。
+**当前进度**: 阶段 IV-C ✅ — 全部定理已证明，0 sorry。Mertens 第一定理完成。
 
 **注**: 全项目共 **95+ 个定理/引理**, 涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理和 ζ 函数基础。
 
@@ -19,7 +19,7 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 阶段 IV  ██████░░░░░░ Zeta 函数系列               🔶 进行中
   IV-A  ████████████ ζ(s) 定义与绝对收敛           ✅ 完成
   IV-B  ████████████ (σ-1)ζ(σ) 上界               ✅ 完成
-  IV-C  █████░░░░░░░ Mertens + Abel 求和          🔶 进行中 (2 sorry)
+  IV-C  ████████████ Mertens + Abel 求和          ✅ 完成 (0 sorry)
   IV-D  ░░░░░░░░░░░░ Euler 乘积                   待开始
   IV-E  ░░░░░░░░░░░░ 解析延拓与零区域             待开始
 阶段 V  ░░░░░░░░░░░░ 素数定理 (PNT)              待开始
@@ -138,12 +138,13 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 | 10 | `primePower_contribution_bounded` — ∑_{¬Prime} Λ(n)/n 有界 | ✅ | 双重求和法: H(m,j) + sum_bij + Summable.sum_le_tsum |
 | 11 | `psi_integral_sub_log_isBigO` — ∫ψ/t² - log = O(1) | ✅ 已证 | Mertens + Abel 恒等式 + setIntegral_union |
 | 12 | `mertens_abel_identity` — ∑Λ(n)/n = ψ/x + ∫ψ/t² dt | ✅ 已证 | Abel 求和公式 |
-| 13 | `mertens_first_theorem` — ∑_{p≤x} (log p)/p - log x = O(1) | ❌ sorry | Mertens 第一定理 |
-| 14 | `mertens_first_theorem_bounded` — \|∑_{p≤x} (log p)/p - log x\| ≤ C | ❌ sorry | 有界形式 |
+| 13 | `mertens_first_theorem` — ∑_{p≤x} (log p)/p - log x = O(1) | ✅ 已证 | Mertens 第一定理 |
+| 14 | `mertens_first_theorem_bounded` — \|∑_{p≤x} (log p)/p - log x\| ≤ C | ✅ 已证 | 有界形式 |
 
-**剩余 2 个 sorry 的技术路线**:
-- `mertens_first_theorem`: ∑_{p≤x} (log p)/p = log x + O(1)
-- `mertens_first_theorem_bounded`: 有界形式 |∑ - log x| ≤ C
+**IV-C 全部完成，0 sorry**:
+- `psi_integral_sub_log_isBigO` ✅: Abel 求和恒等式 + setIntegral_union + integrableOn_of_bounded
+- `mertens_first_theorem` ✅: 由 mertens_first_theorem_bounded 推出
+- `mertens_first_theorem_bounded` ✅: vm_div_sum_sub_log_bound + primePower_contribution_bounded + 三角不等式
 
 #### IV-D: Euler 乘积 ⏳
 
@@ -206,7 +207,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 98+ 个已声明定理/引理, 2 个 sorry (mertens_first_theorem, mertens_first_theorem_bounded)
+**总计**: 98+ 个已声明定理/引理, 0 sorry — 全部已证
 
 ## 技术栈
 
