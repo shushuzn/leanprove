@@ -36,7 +36,7 @@
     ├─ V-A   PNT 等价形式          ████████████████████  100%  ✅
     ├─ V-B   θ~x ↔ π~x/log x      ████████████████████  100%  ✅
     └─ V-C   Wiener-Ikehara 证明   ████████████████████  100%  ✅ 0 axiom
-  阶段 VI   黎曼猜想               ░░░░░░░░░░░░░░░░░░░░    0%  🔮 待启动
+  阶段 VI   黎曼猜想               █░░░░░░░░░░░░░░░░░░░    5%  🔮 ξ 函数定义
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -53,7 +53,7 @@
 | **III** | 解析数论基础 | Dirichlet 等差素数、Mertens 第一定理 | `Dirichlet.lean` | ✅ |
 | **IV** | Zeta 函数 | Euler 乘积、解析延拓、函数方程、ζ(s)≠0 (Re s ≥ 1) | `Zeta*.lean` | ✅ |
 | **V** | 素数定理 | ψ~x ↔ θ~x ↔ π~x/log x、WeakPNT ✅ | `PNTVA.lean` | ✅ |
-| **VI** | 黎曼猜想 | 零点理论、临界线、误差项改进 | — | 🔮 |
+| **VI** | 黎曼猜想 | ξ 函数、Hardy 定理、零点理论 | `ZetaVI.lean` | 🔮 |
 
 ---
 
@@ -236,6 +236,7 @@ leanprove/
 │   ├── PNTVA.lean                    # 阶段 V-A/B: PNT 等价形式 (13+5, 0 sorry)
 │   ├── Sobolev.lean                  # Sobolev 空间 (CS, W1, W21, TruncFun)
 │   ├── Tauberian.lean                # Wiener-Ikehara + PNT (0 sorry, 0 axiom)
+│   ├── ZetaVI.lean                   # 阶段 VI: ξ 函数 + Hardy 定理
 │   └── Tests.lean                    # 测试与验证
 ├── lakefile.toml                     # Lake 构建配置
 ├── lean-toolchain                    # Lean v4.31.0-rc2
