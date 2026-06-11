@@ -8,7 +8,7 @@ import Mathlib.Analysis.Complex.Polynomial
 import Leanprove.ZetaIVE
 
 open Complex Real
-open scoped Topology
+open scoped Topology BigOperators
 
 noncomputable section
 
@@ -63,3 +63,43 @@ lemma riemannXi_isEntire : Differentiable ℂ riemannXi := by
   refine (Differentiable.mul ?_ ?_).add (differentiable_const 1)
   · exact differentiable_id.mul (differentiable_id.sub differentiable_const)
   · exact differentiable_completedZeta₀
+
+/-! #### 增长估计 -/
+
+/-- ζ(s) 在 Re(s) = 2 上绝对收敛：|ζ(2 + it)| ≤ ζ(2) -/
+lemma zeta_bound_at_two (t : ℝ) : ‖riemannZeta (2 + I * t)‖ ≤ riemannZeta (2 : ℂ) := by
+  have hs : 1 < (2 + I * t).re := by
+    simp
+    norm_num
+  rw [zeta_eq_tsum_one_div_nat_cpow hs]
+  have hsum : Summable (fun n : ℕ => ‖1 / ((n : ℂ) ^ (2 + I * t))‖) := by
+    have h_abs_eq : ∀ n : ℕ, n ≠ 0 → ‖1 / ((n : ℂ) ^ (2 + I * t))‖ = 1 / ((n : ℝ) ^ (2 : ℝ)) := by
+      intro n hn
+      have hnpos : 0 < n := Nat.pos_of_ne_zero hn
+      simp [norm_div, norm_one, Complex.norm_natCast_cpow_of_pos hnpos (2 + I * t), norm_natCast,
+        norm_ofReal]
+    refine .of_nonneg_of_le (fun n => norm_nonneg _) (fun n => ?_) (by
+      refine (summable_nat_add_iff 1).mpr ?_
+      have : Summable (fun n : ℕ => 1 / ((n : ℝ) ^ (2 : ℝ))) := by
+        simpa using Real.summable_nat_rpow_inv.mpr (by norm_num : (1 : ℝ) < (2 : ℝ))
+      convert this
+      ext n
+      simp)
+    by_cases hn0 : n = 0
+    · subst hn0; simp
+    · rw [h_abs_eq n hn0]
+      exact le_rfl
+  calc
+    ‖∑' n : ℕ, 1 / ((n : ℂ) ^ (2 + I * t))‖ ≤ ∑' n : ℕ, ‖1 / ((n : ℂ) ^ (2 + I * t))‖ :=
+      norm_tsum_le_tsum_norm hsum
+    _ = ∑' n : ℕ, (1 : ℝ) / ((n : ℝ) ^ (2 : ℝ)) := by
+      refine tsum_congr (fun n => ?_)
+      by_cases hn0 : n = 0
+      · subst hn0; simp
+      · have hnpos : 0 < n := Nat.pos_of_ne_zero hn0
+        simp [norm_div, norm_one, Complex.norm_natCast_cpow_of_pos hnpos (2 + I * t), norm_natCast,
+          norm_ofReal]
+    _ = riemannZeta (2 : ℂ) := by
+      have h2 : 1 < (2 : ℂ).re := by norm_num
+      rw [zeta_eq_tsum_one_div_nat_cpow h2]
+      simp [div_eq_inv_mul]

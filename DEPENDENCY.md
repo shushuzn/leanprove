@@ -40,9 +40,9 @@ PNTVA.lean
        │    └─ mathlib (FourierTransform, LSeries, ...)
        └─ VonMangoldt.lean
             └─ mathlib (Chebyshev, LSeries, ...)
-ZetaVI.lean (阶段 VI — ξ 整函数证明)
-  └─ ZetaIVE.lean
-       └─ mathlib (RiemannZeta, Gamma, ...)
+ZetaVI.lean (阶段 VI — ζ 增长估计 + ξ 函数)
+  ├─ ZetaIVE.lean
+  └─ mathlib (PhragmenLindelof, RiemannZeta, Gamma)
 ```
 
 ## 顶层假设
