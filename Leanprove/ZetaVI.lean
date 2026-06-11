@@ -4,6 +4,7 @@ Phase VI: Riemann Xi function and Hardy's theorem.
 -/
 import Mathlib.NumberTheory.LSeries.RiemannZeta
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 import Mathlib.Analysis.Complex.Polynomial
 import Leanprove.ZetaIVE
 
@@ -139,7 +140,7 @@ lemma zeta_bound_at_neg_one (t : ℝ) : ‖riemannZeta (-1 + I * t)‖ ≤
 /-- ξ(s) 在实轴上取实值 -/
 lemma riemannXi_real_on_real (s : ℝ) : riemannXi (s : ℂ) ∈ ℝ := by
   have : (s : ℂ).conj = (s : ℂ) := by simp
-    simpa [this] using (riemannXi_conj (s : ℂ)).symm ▸ (conj_eq_self.mp ?_)
+  simpa [this] using (riemannXi_conj (s : ℂ)).symm ▸ (conj_eq_self.mp ?_)
   calc
     conj (riemannXi (s : ℂ)) = riemannXi (conj (s : ℂ)) := (riemannXi_conj (s : ℂ)).symm
     _ = riemannXi (s : ℂ) := by simp
@@ -159,3 +160,95 @@ lemma riemannXi_zero : riemannXi 0 = 1 := by
 /-- ξ(1) = 1（对称性） -/
 lemma riemannXi_one : riemannXi 1 = 1 := by
   simpa [riemannXi_eq_riemannXi_one_sub, sub_self] using riemannXi_zero
+
+/-! #### Lemma 1: |Γ(it)| 的下界（通过反射公式） -/
+
+/-- sin(iθ) = i·sinh(θ) -/
+lemma sin_mul_I (θ : ℝ) : Complex.sin (I * (θ : ℂ)) = I * Complex.sinh (θ : ℂ) := by
+  rw [Complex.sin, Complex.sinh, mul_comm (I * (θ : ℂ))]
+  simp [exp_mul_I, mul_comm, mul_left_comm, mul_assoc]
+
+/-- |Γ(it)|² = π / (|t|·|sinh(πt)|)  — 来自反射公式和函数方程 -/
+lemma gamma_it_sq_norm (t : ℝ) (ht : t ≠ 0) : ‖Gamma (I * (t : ℂ))‖ ^ 2 = π / |t| / |Real.sinh (π * t)| := by
+  have h_reflect : Gamma (I * (t : ℂ)) * Gamma (1 - I * (t : ℂ)) = π / sin (π * (I * (t : ℂ))) :=
+    Complex.Gamma_mul_Gamma_one_sub (I * (t : ℂ))
+  have h_add : Gamma (1 - I * (t : ℂ)) = (-I * (t : ℂ)) * Gamma (-I * (t : ℂ)) := by
+    calc
+      Gamma (1 - I * (t : ℂ)) = Gamma ((-I * (t : ℂ)) + 1) := by ring
+      _ = (-I * (t : ℂ)) * Gamma (-I * (t : ℂ)) :=
+        Complex.Gamma_add_one (-I * (t : ℂ)) (by
+          intro hzero; apply ht; simpa [mul_eq_zero] using hzero)
+  have h_norm_gamma_conj : ‖Gamma (-I * (t : ℂ))‖ = ‖Gamma (I * (t : ℂ))‖ := by
+    calc
+      ‖Gamma (-I * (t : ℂ))‖ = ‖conj (Gamma (I * (t : ℂ)))‖ := by
+        simp [Complex.Gamma_conj (I * (t : ℂ))]
+      _ = ‖Gamma (I * (t : ℂ))‖ := norm_conj _
+  have h_sin_sinh : sin (π * (I * (t : ℂ))) = I * Complex.sinh (π * (t : ℂ)) := by
+    calc
+      sin (π * (I * (t : ℂ))) = sin (I * (π * (t : ℂ))) := by ring
+      _ = I * Complex.sinh (π * (t : ℂ)) := sin_mul_I (π * t)
+  have h_norm_sin : ‖sin (π * (I * (t : ℂ)))‖ = |Real.sinh (π * t)| := by
+    rw [h_sin_sinh, norm_mul, norm_I, one_mul, Complex.norm_sinh_eq_abs_sinh (π * t)]
+    simp
+  have h_norm_reflect : ‖Gamma (I * (t : ℂ)) * Gamma (1 - I * (t : ℂ))‖ = π / |t| / |Real.sinh (π * t)| := by
+    rw [h_reflect, h_add, mul_assoc, norm_mul, norm_mul, norm_div, norm_norm, norm_norm,
+      norm_ofReal, norm_neg, norm_I, norm_norm, h_norm_gamma_conj, h_norm_sin]
+    have ht_abs : |t| ≠ 0 := by simpa using ht
+    field_simp [ht_abs]
+    ring
+  have h_prod_norm : ‖Gamma (I * (t : ℂ)) * Gamma (1 - I * (t : ℂ))‖ =
+    ‖Gamma (I * (t : ℂ))‖ * |t| * ‖Gamma (I * (t : ℂ))‖ := by
+    rw [h_add, mul_assoc, norm_mul, norm_mul, norm_neg, norm_I, one_mul, norm_norm, h_norm_gamma_conj]
+    ring
+  have h_eq : ‖Gamma (I * (t : ℂ))‖ ^ 2 * |t| = π / |t| / |Real.sinh (π * t)| * |t| := by
+    calc
+      ‖Gamma (I * (t : ℂ))‖ ^ 2 * |t| = (‖Gamma (I * (t : ℂ))‖ * |t| * ‖Gamma (I * (t : ℂ))‖) := by ring
+      _ = ‖Gamma (I * (t : ℂ)) * Gamma (1 - I * (t : ℂ))‖ := by rw [h_prod_norm]
+      _ = π / |t| / |Real.sinh (π * t)| := h_norm_reflect
+      _ = π / |t| / |Real.sinh (π * t)| * |t| := by ring
+  have hpos : 0 < |t| := abs_pos.mpr ht
+  have h_nonneg : 0 ≤ ‖Gamma (I * (t : ℂ))‖ := norm_nonneg _
+  nlinarith  rw [Complex.sin, Complex.sinh, sub_eq_add_neg, mul_comm, mul_comm (I * (θ : ℂ))]
+  simp [exp_mul_I, mul_comm, add_comm, sub_eq_add_neg]
+
+/-- |Γ(it)|² = π / (|t|·|sinh(πt)|)  — 来自反射公式和函数方程 -/
+lemma gamma_it_sq_norm (t : ℝ) (ht : t ≠ 0) : ‖Gamma (I * (t : ℂ))‖ ^ 2 = π / |t| / |Real.sinh (π * t)| := by
+  have h_reflect : Gamma (I * (t : ℂ)) * Gamma (1 - I * (t : ℂ)) = π / sin (π * (I * (t : ℂ))) :=
+    Complex.Gamma_mul_Gamma_one_sub (I * (t : ℂ))
+  have h_add : Gamma (1 - I * (t : ℂ)) = (-I * (t : ℂ)) * Gamma (-I * (t : ℂ)) := by
+    calc
+      Gamma (1 - I * (t : ℂ)) = Gamma ((-I * (t : ℂ)) + 1) := by ring
+      _ = (-I * (t : ℂ)) * Gamma (-I * (t : ℂ)) :=
+        Complex.Gamma_add_one (-I * (t : ℂ)) (by
+          intro hzero; apply ht; simpa [mul_eq_zero] using hzero)
+  have h_conj_norm : ‖Gamma (-I * (t : ℂ))‖ = ‖Gamma (I * (t : ℂ))‖ := by
+    calc
+      ‖Gamma (-I * (t : ℂ))‖ = ‖conj (Gamma (I * (t : ℂ)))‖ := by
+        simp [Complex.Gamma_conj (I * (t : ℂ))]
+      _ = ‖Gamma (I * (t : ℂ))‖ := norm_conj _
+  have h_sin_norm : ‖sin (π * (I * (t : ℂ)))‖ = |Real.sinh (π * t)| := by
+    calc
+      ‖sin (π * (I * (t : ℂ)))‖ = ‖I * Complex.sinh (π * (t : ℂ))‖ := by
+        simp [sin_mul_I, mul_assoc, mul_comm π]
+      _ = ‖Complex.sinh (π * (t : ℂ))‖ := by simp
+      _ = |Real.sinh (π * t)| := by simp [Complex.sinh_ofReal]
+  have h_norm_reflect : ‖Gamma (I * (t : ℂ)) * Gamma (1 - I * (t : ℂ))‖ = π / |t| / |Real.sinh (π * t)| := by
+    rw [h_reflect, h_add, mul_assoc, norm_mul, norm_mul, norm_div, norm_norm, norm_norm,
+      norm_ofReal, norm_neg, norm_I, norm_norm, h_conj_norm, h_sin_norm]
+    have ht_abs : |t| ≠ 0 := by simpa using ht
+    field_simp [ht_abs]
+    ring
+  have h_prod_norm : ‖Gamma (I * (t : ℂ)) * Gamma (1 - I * (t : ℂ))‖ =
+    ‖Gamma (I * (t : ℂ))‖ * |t| * ‖Gamma (I * (t : ℂ))‖ := by
+    rw [h_add, mul_assoc, norm_mul, norm_mul, norm_neg, norm_I, one_mul, norm_norm, h_conj_norm]
+    ring
+  have h_eq : ‖Gamma (I * (t : ℂ))‖ ^ 2 * |t| = π / |t| / |Real.sinh (π * t)| * |t| := by
+    calc
+      ‖Gamma (I * (t : ℂ))‖ ^ 2 * |t| = (‖Gamma (I * (t : ℂ))‖ * |t| * ‖Gamma (I * (t : ℂ))‖) := by ring
+      _ = ‖Gamma (I * (t : ℂ)) * Gamma (1 - I * (t : ℂ))‖ := by rw [h_prod_norm]
+      _ = π / |t| / |Real.sinh (π * t)| := h_norm_reflect
+      _ = π / |t| / |Real.sinh (π * t)| * |t| := by ring
+  have hpos : 0 < |t| := abs_pos.mpr ht
+  have h_nonneg : 0 ≤ ‖Gamma (I * (t : ℂ))‖ := norm_nonneg _
+  field_simp [hpos.ne.symm]
+  nlinarith
