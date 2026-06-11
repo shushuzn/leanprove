@@ -7,6 +7,11 @@ import Mathlib.NumberTheory.SumPrimeReciprocals
 import Mathlib.Data.Nat.Factorization.PrimePow
 import Mathlib.Topology.Algebra.InfiniteSum.Real
 import Mathlib.NumberTheory.AbelSummation
+import Mathlib.Analysis.SpecialFunctions.Stirling
+import Mathlib.NumberTheory.ArithmeticFunction.Misc
+import Mathlib.Analysis.Asymptotics.Lemmas
+import Mathlib.Analysis.SumIntegralComparisons
+import Leanprove.Chebyshev
 open ArithmeticFunction (vonMangoldt vonMangoldt_apply_one vonMangoldt_nonneg vonMangoldt_apply_prime vonMangoldt_apply_pow vonMangoldt_ne_zero_iff vonMangoldt_pos_iff vonMangoldt_eq_zero_iff vonMangoldt_sum vonMangoldt_mul_zeta zeta_mul_vonMangoldt log_mul_moebius_eq_vonMangoldt moebius_mul_log_eq_vonMangoldt sum_moebius_mul_log_eq)
 open Set Filter Topology Real
 open scoped BigOperators
@@ -558,11 +563,8 @@ theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → 
 
 end
 
-theorem psi_integral_sub_log_isBigO : (fun x : ℝ ↦ ∫ t in Set.Ioc 1 x, ψ t / (t * t) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by sorry
-
 /-! === 第七部分: Mertens 定理 (3定理) === -/
 
--- Mertens Abel 恒等式: Abel 求和公式应用于 von Mangoldt 函数
 theorem mertens_abel_identity (x : ℝ) (hx : 2 ≤ x) :
     ∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) =
     ψ x / x + ∫ t in Set.Ioc 2 x, ψ t / (t * t) := by
@@ -669,12 +671,644 @@ theorem mertens_abel_identity (x : ℝ) (hx : 2 ≤ x) :
   rw [← h_final]
   convert h_abel
 
--- Mertens 第一定理: ∑_{p≤x} (log p)/p = log x + O(1)
-theorem mertens_first_theorem :
-    (fun x : ℝ ↦ ∑ p ∈ Finset.filter Nat.Prime (Finset.Icc 2 ⌊x⌋₊), Real.log ↑p / ↑p - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
-  sorry
+/-! ### 辅助引理: 对数求和 -/
 
--- Mertens 第一定理 (有界形式): |∑_{p≤x} (log p)/p - log x| ≤ C
-theorem mertens_first_theorem_bounded :
-    ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → |∑ p ∈ Finset.filter Nat.Prime (Finset.Icc 2 ⌊x⌋₊), Real.log ↑p / ↑p - Real.log x| ≤ C := by
-  sorry
+lemma log_sum_bound (N : ℕ) (hN : 2 ≤ N) :
+    |∑ n ∈ Finset.Icc 1 N, Real.log (n : ℝ) - ((N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1)| ≤ Real.log (N : ℝ) := by
+  have h1N : (1 : ℕ) ≤ N := by omega
+  have h_log_mono : MonotoneOn Real.log (Set.Icc (1 : ℝ) (N : ℝ)) := by
+    intro x hx y hy hxy
+    refine Real.log_le_log (by nlinarith [hx.1]) hxy
+  have h_int_eq : ∫ x in (1 : ℝ)..(N : ℝ), Real.log x = (N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1 := by
+    rw [integral_log]
+    simp
+  -- Icc 1 N = Ico 1 N ∪ {N}
+  have h_Icc_split : (Finset.Icc (1 : ℕ) N : Finset ℕ) = Finset.Ico (1 : ℕ) N ∪ {(N : ℕ)} := by
+    ext n; simp; omega
+  have h_disj : Disjoint (Finset.Ico (1 : ℕ) N) ({(N : ℕ)} : Finset ℕ) := by
+    simp [Finset.disjoint_left]; omega
+  have h_Icc_sum_eq : ∑ n ∈ Finset.Icc 1 N, Real.log (n : ℝ) =
+      (∑ i ∈ Finset.Ico 1 N, Real.log (i : ℝ)) + Real.log (N : ℝ) := by
+    calc
+      ∑ n ∈ Finset.Icc (1 : ℕ) N, Real.log (n : ℝ) =
+          ∑ n ∈ (Finset.Ico (1 : ℕ) N ∪ {(N : ℕ)}), Real.log (n : ℝ) := by rw [h_Icc_split]
+      _ = (∑ n ∈ Finset.Ico (1 : ℕ) N, Real.log (n : ℝ)) + (∑ n ∈ ({(N : ℕ)} : Finset ℕ), Real.log (n : ℝ)) :=
+        Finset.sum_union h_disj
+      _ = (∑ i ∈ Finset.Ico 1 N, Real.log (i : ℝ)) + Real.log (N : ℝ) := by simp
+  have h_image : (Finset.Ico (1 : ℕ) N).image (fun i : ℕ => i + 1) = Finset.Icc (2 : ℕ) N := by
+    ext j; simp [Finset.mem_image, Finset.mem_Ico, Finset.mem_Icc]
+  -- Lower bound using integral
+  have h_lower : ∫ x in (1 : ℝ)..(N : ℝ), Real.log x ≤ ∑ n ∈ Finset.Icc 1 N, Real.log (n : ℝ) := by
+    have h_temp := MonotoneOn.integral_le_sum_Ico (f := Real.log) h1N (by
+      simpa using h_log_mono)
+    have h_sum_shift : ∑ i ∈ Finset.Ico (1 : ℕ) N, Real.log (((i + 1 : ℕ) : ℝ)) = ∑ n ∈ Finset.Icc 1 N, Real.log (n : ℝ) := by
+      calc
+        ∑ i ∈ Finset.Ico (1 : ℕ) N, Real.log (((i + 1 : ℕ) : ℝ)) =
+            ∑ j ∈ (Finset.Ico (1 : ℕ) N).image (fun i : ℕ => i + 1), Real.log (j : ℝ) := by
+          rw [Finset.sum_image (fun i hi j hj h => by omega)]
+        _ = ∑ j ∈ Finset.Icc (2 : ℕ) N, Real.log (j : ℝ) := by rw [h_image]
+        _ = ∑ n ∈ Finset.Icc 1 N, Real.log (n : ℝ) := by
+          refine Finset.sum_subset (fun x hx => ?_) (by
+            intro x hx hx'
+            rcases Finset.mem_Icc.mp hx with ⟨hx_low, hx_up⟩
+            have hx_lt_2 : x < 2 := by
+              by_contra! h
+              exact hx' (Finset.mem_Icc.mpr ⟨h, hx_up⟩)
+            have hx_eq_1 : x = 1 := by omega
+            subst hx_eq_1; simp
+          )
+          rcases Finset.mem_Icc.mp hx with ⟨hx_low, hx_up⟩
+          exact Finset.mem_Icc.mpr ⟨by omega, hx_up⟩
+    calc
+      ∫ x in (1 : ℝ)..(N : ℝ), Real.log x ≤ ∑ i ∈ Finset.Ico (1 : ℕ) N, Real.log (((i + 1 : ℕ) : ℝ)) := by
+        simpa using h_temp
+      _ = ∑ n ∈ Finset.Icc 1 N, Real.log (n : ℝ) := h_sum_shift
+  -- Upper bound using integral
+  have h_upper : ∑ n ∈ Finset.Icc 1 N, Real.log (n : ℝ) ≤ (∫ x in (1 : ℝ)..(N : ℝ), Real.log x) + Real.log (N : ℝ) := by
+    rw [h_Icc_sum_eq]
+    have h_temp2 : ∑ i ∈ Finset.Ico (1 : ℕ) N, Real.log (i : ℝ) ≤ ∫ x in (1 : ℝ)..(N : ℝ), Real.log x := by
+      have h := MonotoneOn.sum_le_integral_Ico (f := Real.log) h1N (by simpa using h_log_mono)
+      have h_eq : ∫ x in ((1 : ℕ) : ℝ)..((N : ℕ) : ℝ), Real.log x = ∫ x in (1 : ℝ)..(N : ℝ), Real.log x := by
+        simp
+      exact h.trans h_eq.le
+    gcongr
+  have h_log_N_nonneg : 0 ≤ Real.log (N : ℝ) := by
+    have hN_ge_1 : (1 : ℝ) ≤ (N : ℝ) := by exact_mod_cast h1N
+    exact Real.log_nonneg hN_ge_1
+  rw [abs_le]
+  constructor
+  · -- -(log N) ≤ ∑ log n - (N*log N - N + 1)
+    have : (N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1 ≤ ∑ n ∈ Finset.Icc 1 N, Real.log (n : ℝ) := by
+      linarith
+    linarith
+  · -- ∑ log n - (N*log N - N + 1) ≤ log N
+    calc
+      ∑ n ∈ Finset.Icc 1 N, Real.log (n : ℝ) - ((N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1) ≤
+          ((∫ x in (1 : ℝ)..(N : ℝ), Real.log x) + Real.log (N : ℝ)) - ((N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1) :=
+        sub_le_sub_right h_upper _
+      _ = (((N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1) + Real.log (N : ℝ)) - ((N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1) := by rw [h_int_eq]
+      _ = Real.log (N : ℝ) := by ring_nf
+
+/-! ### 辅助引理: Mertens 第一定理 -/
+
+-- 卷积恒等式: ∑_{n=1}^N Λ(n)*⌊N/n⌋ = ∑_{n=1}^N log n
+lemma conv_identity (N : ℕ) : ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ) =
+    ∑ n ∈ Finset.Ioc 0 N, Real.log (n : ℝ) := by
+  calc
+    ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ) =
+        ∑ n ∈ Finset.Ioc 0 N, ((vonMangoldt * ArithmeticFunction.zeta) n : ℝ) := by
+      rw [ArithmeticFunction.sum_Ioc_mul_zeta_eq_sum vonMangoldt N]
+    _ = ∑ n ∈ Finset.Ioc 0 N, (Real.log (n : ℝ)) := by
+      simp [ArithmeticFunction.vonMangoldt_mul_zeta]
+
+lemma decomp_sum (N : ℕ) : (N : ℝ) * ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) =
+    ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ) +
+    ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ)) := by
+  calc
+    (N : ℝ) * ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) =
+        ∑ n ∈ Finset.Ioc 0 N, (N : ℝ) * ((vonMangoldt n : ℝ) / (n : ℝ)) := by rw [Finset.mul_sum]
+    _ = ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ)) := by
+      refine Finset.sum_congr rfl (fun n hn => ?_)
+      have hn_pos : (n : ℝ) ≠ 0 := by
+        have hm := Finset.mem_Ioc.mp hn
+        exact mod_cast hm.1.ne'
+      field_simp [hn_pos, mul_comm]
+    _ = ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * (((N / n : ℕ) : ℝ) + ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ))) := by
+      refine Finset.sum_congr rfl (fun n hn => ?_)
+      ring
+    _ = ∑ n ∈ Finset.Ioc 0 N, ((vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ) + (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ))) := by
+      refine Finset.sum_congr rfl (fun n hn => ?_)
+      ring
+    _ = ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ) +
+        ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ)) := by
+      rw [Finset.sum_add_distrib]
+
+-- 误差项有界: |N/n - ⌊N/n⌋| < 1
+lemma frac_bound (N n : ℕ) (hn : n ≠ 0) : |(N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ)| < 1 := by
+  have hpos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
+  have hN_mod_eq : (N : ℝ) - ((N / n : ℕ) : ℝ) * (n : ℝ) = ((N % n : ℕ) : ℝ) := by
+    have hN_eq : (N : ℝ) = ((N / n : ℕ) : ℝ) * (n : ℝ) + ((N % n : ℕ) : ℝ) := by
+      calc
+        (N : ℝ) = ((N : ℕ) : ℝ) := by norm_cast
+        _ = ((N / n * n + N % n : ℕ) : ℝ) := by
+          norm_cast
+          exact (by simpa [mul_comm] using (Nat.div_add_mod N n).symm)
+        _ = ((N / n : ℕ) : ℝ) * (n : ℝ) + ((N % n : ℕ) : ℝ) := by simp
+    linarith
+  have h_eq : (N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ) = ((N % n : ℕ) : ℝ) / (n : ℝ) := by
+    field_simp [hpos.ne']
+    nlinarith
+  rw [h_eq]
+  have h_mod_lt_n : (N % n : ℕ) < n := Nat.mod_lt N (Nat.pos_of_ne_zero hn)
+  have h_ratio_nonneg : 0 ≤ ((N % n : ℕ) : ℝ) / (n : ℝ) :=
+    div_nonneg (by exact_mod_cast Nat.zero_le _) (by positivity)
+  have h_ratio_lt_one : ((N % n : ℕ) : ℝ) / (n : ℝ) < 1 := by
+    refine (div_lt_one hpos).mpr ?_
+    exact_mod_cast h_mod_lt_n
+  rw [abs_of_nonneg h_ratio_nonneg]
+  exact h_ratio_lt_one
+
+-- ∑ Λ(n)*(N/n - ⌊N/n⌋) ≤ ψ(N)
+lemma error_bound (N : ℕ) : |∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ))| ≤ ψ (N : ℝ) := by
+  have h_nonneg_vM : ∀ n, 0 ≤ (vonMangoldt n : ℝ) := by
+    intro n; exact mod_cast (vonMangoldt_nonneg (n := n))
+  have h_frac_nonneg (n : ℕ) : 0 ≤ (N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ) := by
+    by_cases hn : n = 0
+    · subst hn; simp
+    · have h_eq : (N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ) = ((N % n : ℕ) : ℝ) / (n : ℝ) := by
+        have hpos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
+        field_simp [hpos.ne']
+        have hN_eq : (N : ℝ) = ((N / n : ℕ) : ℝ) * (n : ℝ) + ((N % n : ℕ) : ℝ) := by
+          calc
+            (N : ℝ) = ((N : ℕ) : ℝ) := by norm_cast
+            _ = ((N / n * n + N % n : ℕ) : ℝ) := by
+              norm_cast
+              simpa [mul_comm] using (Nat.div_add_mod N n).symm
+            _ = ((N / n : ℕ) : ℝ) * (n : ℝ) + ((N % n : ℕ) : ℝ) := by simp
+        nlinarith
+      rw [h_eq]
+      apply div_nonneg
+      · exact mod_cast Nat.zero_le _
+      · positivity
+  have h_term_nonneg (n : ℕ) : 0 ≤ (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ)) :=
+    mul_nonneg (h_nonneg_vM n) (h_frac_nonneg n)
+  have h_sum_nonneg : 0 ≤ ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ)) :=
+    Finset.sum_nonneg (fun n hn => h_term_nonneg n)
+  rw [abs_of_nonneg h_sum_nonneg]
+  calc
+    ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ))
+        ≤ ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * 1 := by
+      refine Finset.sum_le_sum (fun n hn => ?_)
+      have hn_ne_zero : n ≠ 0 := by
+        intro hzero; have := Finset.mem_Ioc.mp hn; omega
+      have h_frac_lt_one : (N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ) < 1 := by
+        have h_bound := frac_bound N n hn_ne_zero
+        rw [abs_of_nonneg (h_frac_nonneg n)] at h_bound
+        exact h_bound
+      refine mul_le_mul_of_nonneg_left (by linarith) (h_nonneg_vM n)
+    _ = ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) := by simp
+    _ = ψ (N : ℝ) := by rw [psi_nat_eq_sum]
+
+-- ∑ Λ(n)/n - log N 有界
+lemma vm_div_sum_sub_log_bound (N : ℕ) (hN : 2 ≤ N) :
+    |∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log (N : ℝ)| ≤ Real.log 4 + 7 := by
+  have hN_pos : (N : ℝ) > 0 := by exact_mod_cast (show 0 < N from by omega)
+  have h_psi_bound : ψ (N : ℝ) ≤ (Real.log 4 + 4) * (N : ℝ) := by
+    have h_nonneg : 0 ≤ ψ (N : ℝ) := Chebyshev.psi_nonneg (N : ℝ)
+    have h_bound := psi_bounded (N : ℝ) (by positivity : 0 ≤ (N : ℝ))
+    rwa [abs_of_nonneg h_nonneg] at h_bound
+  have h_conv_comb : |(N : ℝ) * ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) - ∑ n ∈ Finset.Ioc 0 N, Real.log (n : ℝ)| ≤ ψ (N : ℝ) := by
+    have h_eq : (N : ℝ) * ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) - ∑ n ∈ Finset.Ioc 0 N, Real.log (n : ℝ) =
+        ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ)) := by
+      calc
+        (N : ℝ) * ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) - ∑ n ∈ Finset.Ioc 0 N, Real.log (n : ℝ) =
+            (∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ) +
+             ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ))) -
+            ∑ n ∈ Finset.Ioc 0 N, Real.log (n : ℝ) := by rw [decomp_sum N]
+        _ = (∑ n ∈ Finset.Ioc 0 N, Real.log (n : ℝ) +
+             ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ))) -
+            ∑ n ∈ Finset.Ioc 0 N, Real.log (n : ℝ) := by rw [conv_identity N]
+        _ = ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ)) := by ring
+    rw [h_eq]
+    exact error_bound N
+  have h_Ioc_eq_Icc : Finset.Ioc (0 : ℕ) N = Finset.Icc (1 : ℕ) N := by
+    ext n; simp [Finset.mem_Ioc, Finset.mem_Icc]; omega
+  have h_log_sum : |∑ n ∈ Finset.Ioc 0 N, Real.log (n : ℝ) - ((N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1)| ≤ Real.log (N : ℝ) := by
+    rw [h_Ioc_eq_Icc]
+    exact log_sum_bound N hN
+  -- Main computation: bound |S - log N|
+  -- |S - log N| ≤ |S - T/N| + |T/N - log N|
+  let S := ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ)
+  let T := ∑ n ∈ Finset.Ioc 0 N, Real.log (n : ℝ)
+  have hS_div : |(N : ℝ) * S - T| ≤ ψ (N : ℝ) := h_conv_comb
+  have hS_sub_T_div_N : |S - T / (N : ℝ)| ≤ (Real.log 4 + 4) := by
+    have h_eq : S - T / (N : ℝ) = ((N : ℝ) * S - T) / (N : ℝ) := by
+      field_simp [hN_pos.ne', mul_comm]
+    rw [h_eq]
+    rw [abs_div, abs_of_pos hN_pos]
+    calc
+      |(N : ℝ) * S - T| / (N : ℝ) = |(N : ℝ) * S - T| * (1 / (N : ℝ)) := by ring
+      _ ≤ ψ (N : ℝ) * (1 / (N : ℝ)) := mul_le_mul_of_nonneg_right hS_div (by positivity)
+      _ = ψ (N : ℝ) / (N : ℝ) := by ring
+      _ = ψ (N : ℝ) * (1 / (N : ℝ)) := by ring
+      _ ≤ ((Real.log 4 + 4) * (N : ℝ)) * (1 / (N : ℝ)) := mul_le_mul_of_nonneg_right h_psi_bound (by positivity)
+      _ = ((Real.log 4 + 4) * (N : ℝ)) / (N : ℝ) := by ring
+      _ = Real.log 4 + 4 := by field_simp [hN_pos.ne']
+  have h_triangle (a b : ℝ) : |a + b| ≤ |a| + |b| := by
+    have h1 : a ≤ |a| := le_abs_self a
+    have h2 : -|a| ≤ a := neg_abs_le a
+    have h3 : b ≤ |b| := le_abs_self b
+    have h4 : -|b| ≤ b := neg_abs_le b
+    have hab1 : a + b ≤ |a| + |b| := add_le_add h1 h3
+    have hab2 : -(|a| + |b|) ≤ a + b := by linarith
+    exact abs_le.mpr ⟨hab2, hab1⟩
+  have h_T_div_N_sub_log : |T / (N : ℝ) - Real.log (N : ℝ)| ≤ 3 := by
+    let A := (N : ℝ) * Real.log (N : ℝ) - (N : ℝ) + 1
+    have h_log_bound : |T - A| ≤ Real.log (N : ℝ) := h_log_sum
+    have h_log_N_div_N_le_one : Real.log (N : ℝ) / (N : ℝ) ≤ 1 := by
+      calc
+        Real.log (N : ℝ) / (N : ℝ) = Real.log (N : ℝ) * (1 / (N : ℝ)) := by ring
+        _ ≤ (N : ℝ) * (1 / (N : ℝ)) := mul_le_mul_of_nonneg_right (Real.log_le_self (by positivity : 0 ≤ (N : ℝ))) (by positivity)
+        _ = 1 := by field_simp [hN_pos.ne']
+    have h_one_div_N_le_half : 1 / (N : ℝ) ≤ 1/2 := by
+      have hN_large : (2 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN
+      exact (one_div_le_one_div (by positivity : 0 < (N : ℝ)) (by norm_num : 0 < (2 : ℝ))).mpr hN_large
+    have h_one_div_N_nonneg : 0 ≤ 1 / (N : ℝ) := div_nonneg (by norm_num) (by positivity)
+    calc
+      |T / (N : ℝ) - Real.log (N : ℝ)| = |(T - A) / (N : ℝ) - 1 + 1 / (N : ℝ)| := by
+        have h_inner_eq : T / (N : ℝ) - Real.log (N : ℝ) = (T - A) / (N : ℝ) - 1 + 1 / (N : ℝ) := by
+          field_simp [hN_pos.ne', A]
+          ring
+        rw [h_inner_eq]
+      _ ≤ |(T - A) / (N : ℝ) - 1| + |1 / (N : ℝ)| := h_triangle _ _
+      _ ≤ (|(T - A) / (N : ℝ)| + |(1 : ℝ)|) + |1 / (N : ℝ)| := by
+        have h_temp : |(T - A) / (N : ℝ) - 1| ≤ |(T - A) / (N : ℝ)| + |(1 : ℝ)| := abs_sub _ _
+        simpa [add_comm, add_left_comm, add_assoc] using add_le_add_right h_temp (|1 / (N : ℝ)|)
+      _ = |(T - A) / (N : ℝ)| + 1 + |1 / (N : ℝ)| := by simp
+      _ = |T - A| / |(N : ℝ)| + 1 + |1 / (N : ℝ)| := by rw [abs_div]
+      _ = |T - A| / (N : ℝ) + 1 + |1 / (N : ℝ)| := by rw [abs_of_pos hN_pos]
+      _ = |T - A| / (N : ℝ) + 1 + (1 / (N : ℝ)) := by rw [abs_of_nonneg h_one_div_N_nonneg]
+      _ ≤ Real.log (N : ℝ) / (N : ℝ) + 1 + (1 / (N : ℝ)) := by
+        have h_mid : |T - A| / (N : ℝ) ≤ Real.log (N : ℝ) / (N : ℝ) := by
+          calc
+            |T - A| / (N : ℝ) = |T - A| * (1 / (N : ℝ)) := by ring
+            _ ≤ Real.log (N : ℝ) * (1 / (N : ℝ)) := mul_le_mul_of_nonneg_right h_log_bound (by positivity)
+            _ = Real.log (N : ℝ) / (N : ℝ) := by ring
+        linarith
+      _ ≤ 1 + 1 + (1 / (N : ℝ)) := by linarith
+      _ ≤ 1 + 1 + (1/2 : ℝ) := by linarith
+      _ = (2.5 : ℝ) := by norm_num
+      _ ≤ 3 := by norm_num
+  calc
+    |S - Real.log (N : ℝ)| = |(S - T / (N : ℝ)) + (T / (N : ℝ) - Real.log (N : ℝ))| := by ring
+    _ ≤ |S - T / (N : ℝ)| + |T / (N : ℝ) - Real.log (N : ℝ)| := by
+      apply h_triangle
+    _ ≤ (Real.log 4 + 4) + 3 := by gcongr
+    _ = Real.log 4 + 7 := by ring
+
+/-! ### Mertens 第一定理 (主定理) -/
+
+theorem mertens_first_theorem_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x →
+    |∑ p ∈ (Finset.Ioc 1 ⌊x⌋₊).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ) - Real.log x| ≤ C := by
+  rcases primePower_contribution_bounded with ⟨C₁, hC₁⟩
+  let C := Real.log 4 + 7 + C₁ + Real.log 2
+  refine ⟨C, ?_⟩
+  intro x hx
+  set N := ⌊x⌋₊ with hN_def
+  have hN_ge_2 : 2 ≤ N := by
+    by_contra! h
+    have hN_le_1 : N ≤ 1 := by omega
+    have hx_lt_2 : x < 2 := by
+      calc
+        x < (N : ℝ) + 1 := by exact mod_cast Nat.lt_floor_add_one x
+        _ ≤ (1 : ℝ) + 1 := by
+          have hN_cast : (N : ℝ) ≤ (1 : ℝ) := by exact_mod_cast hN_le_1
+          nlinarith
+        _ = 2 := by norm_num
+    linarith
+  have hN_pos : (0 : ℕ) < N := by omega
+  have hN_ne_zero : (N : ℝ) ≠ 0 := by exact_mod_cast hN_pos.ne'
+  have hx_pos : x > 0 := by linarith
+  have hx_ne_zero : x ≠ 0 := by linarith
+  have h_int_bound : |∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log (N : ℝ)| ≤ Real.log 4 + 7 :=
+    vm_div_sum_sub_log_bound N hN_ge_2
+  have h_nonprime_bound : |∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ)| ≤ C₁ := by
+    have h_eq_sum : ∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ) =
+        ∑ n ∈ (Finset.Icc 2 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ) := by
+      apply (Finset.sum_subset ?_ ?_).symm
+      · intro n hn
+        rcases Finset.mem_filter.mp hn with ⟨hn_mem, hn_notprime⟩
+        rcases Finset.mem_Icc.mp hn_mem with ⟨hn_ge_2, hn_le_N⟩
+        refine Finset.mem_filter.mpr ⟨Finset.mem_Ioc.mpr ⟨by omega, hn_le_N⟩, hn_notprime⟩
+      · intro n hn hn'
+        rcases Finset.mem_filter.mp hn with ⟨hn_mem, hn_notprime⟩
+        rcases Finset.mem_Ioc.mp hn_mem with ⟨hn_gt_0, hn_le_N⟩
+        have hn_lt_2 : n < 2 := by
+          by_contra! h
+          have hn_ge_2' : 2 ≤ n := h
+          have hmem : n ∈ (Finset.Icc 2 N).filter (fun n => ¬Nat.Prime n) :=
+            Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨hn_ge_2', hn_le_N⟩, hn_notprime⟩
+          exact hn' hmem
+        have hn1 : n = 1 := by omega
+        subst hn1; simp
+    rw [h_eq_sum]
+    have hxC₁ : 2 ≤ (N : ℝ) := by exact_mod_cast hN_ge_2
+    have hC₁_N := hC₁ (N : ℝ) hxC₁
+    simpa [Nat.floor_natCast] using hC₁_N
+  have h_sdiff : (Finset.Ioc 0 N) \ (Finset.Ioc 0 N).filter Nat.Prime =
+      (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n) := by
+    ext n; simp [Finset.mem_sdiff, Finset.mem_filter]; tauto
+  have h_sum_split : ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) =
+      (∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ)) +
+      (∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ)) := by
+    have h_sub : (Finset.Ioc 0 N).filter Nat.Prime ⊆ Finset.Ioc 0 N := Finset.filter_subset _ _
+    have h_vm_to_log : (∑ n ∈ (Finset.Ioc 0 N).filter Nat.Prime, (vonMangoldt n : ℝ) / (n : ℝ)) =
+        (∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ)) := by
+      refine Finset.sum_congr rfl (fun p hp => ?_)
+      have hprime : Nat.Prime p := (Finset.mem_filter.mp hp).2
+      rw [vonMangoldt_apply_prime hprime]
+    calc
+      ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) =
+          (∑ n ∈ (Finset.Ioc 0 N).filter Nat.Prime, (vonMangoldt n : ℝ) / (n : ℝ)) +
+          ∑ n ∈ (Finset.Ioc 0 N) \ (Finset.Ioc 0 N).filter Nat.Prime, (vonMangoldt n : ℝ) / (n : ℝ) := by
+        simpa using Finset.sum_sdiff (f := fun (n : ℕ) => (vonMangoldt n : ℝ) / (n : ℝ)) h_sub
+      _ = (∑ n ∈ (Finset.Ioc 0 N).filter Nat.Prime, (vonMangoldt n : ℝ) / (n : ℝ)) +
+          (∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ)) := by rw [h_sdiff]
+      _ = (∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ)) +
+          (∑ n ∈ (Finset.Ioc 0 N).filter Nat.Prime, (vonMangoldt n : ℝ) / (n : ℝ)) := by ring
+      _ = (∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ)) +
+          (∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ)) := by rw [h_vm_to_log]
+      _ = (∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ)) +
+          (∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ)) := by ring
+  have h_prime_int_bound : |∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ) - Real.log (N : ℝ)| ≤ Real.log 4 + 7 + C₁ := by
+    have h_sum_eq : (∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ)) - Real.log (N : ℝ) =
+        ((∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ)) - Real.log (N : ℝ)) -
+        (∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ)) := by
+      rw [h_sum_split]
+      ring
+    rw [h_sum_eq]
+    calc
+      |(∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log (N : ℝ)) -
+        (∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ))| ≤
+        |∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log (N : ℝ)| +
+        |∑ n ∈ (Finset.Ioc 0 N).filter (fun n => ¬Nat.Prime n), (vonMangoldt n : ℝ) / (n : ℝ)| := abs_sub _ _
+      _ ≤ (Real.log 4 + 7) + C₁ := by gcongr
+  have h_log_diff : |Real.log (N : ℝ) - Real.log x| ≤ Real.log 2 := by
+    have hNx : (N : ℝ) ≤ x := by
+      have hx_nonneg : 0 ≤ x := by linarith
+      have h_floor_le := Nat.floor_le hx_nonneg
+      -- h_floor_le: (⌊x⌋₊ : ℝ) ≤ x
+      rw [hN_def]
+      exact h_floor_le
+    have hxN : x < (N : ℝ) + 1 := by exact mod_cast Nat.lt_floor_add_one x
+    have h_diff_nonpos : Real.log (N : ℝ) - Real.log x ≤ 0 := by
+      rw [sub_nonpos]
+      exact Real.log_le_log (by positivity) hNx
+    rw [abs_of_nonpos h_diff_nonpos, neg_sub]
+    have hx_div_N_lt_two : x / (N : ℝ) < 2 := by
+      have hN_pos' : (0 : ℝ) < (N : ℝ) := by positivity
+      calc
+        x / (N : ℝ) < ((N : ℝ) + 1) / (N : ℝ) := by
+          gcongr
+        _ = 1 + 1 / (N : ℝ) := by
+          field_simp [hN_pos'.ne']
+        _ ≤ 1 + 1 / (2 : ℝ) := by
+          have hN_ge_2' : (2 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN_ge_2
+          have h_div : 1 / (N : ℝ) ≤ 1 / (2 : ℝ) :=
+            (one_div_le_one_div (by positivity : 0 < (N : ℝ)) (by norm_num : 0 < (2 : ℝ))).mpr hN_ge_2'
+          nlinarith
+        _ = 3/2 := by norm_num
+        _ < 2 := by norm_num
+    calc
+      Real.log x - Real.log (N : ℝ) = Real.log (x / (N : ℝ)) := by
+        rw [Real.log_div hx_ne_zero hN_ne_zero]
+      _ ≤ Real.log 2 := Real.log_le_log (by positivity) (by linarith)
+  have h_final : |∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ) - Real.log x| ≤
+      Real.log 4 + 7 + C₁ + Real.log 2 := by
+    calc
+      |∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ) - Real.log x| =
+          |(∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ) - Real.log (N : ℝ)) +
+            (Real.log (N : ℝ) - Real.log x)| := by ring
+      _ ≤ |∑ p ∈ (Finset.Ioc 0 N).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ) - Real.log (N : ℝ)| +
+          |Real.log (N : ℝ) - Real.log x| := by
+        have h_abs_add (a b : ℝ) : |a + b| ≤ |a| + |b| := by
+          have h1 : a ≤ |a| := le_abs_self a
+          have h2 : -|a| ≤ a := neg_abs_le a
+          have h3 : b ≤ |b| := le_abs_self b
+          have h4 : -|b| ≤ b := neg_abs_le b
+          have hab1 : a + b ≤ |a| + |b| := add_le_add h1 h3
+          have hab2 : -(|a| + |b|) ≤ a + b := by linarith
+          exact abs_le.mpr ⟨hab2, hab1⟩
+        exact h_abs_add _ _
+      _ ≤ (Real.log 4 + 7 + C₁) + Real.log 2 := by gcongr
+      _ = Real.log 4 + 7 + C₁ + Real.log 2 := by ring
+  have h_Ioc_fix : (Finset.Ioc 0 N).filter Nat.Prime = (Finset.Ioc 1 N).filter Nat.Prime := by
+    ext p; constructor <;> intro hp
+    · rcases Finset.mem_filter.mp hp with ⟨hp_mem, hp_prime⟩
+      rcases Finset.mem_Ioc.mp hp_mem with ⟨hp_gt_0, hp_le_N⟩
+      have hp_ge_1 : 1 < p := Nat.Prime.one_lt hp_prime
+      apply Finset.mem_filter.mpr
+      exact ⟨Finset.mem_Ioc.mpr ⟨by omega, hp_le_N⟩, hp_prime⟩
+    · rcases Finset.mem_filter.mp hp with ⟨hp_mem, hp_prime⟩
+      rcases Finset.mem_Ioc.mp hp_mem with ⟨hp_gt_1, hp_le_N⟩
+      apply Finset.mem_filter.mpr
+      exact ⟨Finset.mem_Ioc.mpr ⟨by omega, hp_le_N⟩, hp_prime⟩
+  rw [h_Ioc_fix] at h_final
+  exact h_final
+
+theorem mertens_first_theorem : (fun x : ℝ => ∑ p ∈ (Finset.Ioc 1 ⌊x⌋₊).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ) - Real.log x) =O[atTop] (fun _ : ℝ => (1 : ℝ)) := by
+  rcases mertens_first_theorem_bounded with ⟨C, hC⟩
+  refine Asymptotics.isBigO_iff.mpr ⟨C, ?_⟩
+  filter_upwards [eventually_ge_atTop (2 : ℝ)] with x hx
+  have hx' : 2 ≤ x := hx
+  calc
+    |∑ p ∈ (Finset.Ioc 1 ⌊x⌋₊).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ) - Real.log x| ≤ C := hC x hx'
+    _ = C * ‖(1 : ℝ)‖ := by simp
+
+/-! ### psi_integral_sub_log 的 O(1) 估计 -/
+
+theorem psi_integral_sub_log_isBigO : (fun x : ℝ ↦ (∫ t in Set.Ioc 1 x, ψ t / (t * t)) - Real.log x) =O[atTop] (fun _ ↦ (1 : ℝ)) := by
+  let C := (Real.log 4 + 7 + Real.log 2) + (Real.log 4 + 4)
+  have hC_nonneg : 0 ≤ C := by
+    have h_log4_nonneg : 0 ≤ Real.log 4 := Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 4)
+    have h_log2_nonneg : 0 ≤ Real.log 2 := Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 2)
+    nlinarith
+  refine Asymptotics.isBigO_iff.mpr ⟨C, ?_⟩
+  filter_upwards [eventually_ge_atTop (2 : ℝ)] with x hx
+  have hx2 : 2 ≤ x := hx
+  have hx_nonneg : 0 ≤ x := by linarith
+  have hx_pos : 0 < x := by linarith
+  have hN_ge_2 : 2 ≤ ⌊x⌋₊ := by
+    by_contra! h
+    have hN_le_1 : ⌊x⌋₊ ≤ 1 := by omega
+    have hx_lt_2 : x < 2 := by
+      calc
+        x < (⌊x⌋₊ : ℝ) + 1 := by exact mod_cast Nat.lt_floor_add_one x
+        _ ≤ (1 : ℝ) + 1 := by
+          have h_cast : (⌊x⌋₊ : ℝ) ≤ (1 : ℝ) := by exact_mod_cast hN_le_1
+          nlinarith
+        _ = 2 := by norm_num
+    linarith
+  have hN_pos : (0 : ℕ) < ⌊x⌋₊ := by omega
+  have hN_pos' : (0 : ℝ) < (⌊x⌋₊ : ℝ) := by exact_mod_cast hN_pos
+
+  -- Integral over (1, 2] is zero because ψ t = 0 for t < 2 ({2} has measure zero)
+  have h_int_12 : (∫ t in Set.Ioc (1 : ℝ) (2 : ℝ), ψ t / (t * t)) = 0 := by
+    rw [MeasureTheory.integral_Ioc_eq_integral_Ioo]
+    refine MeasureTheory.setIntegral_eq_zero_of_forall_eq_zero ?_
+    intro t ht
+    have ht_lt_2 : t < 2 := Set.mem_Ioo.mp ht |>.2
+    have hpsi : ψ t = 0 := psi_zero_of_lt_two' ht_lt_2
+    simp [hpsi]
+
+  -- Split the integral: (1, x] = (1, 2] ∪ (2, x]
+  have h_disj_split : Disjoint (Set.Ioc (1 : ℝ) (2 : ℝ)) (Set.Ioc (2 : ℝ) x) := by
+    apply Set.disjoint_left.mpr
+    intro t ht1 ht2
+    have h12 : t ≤ 2 := (Set.mem_Ioc.mp ht1).2
+    have h22 : 2 < t := (Set.mem_Ioc.mp ht2).1
+    linarith
+
+  have h_int_split : (∫ t in Set.Ioc 1 x, ψ t / (t * t)) = (∫ t in Set.Ioc 2 x, ψ t / (t * t)) := by
+    have h_union : (Set.Ioc (1 : ℝ) (2 : ℝ) ∪ Set.Ioc (2 : ℝ) x) = Set.Ioc (1 : ℝ) x :=
+      Set.Ioc_union_Ioc_eq_Ioc (by norm_num : (1 : ℝ) ≤ 2) hx2
+    have h_meas_psi : Measurable ψ := Chebyshev.psi_mono.measurable
+    have h_meas_denom : Measurable (fun t : ℝ => t * t) := (continuous_id.mul continuous_id).measurable
+    have h_meas_f : Measurable (fun t : ℝ => ψ t / (t * t)) := h_meas_psi.div h_meas_denom
+    have h_finite12 : MeasureTheory.volume (Set.Ioc (1 : ℝ) (2 : ℝ)) ≠ ⊤ := by
+      rw [Real.volume_Ioc]
+      exact ENNReal.ofReal_ne_top
+    have h_finite2x : MeasureTheory.volume (Set.Ioc (2 : ℝ) x) ≠ ⊤ := by
+      rw [Real.volume_Ioc]
+      exact ENNReal.ofReal_ne_top
+    have h_int12_integrable : MeasureTheory.IntegrableOn (fun t : ℝ => ψ t / (t * t)) (Set.Ioc (1 : ℝ) (2 : ℝ)) := by
+      refine MeasureTheory.volume.integrableOn_of_bounded (M := Real.log 4 + 4) h_finite12 h_meas_f.aestronglyMeasurable ?_
+      refine Filter.mem_of_superset (MeasureTheory.self_mem_ae_restrict measurableSet_Ioc) ?_
+      intro t ht
+      rcases ht with ⟨ht1, ht2⟩
+      have ht_ge1 : 1 ≤ t := by linarith
+      have ht_nonneg : 0 ≤ t := by linarith
+      have h_psi_abs : |ψ t| ≤ (Real.log 4 + 4) * t := psi_bounded t ht_nonneg
+      have hpos : t * t > 0 := by nlinarith
+      have h_div_bound : (Real.log 4 + 4) / t ≤ Real.log 4 + 4 := div_le_self (by positivity) ht_ge1
+      calc
+        ‖ψ t / (t * t)‖ = |ψ t / (t * t)| := by rw [Real.norm_eq_abs]
+        _ = |ψ t| / |t * t| := by rw [abs_div]
+        _ = |ψ t| / (t * t) := by rw [abs_of_pos hpos]
+        _ ≤ ((Real.log 4 + 4) * t) / (t * t) := by gcongr
+        _ = (Real.log 4 + 4) / t := by field_simp [show t ≠ 0 from by nlinarith]
+        _ ≤ Real.log 4 + 4 := h_div_bound
+    have h_int2x_integrable : MeasureTheory.IntegrableOn (fun t : ℝ => ψ t / (t * t)) (Set.Ioc (2 : ℝ) x) := by
+      refine MeasureTheory.volume.integrableOn_of_bounded (M := Real.log 4 + 4) h_finite2x h_meas_f.aestronglyMeasurable ?_
+      refine Filter.mem_of_superset (MeasureTheory.self_mem_ae_restrict measurableSet_Ioc) ?_
+      intro t ht
+      rcases ht with ⟨ht2, htx⟩
+      have ht_ge1 : 1 ≤ t := by linarith
+      have ht_nonneg : 0 ≤ t := by linarith
+      have h_psi_abs : |ψ t| ≤ (Real.log 4 + 4) * t := psi_bounded t ht_nonneg
+      have hpos : t * t > 0 := by nlinarith
+      have h_div_bound : (Real.log 4 + 4) / t ≤ Real.log 4 + 4 := div_le_self (by positivity) ht_ge1
+      calc
+        ‖ψ t / (t * t)‖ = |ψ t / (t * t)| := by rw [Real.norm_eq_abs]
+        _ = |ψ t| / |t * t| := by rw [abs_div]
+        _ = |ψ t| / (t * t) := by rw [abs_of_pos hpos]
+        _ ≤ ((Real.log 4 + 4) * t) / (t * t) := by gcongr
+        _ = (Real.log 4 + 4) / t := by field_simp [show t ≠ 0 from by linarith]
+        _ ≤ Real.log 4 + 4 := h_div_bound
+    calc
+      (∫ t in Set.Ioc 1 x, ψ t / (t * t)) = (∫ t in (Set.Ioc (1 : ℝ) (2 : ℝ) ∪ Set.Ioc (2 : ℝ) x), ψ t / (t * t)) := by
+        rw [h_union]
+      _ = (∫ t in Set.Ioc (1 : ℝ) (2 : ℝ), ψ t / (t * t)) + (∫ t in Set.Ioc (2 : ℝ) x, ψ t / (t * t)) :=
+        MeasureTheory.setIntegral_union h_disj_split measurableSet_Ioc h_int12_integrable h_int2x_integrable
+      _ = (0 : ℝ) + (∫ t in Set.Ioc 2 x, ψ t / (t * t)) := by rw [h_int_12]
+      _ = (∫ t in Set.Ioc 2 x, ψ t / (t * t)) := by simp
+
+  -- Use Mertens-Abel identity to rewrite the (2, x] integral
+  have h_int_2x : (∫ t in Set.Ioc 2 x, ψ t / (t * t)) =
+      (∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - ψ x / x := by
+    linarith [mertens_abel_identity x hx2]
+
+  -- Express the target quantity
+  have h_expr : ((∫ t in Set.Ioc 1 x, ψ t / (t * t)) - Real.log x) =
+      ((∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - Real.log x) - ψ x / x := by
+    calc
+      ((∫ t in Set.Ioc 1 x, ψ t / (t * t)) - Real.log x) = ((∫ t in Set.Ioc 2 x, ψ t / (t * t)) - Real.log x) := by rw [h_int_split]
+      _ = (((∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - ψ x / x) - Real.log x) := by rw [h_int_2x]
+      _ = ((∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - Real.log x) - ψ x / x := by ring_nf
+
+  rw [h_expr]
+
+  -- Bound |∑ Λ/n - log x|
+  have h_sum_log_bound : |(∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - Real.log x| ≤ Real.log 4 + 7 + Real.log 2 := by
+    have h_vm_bound : |∑ n ∈ Finset.Ioc (0 : ℕ) ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log ((⌊x⌋₊ : ℕ) : ℝ)| ≤ Real.log 4 + 7 :=
+      vm_div_sum_sub_log_bound ⌊x⌋₊ hN_ge_2
+
+    have h_sum_eq : (∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) =
+        (∑ n ∈ Finset.Ioc (0 : ℕ) ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) := by
+      refine Finset.sum_subset ?_ ?_
+      · intro n hn
+        rcases Finset.mem_Icc.mp hn with ⟨hn2, hnN⟩
+        have hn0 : 0 < n := Nat.lt_of_lt_of_le (by norm_num : 0 < 2) hn2
+        exact Finset.mem_Ioc.mpr ⟨hn0, hnN⟩
+      · intro n hn hn_not_mem
+        rcases Finset.mem_Ioc.mp hn with ⟨hn0, hnN⟩
+        have hn_lt_2 : n < 2 := by
+          by_contra! h
+          exact hn_not_mem (Finset.mem_Icc.mpr ⟨h, hnN⟩)
+        have hn1 : n = 1 := by omega
+        subst hn1; simp
+
+    have h_log_diff : |Real.log ((⌊x⌋₊ : ℕ) : ℝ) - Real.log x| ≤ Real.log 2 := by
+      have hNx : ((⌊x⌋₊ : ℕ) : ℝ) ≤ x := by
+        have hx_nonneg' : 0 ≤ x := hx_nonneg
+        exact mod_cast Nat.floor_le hx_nonneg'
+      have hxN : x < ((⌊x⌋₊ : ℕ) : ℝ) + 1 := by exact mod_cast Nat.lt_floor_add_one x
+      have h_diff_nonpos : Real.log ((⌊x⌋₊ : ℕ) : ℝ) - Real.log x ≤ 0 := by
+        rw [sub_nonpos]
+        exact Real.log_le_log (by positivity) hNx
+      rw [abs_of_nonpos h_diff_nonpos, neg_sub]
+      have hx_div_N_lt_two : x / ((⌊x⌋₊ : ℕ) : ℝ) < 2 := by
+        calc
+          x / ((⌊x⌋₊ : ℕ) : ℝ) < (((⌊x⌋₊ : ℕ) : ℝ) + 1) / ((⌊x⌋₊ : ℕ) : ℝ) := by
+            gcongr
+          _ = 1 + 1 / ((⌊x⌋₊ : ℕ) : ℝ) := by
+            field_simp [hN_pos'.ne']
+          _ ≤ 1 + 1 / (2 : ℝ) := by
+            have hN_ge_2' : (2 : ℝ) ≤ ((⌊x⌋₊ : ℕ) : ℝ) := by exact_mod_cast hN_ge_2
+            have h_div : 1 / ((⌊x⌋₊ : ℕ) : ℝ) ≤ 1 / (2 : ℝ) :=
+              (one_div_le_one_div (by positivity : 0 < ((⌊x⌋₊ : ℕ) : ℝ)) (by norm_num : 0 < (2 : ℝ))).mpr hN_ge_2'
+            nlinarith
+          _ = 3/2 := by norm_num
+          _ < 2 := by norm_num
+      calc
+        Real.log x - Real.log ((⌊x⌋₊ : ℕ) : ℝ) = Real.log (x / ((⌊x⌋₊ : ℕ) : ℝ)) := by
+          rw [← Real.log_div hx_pos.ne' hN_pos'.ne']
+        _ ≤ Real.log 2 := Real.log_le_log (by positivity) (by linarith)
+
+    calc
+      |(∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - Real.log x|
+          = |(∑ n ∈ Finset.Ioc (0 : ℕ) ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - Real.log x| := by rw [h_sum_eq]
+      _ = |(∑ n ∈ Finset.Ioc (0 : ℕ) ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log ((⌊x⌋₊ : ℕ) : ℝ)) +
+            (Real.log ((⌊x⌋₊ : ℕ) : ℝ) - Real.log x)| := by ring_nf
+      _ ≤ |∑ n ∈ Finset.Ioc (0 : ℕ) ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log ((⌊x⌋₊ : ℕ) : ℝ)| +
+            |Real.log ((⌊x⌋₊ : ℕ) : ℝ) - Real.log x| := by
+        have h_abs_add (a b : ℝ) : |a + b| ≤ |a| + |b| := by
+          have h1 : a ≤ |a| := le_abs_self a
+          have h2 : -|a| ≤ a := neg_abs_le a
+          have h3 : b ≤ |b| := le_abs_self b
+          have h4 : -|b| ≤ b := neg_abs_le b
+          have hab1 : a + b ≤ |a| + |b| := add_le_add h1 h3
+          have hab2 : -(|a| + |b|) ≤ a + b := by linarith
+          exact abs_le.mpr ⟨hab2, hab1⟩
+        exact h_abs_add _ _
+      _ ≤ (Real.log 4 + 7) + Real.log 2 := by gcongr
+      _ = Real.log 4 + 7 + Real.log 2 := by ring
+
+  -- Bound |ψ x / x|
+  have h_psi_div_bound : |ψ x / x| ≤ Real.log 4 + 4 := by
+    have h_psi_bound : |ψ x| ≤ (Real.log 4 + 4) * x := psi_bounded x hx_nonneg
+    calc
+      |ψ x / x| = |ψ x| / |x| := by rw [abs_div]
+      _ = |ψ x| / x := by rw [abs_of_nonneg hx_nonneg]
+      _ ≤ ((Real.log 4 + 4) * x) / x := by
+        gcongr
+      _ = Real.log 4 + 4 := by field_simp [hx_pos.ne']
+
+  -- Triangle inequality
+  have h_abs_add (a b : ℝ) : |a + b| ≤ |a| + |b| := by
+    have h1 : a ≤ |a| := le_abs_self a
+    have h2 : -|a| ≤ a := neg_abs_le a
+    have h3 : b ≤ |b| := le_abs_self b
+    have h4 : -|b| ≤ b := neg_abs_le b
+    have hab1 : a + b ≤ |a| + |b| := add_le_add h1 h3
+    have hab2 : -(|a| + |b|) ≤ a + b := by linarith
+    exact abs_le.mpr ⟨hab2, hab1⟩
+
+  calc
+    |((∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - Real.log x) - ψ x / x|
+        = |((∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - Real.log x) + (-(ψ x / x))| := by ring_nf
+    _ ≤ |(∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - Real.log x| + |-(ψ x / x)| := h_abs_add _ _
+    _ = |(∑ n ∈ Finset.Icc 2 ⌊x⌋₊, (vonMangoldt n : ℝ) / (n : ℝ)) - Real.log x| + |ψ x / x| := by simp
+    _ ≤ (Real.log 4 + 7 + Real.log 2) + (Real.log 4 + 4) := by gcongr
+    _ = C := rfl
+    _ = C * ‖(1 : ℝ)‖ := by simp
