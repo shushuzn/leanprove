@@ -59,6 +59,8 @@
 
 39. **一个引理完成不是终点**。完成一个编译通过的引理后不得中断，必须继续下一个引理/定理。每次推送后自动继续，直到达到停止条件。
 
+40. **Commit message 必须有描述性**。禁止以下 commit message：空、仅 1 词、少于 15 字符、无意义的词（"fix""update""wip""cleanup"等）。格式应为 "动词 + 模块: 具体描述"（如 "Add zeta_bound_at_two: |ζ(2+it)| ≤ ζ(2)"）。commit-msg hook 会自动检查此规则，拒绝不合格的 commit message。
+
 ---
 
 ## 违规记录

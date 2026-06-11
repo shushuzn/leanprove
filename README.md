@@ -266,13 +266,21 @@ lean --run <file>       # 运行单个文件
 
 ### pre-commit hook
 
-项目提供了一个 pre-commit hook 用于在提交前自动检查：
+项目提供了 git hook 用于在提交时自动检查：
+- **覆盖保护**：检测已跟踪文件被大范围重写（Write 覆盖），自动拒绝
 - **未完成标记检测**：禁止提交含 `sorry`、`admit`、`TODO`、`FIXME`、`XXX` 等未完成标记
 - **文档同步检查**：修改 `.lean` 文件时必须同步更新 README.md、ROADMAP.md、DEPENDENCY.md
+
+### commit-msg hook
+
+项目提供了 commit-msg hook 用于检查 commit message 质量：
+- **最少 15 字符**，至少 3 个词
+- **禁止无意义单次**（如 "fix"、"update"、"wip"）
 
 安装方式：
 ```bash
 cp scripts/pre-commit .git/hooks/pre-commit
+cp scripts/commit-msg .git/hooks/commit-msg
 chmod +x .git/hooks/pre-commit
 ```
 

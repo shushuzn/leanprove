@@ -1,0 +1,39 @@
+#!/bin/bash
+# commit-msg hook: 检查 commit message 质量
+# 第一个参数是 commit message 文件路径
+
+msg_file="$1"
+
+# 读取 commit message（跳过注释行）
+msg=$(grep -v '^#' "$msg_file" | head -1)
+
+# 检查是否为空
+if [ -z "$msg" ]; then
+    echo ""
+    echo "错误: Commit message 不能为空。"
+    echo "请提供描述性信息，例如: \"Add zeta_bound_at_two: |ζ(2+it)| ≤ ζ(2)\""
+    echo ""
+    exit 1
+fi
+
+# 检查长度（至少 15 个字符）
+char_count=${#msg}
+if [ "$char_count" -lt 15 ]; then
+    echo ""
+    echo "错误: Commit message 太短（${char_count} 字符），至少需要 15 个字符。"
+    echo "当前: $msg"
+    echo ""
+    exit 1
+fi
+
+# 检查是否像"fix""update""wip"等无意义单次
+word_count=$(echo "$msg" | wc -w)
+if [ "$word_count" -lt 3 ]; then
+    echo ""
+    echo "错误: Commit message 太简单（仅 $word_count 词），至少需要 3 个词描述变更。"
+    echo "当前: $msg"
+    echo ""
+    exit 1
+fi
+
+exit 0
