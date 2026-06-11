@@ -11,7 +11,9 @@ msg=$(grep -v '^#' "$msg_file" | head -1)
 if [ -z "$msg" ]; then
     echo ""
     echo "错误: Commit message 不能为空。"
-    echo "请提供描述性信息，例如: \"Add zeta_bound_at_two: |ζ(2+it)| ≤ ζ(2)\""
+    echo "格式: \"动词 + 模块: 具体描述\""
+    echo "示例: \"Add zeta_bound_at_two: |ζ(2+it)| ≤ ζ(2)\""
+    echo "      \"AGENT.md: remove fallback clause from rule 20\""
     echo ""
     exit 1
 fi
@@ -22,15 +24,27 @@ if [ "$char_count" -lt 15 ]; then
     echo ""
     echo "错误: Commit message 太短（${char_count} 字符），至少需要 15 个字符。"
     echo "当前: $msg"
+    echo "格式: \"动词 + 模块: 具体描述\""
     echo ""
     exit 1
 fi
 
-# 检查是否像"fix""update""wip"等无意义单次
-word_count=$(echo "$msg" | wc -w)
-if [ "$word_count" -lt 3 ]; then
+# 检查是否包含冒号（分隔模块和描述）
+if ! echo "$msg" | grep -q ':'; then
     echo ""
-    echo "错误: Commit message 太简单（仅 $word_count 词），至少需要 3 个词描述变更。"
+    echo "错误: Commit message 缺少冒号分隔符，无法区分模块和描述。"
+    echo "格式: \"动词 + 模块: 具体描述\""
+    echo "示例: \"Add zeta_bound_at_two: |ζ(2+it)| ≤ ζ(2)\""
+    echo ""
+    exit 1
+fi
+
+# 检查冒号后的描述部分长度
+after_colon=$(echo "$msg" | sed 's/^[^:]*: *//')
+after_len=${#after_colon}
+if [ "$after_len" -lt 10 ]; then
+    echo ""
+    echo "错误: 冒号后的描述太短（${after_len} 字符），至少需要 10 个字符描述具体变更。"
     echo "当前: $msg"
     echo ""
     exit 1
