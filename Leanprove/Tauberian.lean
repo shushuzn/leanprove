@@ -9,6 +9,9 @@ import Mathlib.NumberTheory.LSeries.Nonvanishing
 import Mathlib.NumberTheory.Chebyshev
 import Mathlib.Analysis.Complex.RemovableSingularity
 import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent
+import Mathlib.NumberTheory.Harmonic.EulerMascheroni
+import Mathlib.NumberTheory.Harmonic.ZetaAsymp
+import Mathlib.Analysis.Calculus.Deriv.Slope
 
 open Real Complex MeasureTheory Filter Set LSeries Asymptotics
 open ArithmeticFunction
@@ -31,7 +34,7 @@ def nnabla [Sub E] (u : ℕ → E) (n : ℕ) : E := u n - u (n + 1)
 def shift (u : ℕ → E) (n : ℕ) : E := u (n + 1)
 
 lemma cumsum_nonneg {u : ℕ → ℝ} (hu : ∀ n, 0 ≤ u n) : ∀ n, 0 ≤ cumsum u n :=
-  fun n => Finset.sum_nonneg (fun i _ => hu i)
+  fun _n => Finset.sum_nonneg (fun i _ => hu i)
 
 /-- Chebyshev-type bound -/
 def chebyWith (C : ℝ) (f : ℕ → ℝ) : Prop := ∀ n, cumsum f n ≤ C * n
@@ -72,17 +75,176 @@ axiom WienerIkeharaTheorem
 /-! #### Application to PNT -/
 
 /-- Auxiliary function for WeakPNT: -ζ'/ζ with the pole 1/(s-1) removed.
-    At s=1 both terms have simple poles with residue 1, so G(1) is defined as 1. -/
-noncomputable def G_weakPNT : ℂ → ℂ := fun s => if s = 1 then 1 else
+    Both terms have simple poles at s=1 with residue 1; their difference
+    has a removable singularity. The limit as s→1 is -γ (negative
+    Euler-Mascheroni constant), computed via H(s) = (s-1)ζ(s):
+    -ζ'/ζ - 1/(s-1) = -H'/H → -γ since H(1)=1 and H'(1)=γ. -/
+noncomputable def G_weakPNT : ℂ → ℂ := fun s => if s = 1 then
+  -(Real.eulerMascheroniConstant : ℂ) else
   -deriv riemannZeta s / riemannZeta s - 1 / (s - 1)
 
-/-- **G continuity axiom**: Both -ζ'(s)/ζ(s) and 1/(s-1) have simple poles at s=1
-    with residue 1 (from `riemannZeta_residue_one`), so their difference has a
-    removable singularity at s=1. By Riemann's removable singularity theorem
-    (`differentiableOn_update_limUnder_of_bddAbove` in mathlib), G extends
-    analytically across s=1, hence is continuous on {Re(s) ≥ 1}.
-    A complete formal proof requires ~200 lines of local analysis. -/
-axiom G_continuous : ContinuousOn G_weakPNT {s : ℂ | 1 ≤ s.re}
+/-- **G continuity**: G_weakPNT is continuous on {Re(s) ≥ 1}.
+    The poles of -ζ'/ζ and 1/(s-1) at s=1 cancel, leaving a removable singularity
+    with limit -γ (proven via H(s) = (s-1)ζ(s)). -/
+theorem G_continuous : ContinuousOn G_weakPNT {s : ℂ | 1 ≤ s.re} := by
+  let H_set : Set ℂ := {s | 1 ≤ s.re}
+  let f_ext : ℂ → ℂ := fun s ↦ -deriv riemannZeta s / riemannZeta s - 1 / (s - 1)
+  have hG_eq : G_weakPNT = Function.update f_ext 1 (-(Real.eulerMascheroniConstant : ℂ)) := by
+    funext s; by_cases hs : s = 1 <;> simp [G_weakPNT, f_ext, hs, Function.update]
+  rw [hG_eq]
+  -- Define h(s) = (s-1)·ζ(s) with continuous extension h(1) = 1
+  let h : ℂ → ℂ := Function.update (fun s ↦ (s - 1) * riemannZeta s) 1 1
+  have h_one_val : h 1 = 1 := by simp [h]
+  have h_one_ne_zero : h 1 ≠ 0 := by simp [h]
+  have h_cont_one : ContinuousAt h 1 := by
+    simpa [h, continuousAt_update_same] using riemannZeta_residue_one
+  have h_diff_punct : ∀ᶠ s in 𝓝[≠] 1, DifferentiableAt ℂ h s := by
+    have h_underlying_diff : ∀ᶠ s in 𝓝[≠] 1,
+        DifferentiableAt ℂ (fun s ↦ (s - 1) * riemannZeta s) s := by
+      filter_upwards [self_mem_nhdsWithin (a := (1 : ℂ)) (s := {1}ᶜ)] with (s : ℂ) hs
+      exact ((differentiableAt_id (𝕜 := ℂ)).sub (differentiableAt_const (𝕜 := ℂ) (1 : ℂ))).mul
+        (differentiableAt_riemannZeta hs)
+    have h_eq : h =ᶠ[𝓝[≠] 1] (fun s ↦ (s - 1) * riemannZeta s) := by
+      filter_upwards [self_mem_nhdsWithin (a := (1 : ℂ)) (s := {1}ᶜ)] with (s : ℂ) hs
+      simp [h, Function.update_of_ne hs]
+    have h_self_mem : ∀ᶠ (s : ℂ) in 𝓝[≠] 1, s ≠ 1 := by
+      have h : {1}ᶜ ∈ 𝓝[≠] (1 : ℂ) := by
+        rw [show 𝓝[≠] (1 : ℂ) = 𝓝[{1}ᶜ] (1 : ℂ) by rfl]
+        exact self_mem_nhdsWithin
+      filter_upwards [h] with s hs
+      simpa using hs
+    filter_upwards [h_underlying_diff, h_eq, h_self_mem] with s hs_diff h_eq_val hs_ne
+    have h_eq_near : h =ᶠ[𝓝 s] (fun s ↦ (s - 1) * riemannZeta s) := by
+      have h_open : IsOpen ({1}ᶜ : Set ℂ) := isOpen_compl_singleton
+      have h_mem : s ∈ ({1}ᶜ : Set ℂ) := hs_ne
+      filter_upwards [h_open.mem_nhds h_mem] with x hx
+      simp [h, Function.update_of_ne hx]
+    exact hs_diff.congr_of_eventuallyEq h_eq_near
+  have h_analytic_one : AnalyticAt ℂ h 1 :=
+    analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt h_diff_punct h_cont_one
+  have h_hasDerivAt_one : HasDerivAt h (Real.eulerMascheroniConstant : ℂ) 1 := by
+    rw [hasDerivAt_iff_tendsto_slope]
+    have h_slope_eq : (fun s ↦ slope h 1 s) =ᶠ[𝓝[≠] 1]
+        (fun s ↦ riemannZeta s - 1 / (s - 1)) := by
+      filter_upwards [self_mem_nhdsWithin (a := (1 : ℂ)) (s := {1}ᶜ)] with (s : ℂ) hs
+      have hs_ne : s ≠ 1 := hs
+      calc
+        slope h 1 s = (h s - h 1) / (s - 1) := by rw [slope_def_field]
+        _ = (((s - 1) * riemannZeta s) - 1) / (s - 1) := by
+          simp [h, Function.update_of_ne hs_ne]
+        _ = riemannZeta s - 1 / (s - 1) := by
+          have h : s - 1 ≠ 0 := sub_ne_zero_of_ne hs_ne
+          field_simp [h]
+    exact Tendsto.congr' h_slope_eq.symm tendsto_riemannZeta_sub_one_div
+  have h_deriv_one : deriv h 1 = (Real.eulerMascheroniConstant : ℂ) :=
+    h_hasDerivAt_one.deriv
+  have h_g_analytic_one : AnalyticAt ℂ (fun s ↦ -deriv h s / h s) 1 := by
+    have h_deriv_analytic_one : AnalyticAt ℂ (deriv h) 1 := h_analytic_one.deriv
+    exact (AnalyticAt.neg h_deriv_analytic_one).div h_analytic_one h_one_ne_zero
+  have h_g_cont_one : ContinuousAt (fun s ↦ -deriv h s / h s) 1 :=
+    h_g_analytic_one.continuousAt
+  -- f_ext agrees with -deriv h / h in a punctured neighborhood of 1
+  have h_ζ_ne : ∀ᶠ s in 𝓝[≠] 1, riemannZeta s ≠ 0 :=
+    eventually_nhdsWithin_of_eventually_nhds riemannZeta_eventually_ne_zero_nhds_one
+  have h_f_ext_eq_g : f_ext =ᶠ[𝓝[≠] 1] (fun s ↦ -deriv h s / h s) := by
+    filter_upwards [h_ζ_ne, self_mem_nhdsWithin (a := (1 : ℂ)) (s := {1}ᶜ)]
+      with s hζ_ne hs_ne
+    have hs_ne_one : s ≠ 1 := hs_ne
+    have h_deriv_eq : deriv h s = riemannZeta s + (s - 1) * deriv riemannZeta s := by
+      have h_loc : h =ᶠ[𝓝 s] (fun t ↦ (t - 1) * riemannZeta t) := by
+        filter_upwards [eventually_ne_nhds hs_ne_one] with x hx
+        simp [h, Function.update_of_ne hx]
+      have h_g_diff : DifferentiableAt ℂ (fun t ↦ (t - 1) * riemannZeta t) s :=
+        ((differentiableAt_id (𝕜 := ℂ)).sub (differentiableAt_const (𝕜 := ℂ) (1 : ℂ))).mul
+          (differentiableAt_riemannZeta hs_ne_one)
+      have h_deriv_g : deriv (fun t ↦ (t - 1) * riemannZeta t) s =
+          riemannZeta s + (s - 1) * deriv riemannZeta s := by
+        have h1 : deriv (fun t : ℂ ↦ t - 1) s = 1 := by
+          simp [deriv_id'', deriv_const]
+        have h2 : (fun t : ℂ ↦ t - 1) s = s - 1 := rfl
+        have h3 : DifferentiableAt ℂ (fun t : ℂ ↦ t - 1) s := by
+          apply DifferentiableAt.sub
+          · exact differentiableAt_id
+          · exact differentiableAt_const 1
+        have h4 : DifferentiableAt ℂ riemannZeta s := differentiableAt_riemannZeta hs_ne_one
+        have h5 : deriv (fun t ↦ (t - 1) * riemannZeta t) s =
+            deriv (fun t ↦ t - 1) s * riemannZeta s + (fun t ↦ t - 1) s * deriv riemannZeta s := by
+          apply deriv_mul h3 h4
+        rw [h5]
+        simp [h1]
+      calc
+        deriv h s = deriv (fun t ↦ (t - 1) * riemannZeta t) s :=
+          (h_g_diff.hasDerivAt.congr_of_eventuallyEq h_loc).deriv
+        _ = riemannZeta s + (s - 1) * deriv riemannZeta s := h_deriv_g
+    have h_val_eq : h s = (s - 1) * riemannZeta s := by
+      simp [h, Function.update_of_ne hs_ne_one]
+    calc
+      f_ext s = -deriv riemannZeta s / riemannZeta s - 1 / (s - 1) := rfl
+      _ = -(deriv h s / h s) := by
+        rw [h_deriv_eq, h_val_eq]
+        have h : s - 1 ≠ 0 := sub_ne_zero_of_ne hs_ne_one
+        field_simp [h, hζ_ne]
+        ring_nf
+      _ = -deriv h s / h s := by ring
+  -- Therefore the limit of f_ext at 1 is -γ
+  have h_lim : Tendsto f_ext (𝓝[≠] (1 : ℂ))
+      (𝓝 (-(Real.eulerMascheroniConstant : ℂ))) := by
+    have h_g_lim_punct : Tendsto (fun s ↦ -deriv h s / h s) (𝓝[≠] 1)
+        (𝓝 (-(Real.eulerMascheroniConstant : ℂ))) := by
+      have h_tendsto : Tendsto (fun s ↦ -deriv h s / h s) (𝓝 1)
+          (𝓝 (-(Real.eulerMascheroniConstant : ℂ))) := by
+        have h1 : Tendsto (fun s ↦ -deriv h s / h s) (𝓝 1) (𝓝 (-deriv h 1 / h 1)) := h_g_cont_one
+        simpa [h_one_val, h_deriv_one] using h1
+      exact h_tendsto.mono_left nhdsWithin_le_nhds
+    exact Tendsto.congr' h_f_ext_eq_g.symm h_g_lim_punct
+  -- Now prove continuity on H_set
+  intro s hs
+  by_cases hs1 : s = 1
+  · subst hs1
+    have h_subset : H_set \ {1} ⊆ {1}ᶜ := fun x hx ↦ hx.2
+    have h_filter : 𝓝[H_set \ {1}] (1 : ℂ) ≤ 𝓝[≠] (1 : ℂ) :=
+      nhdsWithin_mono _ h_subset
+    exact continuousWithinAt_update_same.2 (h_lim.mono_left h_filter)
+  · have h_f_ext_cont : ContinuousAt f_ext s := by
+      dsimp [f_ext]
+      have hζ_diff : DifferentiableAt ℂ riemannZeta s := differentiableAt_riemannZeta hs1
+      have hζ_cont : ContinuousAt riemannZeta s := hζ_diff.continuousAt
+      have hζ_ne : riemannZeta s ≠ 0 := riemannZeta_ne_zero_of_one_le_re hs
+      have hderivζ_cont : ContinuousAt (deriv riemannZeta) s := by
+        have h_an : AnalyticOnNhd ℂ riemannZeta {1}ᶜ := analyticOn_riemannZeta
+        have h_cd : ContDiffOn ℂ ⊤ riemannZeta {1}ᶜ :=
+          h_an.contDiffOn isOpen_compl_singleton.uniqueDiffOn
+        have hderiv_cont : ContinuousOn (deriv riemannZeta) {1}ᶜ :=
+          h_cd.continuousOn_deriv_of_isOpen isOpen_compl_singleton le_top
+        have hs_mem : s ∈ ({1}ᶜ : Set ℂ) := hs1
+        exact hderiv_cont s hs_mem |>.continuousAt (isOpen_compl_singleton.mem_nhds hs_mem)
+      have hlog_cont : ContinuousAt (fun t ↦ -deriv riemannZeta t / riemannZeta t) s := by
+        have h1 : ContinuousAt (fun t ↦ deriv riemannZeta t / riemannZeta t) s := by
+          apply ContinuousAt.div hderivζ_cont hζ_cont hζ_ne
+        have h_eq : (fun t : ℂ ↦ -deriv riemannZeta t / riemannZeta t) = (fun t ↦ -(deriv riemannZeta t / riemannZeta t)) := by
+          funext t; ring
+        rw [h_eq]
+        exact h1.neg
+      have hinv_cont : ContinuousAt (fun t ↦ 1 / (t - 1)) s := by
+        refine ContinuousAt.div continuousAt_const
+          (continuousAt_id.sub continuousAt_const) (sub_ne_zero.2 hs1)
+      exact ContinuousAt.sub hlog_cont hinv_cont
+    have h_eventually : G_weakPNT =ᶠ[𝓝 s] f_ext := by
+      filter_upwards [isOpen_compl_singleton.mem_nhds hs1] with t ht
+      have ht_ne : t ≠ 1 := ht
+      simp only [G_weakPNT, f_ext, ht_ne, ↓reduceIte]
+    have h_tendsto_f : Tendsto f_ext (𝓝 s) (𝓝 (f_ext s)) := h_f_ext_cont.tendsto
+    have h_val : G_weakPNT s = f_ext s := by
+      have hs_ne : s ≠ 1 := hs1
+      simp only [G_weakPNT, f_ext, hs_ne, ↓reduceIte]
+    have h_tendsto_G : Tendsto G_weakPNT (𝓝 s) (𝓝 (f_ext s)) :=
+      Tendsto.congr' h_eventually.symm h_tendsto_f
+    have h_cwa : Tendsto (Function.update f_ext 1 (-(Real.eulerMascheroniConstant : ℂ)))
+        (𝓝[{s | 1 ≤ s.re}] s) (𝓝 ((Function.update f_ext 1 (-(Real.eulerMascheroniConstant : ℂ))) s)) := by
+      rw [← hG_eq, h_val]
+      exact h_tendsto_G.mono_left nhdsWithin_le_nhds
+    exact h_cwa
+
 
 /-- The weak PNT: (1/N)∑_{n<N} Λ(n) → 1 -/
 theorem WeakPNT : Tendsto (fun N : ℕ => cumsum vonMangoldt N / (N : ℝ))
