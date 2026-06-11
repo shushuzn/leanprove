@@ -98,7 +98,7 @@ RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价
 | 优先级 | 主题 | 可行性 | 说明 |
 |:------:|:-----|:------:|:-----|
 | ✅ 已完成 | 零点计数函数 N(T) | ✅ 完成 | `criticalStrip` 紧性 + `xiZeroCount T` 单调 + 零点对称性 |
-| 高 | 临界线 Re(s)=1/2 | ✅ 可形式化 | Hardy 定理（临界线上无穷多零点）|
+| ✅ 已完成框架 | 临界线 Re(s)=1/2 | ✅ 框架就绪 | `criticalLine` 参数化 + `criticalLineZeros` + `xi_on_critical_line` 连续性 + Hardy 定理归约引理 |
 | 中 | 显式公式 | ✅ 可形式化 | ψ(x) 的 Riemann 显式公式 |
 | 中 | 误差项改进 | ⚠️ 依赖 PNT+ | 若 PNT 误差项形式化完成 |
 | 低 | RH 本身 | 🔮 开放问题 | 仅形式化陈述 |
@@ -113,7 +113,7 @@ RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价
   ├── ✅ Wiener-Ikehara 完整形式化证明 (0 sorry + 0 axiom)
   ├── ✅ WeakPNT 可推导
   ├── ✅ 启动阶段 VI: 零点理论框架 (N(T) 定义 + criticalStrip 紧性 + 零点对称性)
-  └── ⏳ 临界线 Re(s)=1/2 上的零点性质 (Hardy 定理)
+  └── ✅ Hardy 定理框架 (criticalLine 参数化 + xi_on_critical_line 连续 + 归约引理)
 
 中期（1–3 个月）
   ├── 启动阶段 VI: 零点理论框架

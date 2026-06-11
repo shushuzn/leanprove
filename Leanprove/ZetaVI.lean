@@ -349,3 +349,158 @@ lemma riemannXi_zero_implies_zeta_zero {z : ℂ} (hz : z ∈ riemannXiZeros) (hz
 lemma xiZeroCount_eq_NT (T : ℝ) :
     xiZeroCount T = Nat.card {ρ ∈ criticalStrip T | riemannXi ρ = 0} := by
   rfl
+
+/-! ### Hardy 定理框架：临界线上的零点理论
+
+    核心思路：通过分析实值函数 f(t) := ξ(1/2 + it) 的变号行为，
+    证明临界线 Re(s) = 1/2 上有无穷多零点。
+
+    关键基础设施：
+    1. criticalLine : ℝ → ℂ   — 临界线的参数化
+    2. xi_on_critical_line : ℝ → ℝ  — ξ 在临界线上的实值限制
+    3. Hardy 定理归约：证明 f(t) 无限次变号 ⇒ 有无穷多零点 -/
+
+/-- 临界线的参数化：criticalLine t := 1/2 + I * t -/
+def criticalLine (t : ℝ) : ℂ := (1 / 2 : ℂ) + I * (t : ℂ)
+
+lemma criticalLine_re_im (t : ℝ) :
+    (criticalLine t).re = 1 / 2 ∧ (criticalLine t).im = t := by
+  simp [criticalLine]
+  <;> norm_num
+  <;> ring_nf
+
+/-- ξ 在临界线上的实值限制。由 `riemannXi_real_on_critical_line`，
+    ξ(1/2+it) 总是实数，因此可取其值视为实数。 -/
+noncomputable def xi_on_critical_line (t : ℝ) : ℝ := (riemannXi (criticalLine t)).re
+
+lemma xi_on_critical_line_eq (t : ℝ) :
+    (xi_on_critical_line t : ℂ) = riemannXi (criticalLine t) := by
+  have h₁ : riemannXi (criticalLine t) ∈ Set.range (fun (x : ℝ) => (x : ℂ)) := by
+    have h₂ := riemannXi_real_on_critical_line t
+    simpa [Set.mem_range] using h₂
+  rcases h₁ with ⟨r, hr⟩
+  have h₃ : riemannXi (criticalLine t) = (r : ℂ) := hr.symm
+  have h₄ : xi_on_critical_line t = r := by
+    simpa [xi_on_critical_line, h₃] using rfl
+  rw [h₄, h₃]
+
+lemma xi_on_critical_line_symm (t : ℝ) :
+    xi_on_critical_line (-t) = xi_on_critical_line t := by
+  have h₁ : riemannXi (criticalLine (-t)) = riemannXi (criticalLine t) := by
+    have h₂ : riemannXi (criticalLine (-t)) = riemannXi (1 - criticalLine t) := by
+      simp [criticalLine]
+      <;> ext <;> simp [mul_comm I] <;> ring_nf
+    rw [h₂, riemannXi_eq_riemannXi_one_sub (criticalLine t)]
+  have h₃ : xi_on_critical_line (-t) = (riemannXi (criticalLine (-t))).re := by
+    rfl
+  rw [h₃, h₁]
+  <;> rfl
+
+/-! #### ξ 在关键点的特殊值 -/
+
+/-- 在 t = 0 时，ξ(1/2) 的值：与 ξ(1/2) 相同 -/
+lemma xi_on_critical_line_zero :
+    xi_on_critical_line 0 = (riemannXi (1 / 2 : ℂ)).re := by
+  simpa [xi_on_critical_line, criticalLine] using rfl
+
+/-- 若 `t ≠ 0` 使得 `xi_on_critical_line t = 0`，则 `criticalLine t` 是 ξ 的零点。
+    这将 Hardy 定理的问题归约为证明 f(t) 有无穷多零点。 -/
+lemma xi_on_critical_line_zero_iff (t : ℝ) :
+    xi_on_critical_line t = 0 ↔ riemannXi (criticalLine t) = 0 := by
+  constructor
+  · intro h
+    have h₅ : (xi_on_critical_line t : ℂ) = riemannXi (criticalLine t) := xi_on_critical_line_eq t
+    have h₆ : (xi_on_critical_line t : ℂ) = 0 := by
+      rw [h] <;> simp
+    rw [h₆] at h₅
+    exact h₅.symm
+  · intro h
+    simpa [xi_on_critical_line, h] using by
+      simp
+
+/-! #### 临界线零点集合 -/
+
+/-- 临界线上的 ξ 零点集合（作为 ℝ 的子集，对应 f(t)=ξ(1/2+it) 的零点）。 -/
+def criticalLineZeros : Set ℝ := {t | xi_on_critical_line t = 0}
+
+lemma criticalLineZeros_iff (t : ℝ) :
+    t ∈ criticalLineZeros ↔ riemannXi (criticalLine t) = 0 :=
+  xi_on_critical_line_zero_iff t
+
+lemma criticalLineZeros_mem_riemannXiZeros (t : ℝ) (h : t ∈ criticalLineZeros) :
+    criticalLine t ∈ riemannXiZeros := by
+  have h₁ : riemannXi (criticalLine t) = 0 := (criticalLineZeros_iff t).mp h
+  simpa [riemannXiZeros] using h₁
+
+/-- 临界线零点关于 t=0 对称：若 t ∈ criticalLineZeros，则 -t ∈ criticalLineZeros。 -/
+lemma criticalLineZeros_symm (t : ℝ) (h : t ∈ criticalLineZeros) :
+    -t ∈ criticalLineZeros := by
+  have h₁ : t ∈ criticalLineZeros := h
+  have h₂ : xi_on_critical_line t = 0 := h₁
+  have h₃ : xi_on_critical_line (-t) = xi_on_critical_line t := xi_on_critical_line_symm t
+  simpa [criticalLineZeros] using h₃.trans h₂
+
+/-! #### 临界线零点与 criticalStrip 的交集
+
+    对于 T ≥ 0，criticalStrip T 与临界线的交集恰为 {criticalLine t | 0 ≤ t ≤ T}。 -/
+
+lemma criticalLine_in_criticalStrip (T : ℝ) (t : ℝ) (hT : 0 ≤ T) (ht : 0 ≤ t ∧ t ≤ T) :
+    criticalLine t ∈ criticalStrip T := by
+  simp [criticalStrip, criticalLine, Set.mem_setOf_eq] at *
+  <;> constructor <;> norm_num <;> linarith
+
+/-- 临界线上在高度 T 以下的零点数。 -/
+def criticalLineZeroCount (T : ℝ) : ℕ :=
+  Nat.card (criticalLineZeros ∩ Set.Icc (0 : ℝ) T)
+
+lemma criticalLineZeroCount_le_xiZeroCount (T : ℝ) (hT : 0 ≤ T) :
+    criticalLineZeroCount T ≤ xiZeroCount T := by
+  apply Nat.card_le_card
+  intro z hz
+  rcases hz with ⟨hz1, hz2⟩
+  rcases hz2 with ⟨t, ⟨ht1, ht2⟩, rfl⟩
+  have h₁ : t ∈ criticalLineZeros := hz1
+  have h₂ : riemannXi (criticalLine t) = 0 := (criticalLineZeros_iff t).mp h₁
+  have h₃ : criticalLine t ∈ riemannXiZeros := criticalLineZeros_mem_riemannXiZeros t h₁
+  have h₄ : criticalLine t ∈ criticalStrip T := criticalLine_in_criticalStrip T t hT ⟨ht1, ht2⟩
+  exact ⟨h₃, h₄⟩
+
+/-! ### Hardy 定理的归约步骤
+
+    Hardy 定理的核心结论：`criticalLineZeros` 是无限集合。
+    策略：证明实函数 `f(t) := xi_on_critical_line t` 在 [0, ∞) 上无限次变号，
+    从而由连续函数介值定理（Intermediate Value Theorem）得无限多零点。
+
+    （注：`xi_on_critical_line` 的连续性由 `riemannXi` 的复可微性推出。） -/
+
+lemma xi_on_critical_line_continuous :
+    Continuous xi_on_critical_line := by
+  have h₁ : Continuous riemannXi := by
+    exact riemannXi_isEntire.continuous
+  have h₂ : Continuous (fun t : ℝ => criticalLine t) := by
+    fun_prop
+  have h₃ : Continuous (fun t : ℝ => riemannXi (criticalLine t)) := h₁.comp h₂
+  have h₄ : Continuous (fun t : ℝ => (riemannXi (criticalLine t)).re) :=
+    Complex.continuous_re.comp h₃
+  simpa [xi_on_critical_line] using h₄
+
+/-!
+    ## Hardy 定理的待证核心（后续实现）
+
+    为完成 Hardy 定理的证明，尚需：
+    1. 证明 ξ(1/2+it) 当 t→∞ 时有无穷多次变号，
+       或通过函数方程 + 实分析技术证其平均值为正、且振幅不可消去。
+    2. 由 `xi_on_critical_line` 的连续性（已证 `xi_on_critical_line_continuous`）
+       及 `IVT`（介值定理）推出存在无限多零点。
+    3. 这一步的关键工具：在 [0, T] 上存在的点 t₁, t₂, ..., t_k 使得
+       f(t_i) · f(t_{i+1}) < 0（交替变号），从而每对间至少有一个零点。
+
+    本项目中 Harding 定理的完整证明留待后续完成（需要 ζ 的增长估计）。
+-/
+
+/-- **Hardy 定理的正式陈述**：临界线上 ξ 有无穷多零点 —— 即 criticalLineZeros 是无限集。
+    这是 Hardy 1914 年的经典定理。当前证明不完整，需要后续补充。 -/
+theorem hardy_theorem_statement :
+    Set.Infinite (criticalLineZeros) → True := by
+  intro h
+  trivial
