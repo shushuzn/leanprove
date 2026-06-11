@@ -2,6 +2,8 @@
 import Mathlib.NumberTheory.Chebyshev
 import Mathlib.NumberTheory.LSeries.RiemannZeta
 import Mathlib.NumberTheory.LSeries.Dirichlet
+import Mathlib.NumberTheory.LSeries.Nonvanishing
+import Mathlib.Analysis.Analytic.Constructions
 import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent
 import Mathlib.Analysis.Asymptotics.Lemmas
@@ -467,7 +469,13 @@ theorem log_deriv_zeta_eq_vonMangoldt_series (s : ℂ) (hs : 1 < s.re) :
 theorem log_deriv_zeta_analytic :
     AnalyticOnNhd ℂ (fun s => -deriv riemannZeta s / riemannZeta s)
       {s : ℂ | 1 ≤ s.re ∧ s ≠ 1} := by
-  sorry
+  let S : Set ℂ := {s | 1 ≤ s.re ∧ s ≠ 1}
+  have hS : S ⊆ {1}ᶜ := fun s hs => hs.2
+  have hζ := analyticOn_riemannZeta.mono hS
+  have hζ' := analyticOn_riemannZeta.deriv.mono hS
+  have hne : ∀ s ∈ S, riemannZeta s ≠ 0 := fun s hs =>
+    riemannZeta_ne_zero_of_one_le_re hs.1
+  exact (hζ'.neg.div hζ hne)
 
 
 /-! #### 素数定理 (陈述，待证) -/

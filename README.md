@@ -6,9 +6,9 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
 
 使用 [Lean 4](https://leanprover.github.io/) + [Mathlib](https://leanprover-community.github.io/mathlib4/) 对数论定理进行严格的形式化证明。项目从素数的模运算性质出发，逐步推进到解析数论的核心结果。
 
-**当前进度**: 阶段 V-A/V-B ✅ — PNT 等价形式已证明 (ψ~x ↔ θ~x ↔ π~x/log x)。3 sorry (深层定理待 Tauberian)。
+**当前进度**: 阶段 V-A/V-B ✅ — PNT 等价形式已证明 (ψ~x ↔ θ~x ↔ π~x/log x)。2 sorry (深层定理待 Tauberian)。
 
-**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A/V-B 新增 **8 定理 + 5 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与 PNT 等价形式。Phase I-IV 全部已证 0 sorry；Phase V-A/V-B 已证 8 定理 5 引理，3 sorry (PNT 完整证明待 Tauberian 定理)。
+**注**: 全项目共 **110 个定理 + 24 个引理 (134 总计)** + Phase V-A/V-B 新增 **8 定理 + 5 引理**，涵盖初等数论、Chebyshev 理论、Dirichlet 定理、Von Mangoldt 函数、Mertens 第一定理、ζ 函数基础、Euler 乘积、解析延拓与 PNT 等价形式。Phase I-IV 全部已证 0 sorry；Phase V-A/V-B 已证 9 定理 5 引理，2 sorry (PNT 完整证明待 Tauberian 定理)。
 
 ## 路线图
 
@@ -23,7 +23,7 @@ Lean 4 数学形式化证明项目 — 从素数分布到黎曼猜想的探索�
   IV-D  ████████████ Euler 乘积                   ✅ 完成 (0 sorry)
   IV-E  ████████████ 解析延拓与零区域             ✅ 完成 (0 sorry)
 阶段 V  ▓▓░░░░░░░░░░ 素数定理 (PNT)              进行中
-  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (4 sorry)
+  V-A   ▓▓▓▓▓▓▓▓▓▓▓▓ PNT 等价形式               ✅ 完成 (2 sorry)
   V-B   ▓▓▓▓▓▓▓▓▓▓▓▓ θ~x ↔ π~x/log x           ✅ 完成 (0 sorry)
 阶段 VI ░░░░░░░░░░░░ 黎曼猜想                    待开始
 ```
@@ -194,7 +194,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 
 #### V-A: PNT 等价形式 ✅
 
-**文件**: `PNTVA.lean` — 8 个已证定理 + 5 个辅助引理，3 sorry (深层定理待 Tauberian)
+**文件**: `PNTVA.lean` — 9 个已证定理 + 5 个辅助引理，2 sorry (深层定理待 Tauberian)
 
 | # | 定理 | 状态 | 方法 |
 |---|------|------|------|
@@ -208,7 +208,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 | 8 | `pnt_theta_iff_pnt_pi` — θ~x ↔ π~x/log x | ✅ | 由 5+7+IsEquivalent 传递 |
 | 9 | `pnt_psi_iff_pnt_pi` — ψ~x ↔ π~x/log x | ✅ | 由 5+8 传递 |
 | 10 | `log_deriv_zeta_eq_vonMangoldt_series` — -ζ'/ζ = ∑Λ/n^s | ✅ | mathlib LSeries_vonMangoldt_eq_deriv_riemannZeta_div |
-| 11 | `log_deriv_zeta_analytic` — -ζ'/ζ 全纯 | ⏳ sorry | 需 ζ≠0 + 解析性 |
+| 11 | `log_deriv_zeta_analytic` — -ζ'/ζ 全纯 | ✅ | analyticOn_riemannZeta + deriv + div + riemannZeta_ne_zero |
 | 12 | `prime_number_theorem_psi` — ψ~x | ⏳ sorry | 需 Tauberian 定理 |
 | 13 | `prime_number_theorem_pi` — π~x/log x | ⏳ sorry | 需 Tauberian 定理 |
 
@@ -218,6 +218,7 @@ Riemann ζ 函数的分阶段构建。每个子阶段独立可验证。
 - `pi_isEquivalent_theta_div_log` ✅: 核心引理。利用 mathlib 的 `primeCounting_sub_theta_div_log_isBigO` (π - θ/log = O(x/log²x)) 与 `theta_ge'` (Chebyshev 下界) 证明 θ(x) ≥ c·x (c > 0)。由 x/log²x =o(θ/log) 和 O·o 传递性得 (π - θ/log) =o(θ/log)，从而 π ~ θ/log。
 - `pnt_theta_iff_pnt_pi` ✅: 由 π ~ θ/log 和 θ ~ x ↔ θ/log ~ x/log (通过 isEquivalent_iff_tendsto_one 转换) 和 π ~ θ/log (已证) 传递得出。
 - `log_deriv_zeta_eq_vonMangoldt_series` ✅: 包装 mathlib 的 `LSeries_vonMangoldt_eq_deriv_riemannZeta_div`，通过 `LSeries_congr` 处理 vonMangoldt 的类型强制 (ℝ→ℂ)。
+- `log_deriv_zeta_analytic` ✅: 由 `analyticOn_riemannZeta.deriv` 得 ζ' 解析，再用 `AnalyticOnNhd.div` 除以 ζ (利用 `riemannZeta_ne_zero_of_one_le_re` 保证 ζ≠0)，最后 `.neg` 取负。
 
 ---
 
@@ -248,7 +249,7 @@ leanprove/
 │   ├── ZetaIVB.lean            # 阶段 IV-B: ζ 上界 (5 引理, 零 sorry)
 │   ├── ZetaIVD.lean            # 阶段 IV-D: Euler 乘积 (4 定理, 零 sorry)
 │   ├── ZetaIVE.lean            # 阶段 IV-E: 解析延拓 (16 定理, 零 sorry)
-│   ├── PNTVA.lean              # 阶段 V-A/V-B: PNT 等价形式 (7 定理 + 5 引理, 4 sorry)
+│   ├── PNTVA.lean              # 阶段 V-A/V-B: PNT 等价形式 (9 定理 + 5 引理, 2 sorry)
 │   ├── Zeta.lean               # 阶段 IV: ζ 函数基础
 │   └── Tests.lean              # 测试与验证
 ├── ROADMAP.md                  # 详细路线图与发展建议
@@ -257,7 +258,7 @@ leanprove/
 └── README.md                   # 本文件
 ```
 
-**总计**: 110+ 个定理 + 24+ 个引理 (134+ 总计), Phase I-IV: 0 sorry; Phase V-A: 5 sorry
+**总计**: 110+ 个定理 + 24+ 个引理 (134+ 总计), Phase I-IV: 0 sorry; Phase V-A: 2 sorry
 
 ## 技术栈
 
