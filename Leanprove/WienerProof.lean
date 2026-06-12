@@ -479,8 +479,190 @@ theorem limiting_fourier_lim2 (A : ℝ) (ψ : CS 2 ℂ) (hx : 1 ≤ x) :
         · intro σ' hσ'
           simp [hσ'.1]
 
+lemma first_fourier_aux1 (hψ : AEMeasurable ψ) {x : ℝ} (n : ℕ) : AEMeasurable fun (u : ℝ) ↦
+    (‖fourierChar (-(u * ((1 : ℝ) / ((2 : ℝ) * π) * (n / x).log))) • ψ u‖ₑ : ENNReal) := by
+  fun_prop
+
+lemma first_fourier_aux2a :
+    (2 : ℂ) * π * -(y * (1 / (2 * π) * Real.log ((n) / x))) = -(y * ((n) / x).log) := by
+  calc
+    _ = -(y * (((2 : ℂ) * π) / (2 * π) * Real.log ((n) / x))) := by ring
+    _ = _ := by rw [div_self (by norm_num), one_mul]
+
+lemma first_fourier_aux2 (hx : 0 < x) (n : ℕ) :
+    _root_.term f σ' n * 𝐞 (-(y * (1 / (2 * π) * Real.log (n / x)))) • ψ y =
+    _root_.term f (σ' + y * I) n • (ψ y * x ^ (y * I)) := by
+  by_cases hn : n = 0
+  · simp [_root_.term, hn]
+  simp only [_root_.term, hn, ↓reduceIte]
+  calc
+    _ = (f n * (cexp ((2 * π * -(y * (1 / (2 * π) * Real.log (n / x)))) * I) /
+        ↑((n : ℝ) ^ σ'))) • ψ y := by
+      rw [Circle.smul_def, fourierChar_apply, ofReal_cpow (by norm_num)]
+      simp only [one_div, mul_inv_rev, mul_neg, ofReal_neg, ofReal_mul, ofReal_ofNat, ofReal_inv,
+        neg_mul, smul_eq_mul, ofReal_natCast]
+      ring
+    _ = (f n * (x ^ (y * I) / n ^ (σ' + y * I))) • ψ y := by
+      congr 2
+      have l1 : 0 < (n : ℝ) := by simpa using Nat.pos_iff_ne_zero.mpr hn
+      have l2 : (x : ℂ) ≠ 0 := by simp [hx.ne.symm]
+      have l3 : (n : ℂ) ≠ 0 := by simp [hn]
+      rw [Real.rpow_def_of_pos l1, Complex.cpow_def_of_ne_zero l2, Complex.cpow_def_of_ne_zero l3]
+      push_cast
+      simp_rw [← Complex.exp_sub]
+      congr 1
+      rw [first_fourier_aux2a, Real.log_div l1.ne.symm hx.ne.symm]
+      push_cast
+      rw [Complex.ofReal_log hx.le]
+      ring
+    _ = _ := by simp ; group
+
+-- TODO: 实现 norm_term_eq_nterm_re
+lemma norm_term_eq_nterm_re {f : ℕ → ℂ} {σ' : ℝ} {n : ℕ} (h : n ≠ 0) :
+    ‖_root_.term f σ' n‖ = ‖f n‖ / ↑n ^ σ' := by
+  simp [_root_.term, nterm, h]
+
+lemma hf_coe1 (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (hσ : 1 < σ') :
+    ∑' i, (‖_root_.term f σ' i‖₊ : ENNReal) ≠ ⊤ := by
+  simp_rw [ENNReal.tsum_coe_ne_top_iff_summable_coe, ← norm_toNNReal]
+  norm_cast
+  apply Summable.toNNReal
+  convert hf σ' hσ with i
+  simp [nterm_eq_norm_term]
+
+
+lemma second_fourier_integrable_aux1a (hσ : 1 < σ') :
+    IntegrableOn (fun (x : ℝ) ↦ cexp (-((x : ℂ) * ((σ' : ℂ) - 1)))) (Ici (-Real.log x)) := by
+  norm_cast
+  suffices IntegrableOn (fun (x : ℝ) ↦ (rexp (-(x * (σ' - 1))))) (Ici (-x.log)) _ from this.ofReal
+  simp_rw [fun (a x : ℝ) ↦ (by ring : -(x * a) = -a * x)]
+  rw [integrableOn_Ici_iff_integrableOn_Ioi]
+  apply exp_neg_integrableOn_Ioi
+  linarith
 lemma limiting_fourier_aux (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re})
     (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (ψ : CS 2 ℂ) (hx : 1 ≤ x) (σ' : ℝ)
+    (hσ' : 1 < σ') :
+    ∑' n, _root_.term f σ' n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x)) -
+    A * (x ^ (1 - σ') : ℝ) * ∫ u in Ici (- Real.log x), rexp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ)
+      (u / (2 * π)) = ∫ t : ℝ, G (σ' + t * I) * ψ t * x ^ (t * I) := by
+  have hint : Integrable ψ := ψ.h1.continuous.integrable_of_hasCompactSupport ψ.h2
+  have l3 : 0 < x := zero_lt_one.trans_le hx
+  have l1 (σ') (hσ' : 1 < σ') := first_fourier hf hint l3 hσ'
+  have l2 (σ') (hσ' : 1 < σ') := second_fourier ψ.h1.continuous.measurable hint l3 hσ'
+  have l8 : Continuous fun t : ℝ ↦ (x : ℂ) ^ (t * I) :=
+    continuous_const.cpow (continuous_ofReal.mul continuous_const) (by simp [l3])
+  have l6 : Continuous fun t : ℝ ↦ LSeries f (↑σ' + ↑t * I) * ψ t * ↑x ^ (↑t * I) := by
+    apply ((continuous_LSeries_aux (hf _ hσ')).mul ψ.h1.continuous).mul l8
+  have l4 : Integrable fun t : ℝ ↦ LSeries f (↑σ' + ↑t * I) * ψ t * ↑x ^ (↑t * I) := by
+    exact l6.integrable_of_hasCompactSupport ψ.h2.mul_left.mul_right
+  have e2 (u : ℝ) : σ' + u * I - 1 ≠ 0 := by
+    intro h ; have := congr_arg Complex.re h ; simp at this ; linarith
+  have l7 : Continuous fun a ↦ A * ↑(x ^ (1 - σ')) * (↑(x ^ (σ' - 1)) *
+      (1 / (σ' + a * I - 1) * ψ a * x ^ (a * I))) := by
+    simp only [one_div, ← mul_assoc]
+    refine ((continuous_const.mul <| Continuous.inv₀ ?_ e2).mul ψ.h1.continuous).mul l8
+    fun_prop
+  have l5 : Integrable fun a ↦ A * ↑(x ^ (1 - σ')) * (↑(x ^ (σ' - 1)) *
+      (1 / (σ' + a * I - 1) * ψ a * x ^ (a * I))) := by
+    apply l7.integrable_of_hasCompactSupport
+    exact ψ.h2.mul_left.mul_right.mul_left.mul_left
+
+  simp_rw [l1 σ' hσ', l2 σ' hσ', ← integral_const_mul, ← integral_sub l4 l5]
+  apply integral_congr_ae
+  apply Eventually.of_forall
+  intro u
+  have e1 : 1 < ((σ' : ℂ) + (u : ℂ) * I).re := by simp [hσ']
+  simp only [hG' (by simpa using e1) (Set.mem_setOf_eq.mp ?_), mul_sub, sub_sub_cancel, one_div,
+    mul_comm (A : ℂ), mul_left_comm (A : ℂ), mul_assoc, sub_mul, mul_comm (A : ℂ)]
+  ring
+
+lemma second_fourier_integrable_aux1 (hcont : Measurable ψ) (hsupp : Integrable ψ) (hσ : 1 < σ') :
+    let ν : Measure (ℝ × ℝ) := (volume.restrict (Ici (-Real.log x))).prod volume
+    Integrable (Function.uncurry fun (u : ℝ) (a : ℝ) ↦ ((rexp (-u * (σ' - 1))) : ℂ) •
+    (𝐞 (Multiplicative.ofAdd (-(a * (u / (2 * π))))) : ℂ) • ψ a) ν := by
+  intro ν
+  constructor
+  · apply Measurable.aestronglyMeasurable
+    simp only [neg_mul, ofReal_exp, ofReal_neg, ofReal_mul, ofReal_sub, ofReal_one,
+      Multiplicative.ofAdd, Equiv.coe_fn_mk, smul_eq_mul]
+    fun_prop
+  · let f1 : ℝ → ENNReal := fun a1 ↦ ‖cexp (-(↑a1 * (↑σ' - 1)))‖ₑ
+    let f2 : ℝ → ENNReal := fun a2 ↦ ‖ψ a2‖ₑ
+    suffices ∫⁻ (a : ℝ × ℝ), f1 a.1 * f2 a.2 ∂ν < ⊤ by
+      simpa [hasFiniteIntegral_iff_enorm, enorm_eq_nnnorm, Function.uncurry]
+    refine (lintegral_prod_mul ?_ ?_).trans_lt ?_ <;> try fun_prop
+    exact ENNReal.mul_lt_top (second_fourier_integrable_aux1a hσ).2 hsupp.2
+
+lemma second_fourier_integrable_aux2 (hσ : 1 < σ') :
+    IntegrableOn (fun (u : ℝ) ↦ cexp ((1 - ↑σ' - ↑t * I) * ↑u)) (Ioi (-Real.log x)) := by
+  refine (integrable_norm_iff (Measurable.aestronglyMeasurable <| by fun_prop)).mp ?_
+  suffices IntegrableOn (fun a ↦ rexp (-(σ' - 1) * a)) (Ioi (-x.log)) _ by simpa [Complex.norm_exp]
+  apply exp_neg_integrableOn_Ioi
+  linarith
+
+lemma second_fourier_aux (hx : 0 < x) :
+    -(cexp (-((1 - ↑σ' - ↑t * I) * ↑(Real.log x))) / (1 - ↑σ' - ↑t * I)) =
+    ↑(x ^ (σ' - 1)) * (↑σ' + ↑t * I - 1)⁻¹ * ↑x ^ (↑t * I) := by
+  calc
+    _ = cexp (↑(Real.log x) * ((↑σ' - 1) + ↑t * I)) * (↑σ' + ↑t * I - 1)⁻¹ := by
+      rw [← div_neg]; ring_nf
+    _ = (x ^ ((↑σ' - 1) + ↑t * I)) * (↑σ' + ↑t * I - 1)⁻¹ := by
+      rw [Complex.cpow_def_of_ne_zero (ofReal_ne_zero.mpr (ne_of_gt hx)), Complex.ofReal_log hx.le]
+    _ = (x ^ ((σ' : ℂ) - 1)) * (x ^ (↑t * I)) * (↑σ' + ↑t * I - 1)⁻¹ := by
+      rw [Complex.cpow_add _ _ (ofReal_ne_zero.mpr (ne_of_gt hx))]
+    _ = _ := by rw [ofReal_cpow hx.le]; push_cast; ring
+
+lemma second_fourier (hcont : Measurable ψ) (hsupp : Integrable ψ)
+    {x σ' : ℝ} (hx : 0 < x) (hσ : 1 < σ') :
+    ∫ u in Ici (-Real.log x), Real.exp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)) =
+    (x^(σ' - 1) : ℝ) * ∫ t, (1 / (σ' + t * I - 1)) * ψ t * x^(t * I) ∂ volume := by
+
+  conv in ↑(rexp _) * _ => { rw [Real.fourier_real_eq, ← smul_eq_mul, ← integral_smul] }
+  rw [MeasureTheory.integral_integral_swap]
+  swap
+  · exact second_fourier_integrable_aux1 hcont hsupp hσ
+  rw [← integral_const_mul]
+  congr 1; ext t
+  dsimp [Real.fourierChar, Circle.exp]
+
+lemma first_fourier (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))
+    (hsupp : Integrable ψ) (hx : 0 < x) (hσ : 1 < σ') :
+    ∑' n : ℕ, _root_.term f σ' n * (𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x))) =
+    ∫ t : ℝ, LSeries f (σ' + t * I) * ψ t * x ^ (t * I) := by
+
+  calc
+    _ = ∑' n, _root_.term f σ' n * ∫ (v : ℝ), 𝐞 (-(v * ((1 : ℝ) /
+        ((2 : ℝ) * π) * Real.log (n / x)))) • ψ v := by
+      simp only [Real.fourier_eq]
+      simp only [one_div, mul_inv_rev, RCLike.inner_apply', conj_trivial]
+    _ = ∑' n, ∫ (v : ℝ), _root_.term f σ' n * 𝐞 (-(v * ((1 : ℝ) /
+        ((2 : ℝ) * π) * Real.log (n / x)))) • ψ v := by
+      simp [integral_const_mul]
+    _ = ∫ (v : ℝ), ∑' n, _root_.term f σ' n * 𝐞 (-(v * ((1 : ℝ) /
+        ((2 : ℝ) * π) * Real.log (n / x)))) • ψ v := by
+      refine (integral_tsum ?_ ?_).symm
+      · refine fun _ ↦ AEMeasurable.aestronglyMeasurable ?_
+        have := hsupp.aemeasurable
+        fun_prop
+      · simp only [enorm_mul]
+        simp_rw [lintegral_const_mul'' _ (first_fourier_aux1 hsupp.aemeasurable _)]
+        calc
+          _ = (∑' (i : ℕ), ‖_root_.term f σ' i‖ₑ) * ∫⁻ (a : ℝ), ‖ψ a‖ₑ ∂volume := by
+            simp [ENNReal.tsum_mul_right, enorm_eq_nnnorm]
+          _ ≠ ⊤ := ENNReal.mul_ne_top (hf_coe1 hf hσ)
+            (ne_top_of_lt hsupp.2)
+    _ = _ := by
+      congr 1; ext y
+      simp_rw [mul_assoc (LSeries _ _), ← smul_eq_mul (a := (LSeries _ _)), LSeries]
+      rw [← Summable.tsum_smul_const]
+      · simp_rw [first_fourier_aux2 hx]
+      · apply Summable.of_norm
+        convert hf σ' hσ with n
+        rw [norm_term_eq_nterm_re]
+        simp
+
+/-! #### Second Fourier identity -/
+
     (hσ' : 1 < σ') :
     ∑' n, _root_.term f σ' n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x)) -
     A * (x ^ (1 - σ') : ℝ) * ∫ u in Ici (- Real.log x), rexp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ)
@@ -580,153 +762,6 @@ lemma W21_norm_fourier_integral_le (ψ : W21) (hc : c ≠ 0) :
       simp [div_eq_mul_inv, mul_comm, integral_const_mul]
 
 /-! #### First Fourier identity -/
-
-lemma hf_coe1 (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (hσ : 1 < σ') :
-    ∑' i, (‖_root_.term f σ' i‖₊ : ENNReal) ≠ ⊤ := by
-  simp_rw [ENNReal.tsum_coe_ne_top_iff_summable_coe, ← norm_toNNReal]
-  norm_cast
-  apply Summable.toNNReal
-  convert hf σ' hσ with i
-  simp [nterm_eq_norm_term]
-
-lemma first_fourier_aux1 (hψ : AEMeasurable ψ) {x : ℝ} (n : ℕ) : AEMeasurable fun (u : ℝ) ↦
-    (‖fourierChar (-(u * ((1 : ℝ) / ((2 : ℝ) * π) * (n / x).log))) • ψ u‖ₑ : ENNReal) := by
-  fun_prop
-
-lemma first_fourier_aux2a :
-    (2 : ℂ) * π * -(y * (1 / (2 * π) * Real.log ((n) / x))) = -(y * ((n) / x).log) := by
-  calc
-    _ = -(y * (((2 : ℂ) * π) / (2 * π) * Real.log ((n) / x))) := by ring
-    _ = _ := by rw [div_self (by norm_num), one_mul]
-
-lemma first_fourier_aux2 (hx : 0 < x) (n : ℕ) :
-    _root_.term f σ' n * 𝐞 (-(y * (1 / (2 * π) * Real.log (n / x)))) • ψ y =
-    _root_.term f (σ' + y * I) n • (ψ y * x ^ (y * I)) := by
-  by_cases hn : n = 0
-  · simp [_root_.term, hn]
-  simp only [_root_.term, hn, ↓reduceIte]
-  calc
-    _ = (f n * (cexp ((2 * π * -(y * (1 / (2 * π) * Real.log (n / x)))) * I) /
-        ↑((n : ℝ) ^ σ'))) • ψ y := by
-      rw [Circle.smul_def, fourierChar_apply, ofReal_cpow (by norm_num)]
-      simp only [one_div, mul_inv_rev, mul_neg, ofReal_neg, ofReal_mul, ofReal_ofNat, ofReal_inv,
-        neg_mul, smul_eq_mul, ofReal_natCast]
-      ring
-    _ = (f n * (x ^ (y * I) / n ^ (σ' + y * I))) • ψ y := by
-      congr 2
-      have l1 : 0 < (n : ℝ) := by simpa using Nat.pos_iff_ne_zero.mpr hn
-      have l2 : (x : ℂ) ≠ 0 := by simp [hx.ne.symm]
-      have l3 : (n : ℂ) ≠ 0 := by simp [hn]
-      rw [Real.rpow_def_of_pos l1, Complex.cpow_def_of_ne_zero l2, Complex.cpow_def_of_ne_zero l3]
-      push_cast
-      simp_rw [← Complex.exp_sub]
-      congr 1
-      rw [first_fourier_aux2a, Real.log_div l1.ne.symm hx.ne.symm]
-      push_cast
-      rw [Complex.ofReal_log hx.le]
-      ring
-    _ = _ := by simp ; group
-
--- TODO: 实现 norm_term_eq_nterm_re
-lemma norm_term_eq_nterm_re {f : ℕ → ℂ} {σ' : ℝ} {n : ℕ} (h : n ≠ 0) :
-    ‖_root_.term f σ' n‖ = ‖f n‖ / ↑n ^ σ' := by
-  simp [_root_.term, nterm, h]
-
-lemma first_fourier (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))
-    (hsupp : Integrable ψ) (hx : 0 < x) (hσ : 1 < σ') :
-    ∑' n : ℕ, _root_.term f σ' n * (𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x))) =
-    ∫ t : ℝ, LSeries f (σ' + t * I) * ψ t * x ^ (t * I) := by
-
-  calc
-    _ = ∑' n, _root_.term f σ' n * ∫ (v : ℝ), 𝐞 (-(v * ((1 : ℝ) /
-        ((2 : ℝ) * π) * Real.log (n / x)))) • ψ v := by
-      simp only [Real.fourier_eq]
-      simp only [one_div, mul_inv_rev, RCLike.inner_apply', conj_trivial]
-    _ = ∑' n, ∫ (v : ℝ), _root_.term f σ' n * 𝐞 (-(v * ((1 : ℝ) /
-        ((2 : ℝ) * π) * Real.log (n / x)))) • ψ v := by
-      simp [integral_const_mul]
-    _ = ∫ (v : ℝ), ∑' n, _root_.term f σ' n * 𝐞 (-(v * ((1 : ℝ) /
-        ((2 : ℝ) * π) * Real.log (n / x)))) • ψ v := by
-      refine (integral_tsum ?_ ?_).symm
-      · refine fun _ ↦ AEMeasurable.aestronglyMeasurable ?_
-        have := hsupp.aemeasurable
-        fun_prop
-      · simp only [enorm_mul]
-        simp_rw [lintegral_const_mul'' _ (first_fourier_aux1 hsupp.aemeasurable _)]
-        calc
-          _ = (∑' (i : ℕ), ‖_root_.term f σ' i‖ₑ) * ∫⁻ (a : ℝ), ‖ψ a‖ₑ ∂volume := by
-            simp [ENNReal.tsum_mul_right, enorm_eq_nnnorm]
-          _ ≠ ⊤ := ENNReal.mul_ne_top (hf_coe1 hf hσ)
-            (ne_top_of_lt hsupp.2)
-    _ = _ := by
-      congr 1; ext y
-      simp_rw [mul_assoc (LSeries _ _), ← smul_eq_mul (a := (LSeries _ _)), LSeries]
-      rw [← Summable.tsum_smul_const]
-      · simp_rw [first_fourier_aux2 hx]
-      · apply Summable.of_norm
-        convert hf σ' hσ with n
-        rw [norm_term_eq_nterm_re]
-        simp
-
-/-! #### Second Fourier identity -/
-
-lemma second_fourier_integrable_aux1a (hσ : 1 < σ') :
-    IntegrableOn (fun (x : ℝ) ↦ cexp (-((x : ℂ) * ((σ' : ℂ) - 1)))) (Ici (-Real.log x)) := by
-  norm_cast
-  suffices IntegrableOn (fun (x : ℝ) ↦ (rexp (-(x * (σ' - 1))))) (Ici (-x.log)) _ from this.ofReal
-  simp_rw [fun (a x : ℝ) ↦ (by ring : -(x * a) = -a * x)]
-  rw [integrableOn_Ici_iff_integrableOn_Ioi]
-  apply exp_neg_integrableOn_Ioi
-  linarith
-
-lemma second_fourier_integrable_aux1 (hcont : Measurable ψ) (hsupp : Integrable ψ) (hσ : 1 < σ') :
-    let ν : Measure (ℝ × ℝ) := (volume.restrict (Ici (-Real.log x))).prod volume
-    Integrable (Function.uncurry fun (u : ℝ) (a : ℝ) ↦ ((rexp (-u * (σ' - 1))) : ℂ) •
-    (𝐞 (Multiplicative.ofAdd (-(a * (u / (2 * π))))) : ℂ) • ψ a) ν := by
-  intro ν
-  constructor
-  · apply Measurable.aestronglyMeasurable
-    simp only [neg_mul, ofReal_exp, ofReal_neg, ofReal_mul, ofReal_sub, ofReal_one,
-      Multiplicative.ofAdd, Equiv.coe_fn_mk, smul_eq_mul]
-    fun_prop
-  · let f1 : ℝ → ENNReal := fun a1 ↦ ‖cexp (-(↑a1 * (↑σ' - 1)))‖ₑ
-    let f2 : ℝ → ENNReal := fun a2 ↦ ‖ψ a2‖ₑ
-    suffices ∫⁻ (a : ℝ × ℝ), f1 a.1 * f2 a.2 ∂ν < ⊤ by
-      simpa [hasFiniteIntegral_iff_enorm, enorm_eq_nnnorm, Function.uncurry]
-    refine (lintegral_prod_mul ?_ ?_).trans_lt ?_ <;> try fun_prop
-    exact ENNReal.mul_lt_top (second_fourier_integrable_aux1a hσ).2 hsupp.2
-
-lemma second_fourier_integrable_aux2 (hσ : 1 < σ') :
-    IntegrableOn (fun (u : ℝ) ↦ cexp ((1 - ↑σ' - ↑t * I) * ↑u)) (Ioi (-Real.log x)) := by
-  refine (integrable_norm_iff (Measurable.aestronglyMeasurable <| by fun_prop)).mp ?_
-  suffices IntegrableOn (fun a ↦ rexp (-(σ' - 1) * a)) (Ioi (-x.log)) _ by simpa [Complex.norm_exp]
-  apply exp_neg_integrableOn_Ioi
-  linarith
-
-lemma second_fourier_aux (hx : 0 < x) :
-    -(cexp (-((1 - ↑σ' - ↑t * I) * ↑(Real.log x))) / (1 - ↑σ' - ↑t * I)) =
-    ↑(x ^ (σ' - 1)) * (↑σ' + ↑t * I - 1)⁻¹ * ↑x ^ (↑t * I) := by
-  calc
-    _ = cexp (↑(Real.log x) * ((↑σ' - 1) + ↑t * I)) * (↑σ' + ↑t * I - 1)⁻¹ := by
-      rw [← div_neg]; ring_nf
-    _ = (x ^ ((↑σ' - 1) + ↑t * I)) * (↑σ' + ↑t * I - 1)⁻¹ := by
-      rw [Complex.cpow_def_of_ne_zero (ofReal_ne_zero.mpr (ne_of_gt hx)), Complex.ofReal_log hx.le]
-    _ = (x ^ ((σ' : ℂ) - 1)) * (x ^ (↑t * I)) * (↑σ' + ↑t * I - 1)⁻¹ := by
-      rw [Complex.cpow_add _ _ (ofReal_ne_zero.mpr (ne_of_gt hx))]
-    _ = _ := by rw [ofReal_cpow hx.le]; push_cast; ring
-
-lemma second_fourier (hcont : Measurable ψ) (hsupp : Integrable ψ)
-    {x σ' : ℝ} (hx : 0 < x) (hσ : 1 < σ') :
-    ∫ u in Ici (-Real.log x), Real.exp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)) =
-    (x^(σ' - 1) : ℝ) * ∫ t, (1 / (σ' + t * I - 1)) * ψ t * x^(t * I) ∂ volume := by
-
-  conv in ↑(rexp _) * _ => { rw [Real.fourier_real_eq, ← smul_eq_mul, ← integral_smul] }
-  rw [MeasureTheory.integral_integral_swap]
-  swap
-  · exact second_fourier_integrable_aux1 hcont hsupp hσ
-  rw [← integral_const_mul]
-  congr 1; ext t
-  dsimp [Real.fourierChar, Circle.exp]
 
   simp_rw [mul_smul_comm, ← smul_mul_assoc, integral_mul_const]
   rw [fun (a b d : ℂ) ↦ show a * (b * (ψ t) * d) = (a * b * d) * ψ t by ring]
