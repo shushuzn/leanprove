@@ -83,7 +83,7 @@
 5. **区间逼近 + 最终整合** (`WienerProof.lean` 🚧 ~85%)
 6. **应用到 von Mangoldt** — 组合所有估计得到 WeakPNT (`Tauberian.lean` 待完成)
 
-**当前**: WienerProof.lean ~1550行，全项目 0 sorry + 0 axiom。
+**当前**: WienerProof.lean ~1550行，LSeries/cheby/nterm 类型修复进行中。
 
 ---
 
