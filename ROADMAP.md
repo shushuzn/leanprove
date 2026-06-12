@@ -114,7 +114,8 @@ RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价
   ├── ✅ WeakPNT 可推导
   ├── ✅ 启动阶段 VI: 零点理论框架 (N(T) 定义 + criticalStrip 紧性 + 零点对称性)
   ├── ✅ Hardy 定理完整框架 (实分析核心 + 数论假设归约)
-  └── ✅ Hardy 定理渐近分析核心 (gamma_it_norm_le + Gamma渐近假设 + 均值积分归约)
+  ├── ✅ Hardy 定理渐近分析核心 (gamma_it_norm_le + Gamma渐近假设 + 均值积分归约)
+  └── ✅ ZetaVI 模块化重构 (Definitions + Hardy + Asymptotics 三模块)
 
 中期（1–3 个月）
   ├── 证明 mean_value_implies_oscillation（精细积分估计）
