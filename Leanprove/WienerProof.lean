@@ -388,7 +388,7 @@ lemma limiting_fourier_lim1_aux (hcheby : cheby f) (hx : 0 < x) (C : ℝ) (hC : 
 
 theorem limiting_fourier_lim1 (hcheby : cheby f) (ψ : W21) (hx : 0 < x) :
     Tendsto (fun σ' : ℝ ↦
-        ∑' n, term f σ' n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x))) (𝓝[>] 1)
+        ∑' n, _root_.term f σ' n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x))) (𝓝[>] 1)
       (𝓝 (∑' n, f n / n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x)))) := by
 
   obtain ⟨C, hC⟩ := decay_bounds_cor ψ
@@ -396,7 +396,7 @@ theorem limiting_fourier_lim1 (hcheby : cheby f) (ψ : W21) (hx : 0 < x) :
   refine tendsto_tsum_of_dominated_convergence
     (limiting_fourier_lim1_aux hcheby hx C this) (fun n => ?_) ?_
   · apply Tendsto.mul_const
-    by_cases h : n = 0 <;> simp only [term, h, ↓reduceIte, CharP.cast_eq_zero, div_zero,
+    by_cases h : n = 0 <;> simp only [_root_.term, h, ↓reduceIte, CharP.cast_eq_zero, div_zero,
       tendsto_const_nhds_iff]
     refine tendsto_const_nhds.div ?_ (by simp [h])
     simpa using ((continuous_ofReal.tendsto 1).mono_left nhdsWithin_le_nhds).const_cpow
@@ -414,13 +414,12 @@ theorem limiting_fourier_lim3 (hG : ContinuousOn G {s | 1 ≤ s.re}) (ψ : CS 2 
     Tendsto (fun σ' : ℝ ↦ ∫ t : ℝ, G (σ' + t * I) * ψ t * x ^ (t * I)) (𝓝[>] 1)
       (𝓝 (∫ t : ℝ, G (1 + t * I) * ψ t * x ^ (t * I))) := by
   sorry
-    · exact ((continuous_ofReal.tendsto _).add tendsto_const_nhds).mono_left nhdsWithin_le_nhds
 theorem limiting_fourier (hcheby : cheby f)
     (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re})
     (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (ψ : CS 2 ℂ) (hx : 1 ≤ x) :
-    ∑' n, f n / n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * log (n / x)) -
-      A * ∫ u in Set.Ici (-log x), 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)) =
+    ∑' n, f n / n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x)) -
+      A * ∫ u in Set.Ici (-Real.log x), 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)) =
       ∫ (t : ℝ), (G (1 + t * I)) * (ψ t) * x ^ (t * I) := by
 
   have l1 := limiting_fourier_lim1 hcheby ψ (by linarith)
@@ -431,11 +430,11 @@ theorem limiting_fourier (hcheby : cheby f)
 
 lemma limiting_cor_aux (f : ℝ → ℂ) : Tendsto (fun x : ℝ ↦ ∫ t, f t * x ^ (t * I)) atTop (𝓝 0) := by
 
-  have l1 : ∀ᶠ x : ℝ in atTop, ∀ t : ℝ, x ^ (t * I) = exp (log x * t * I) := by
+  have l1 : ∀ᶠ x : ℝ in atTop, ∀ t : ℝ, x ^ (t * I) = exp (Real.log x * t * I) := by
     filter_upwards [eventually_ne_atTop 0, eventually_ge_atTop 0] with x hx hx' t
     rw [Complex.cpow_def_of_ne_zero (ofReal_ne_zero.mpr hx), ofReal_log hx'] ; ring_nf
 
-  have l2 : ∀ᶠ x : ℝ in atTop, ∫ t, f t * x ^ (t * I) = ∫ t, f t * exp (log x * t * I) := by
+  have l2 : ∀ᶠ x : ℝ in atTop, ∫ t, f t * x ^ (t * I) = ∫ t, f t * exp (Real.log x * t * I) := by
     filter_upwards [l1] with x hx
     refine integral_congr_ae (Eventually.of_forall (fun x => by simp [hx]))
 
@@ -545,7 +544,7 @@ lemma W21_norm_fourier_integral_le (ψ : W21) (hc : c ≠ 0) :
 /-! #### First Fourier identity -/
 
 lemma hf_coe1 (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (hσ : 1 < σ') :
-    ∑' i, (‖term f σ' i‖₊ : ENNReal) ≠ ⊤ := by
+    ∑' i, (‖_root_.term f σ' i‖₊ : ENNReal) ≠ ⊤ := by
   simp_rw [ENNReal.tsum_coe_ne_top_iff_summable_coe, ← norm_toNNReal]
   norm_cast
   apply Summable.toNNReal
@@ -563,11 +562,11 @@ lemma first_fourier_aux2a :
     _ = _ := by rw [div_self (by norm_num), one_mul]
 
 lemma first_fourier_aux2 (hx : 0 < x) (n : ℕ) :
-    term f σ' n * 𝐞 (-(y * (1 / (2 * π) * Real.log (n / x)))) • ψ y =
-    term f (σ' + y * I) n • (ψ y * x ^ (y * I)) := by
+    _root_.term f σ' n * 𝐞 (-(y * (1 / (2 * π) * Real.log (n / x)))) • ψ y =
+    _root_.term f (σ' + y * I) n • (ψ y * x ^ (y * I)) := by
   by_cases hn : n = 0
-  · simp [term, hn]
-  simp only [term, hn, ↓reduceIte]
+  · simp [_root_.term, hn]
+  simp only [_root_.term, hn, ↓reduceIte]
   calc
     _ = (f n * (cexp ((2 * π * -(y * (1 / (2 * π) * Real.log (n / x)))) * I) /
         ↑((n : ℝ) ^ σ'))) • ψ y := by
@@ -592,18 +591,18 @@ lemma first_fourier_aux2 (hx : 0 < x) (n : ℕ) :
 
 lemma first_fourier (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))
     (hsupp : Integrable ψ) (hx : 0 < x) (hσ : 1 < σ') :
-    ∑' n : ℕ, term f σ' n * (𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * log (n / x))) =
+    ∑' n : ℕ, _root_.term f σ' n * (𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x))) =
     ∫ t : ℝ, LSeries f (σ' + t * I) * ψ t * x ^ (t * I) := by
 
   calc
-    _ = ∑' n, term f σ' n * ∫ (v : ℝ), 𝐞 (-(v * ((1 : ℝ) /
+    _ = ∑' n, _root_.term f σ' n * ∫ (v : ℝ), 𝐞 (-(v * ((1 : ℝ) /
         ((2 : ℝ) * π) * Real.log (n / x)))) • ψ v := by
       simp only [Real.fourier_eq]
       simp only [one_div, mul_inv_rev, RCLike.inner_apply', conj_trivial]
-    _ = ∑' n, ∫ (v : ℝ), term f σ' n * 𝐞 (-(v * ((1 : ℝ) /
+    _ = ∑' n, ∫ (v : ℝ), _root_.term f σ' n * 𝐞 (-(v * ((1 : ℝ) /
         ((2 : ℝ) * π) * Real.log (n / x)))) • ψ v := by
       simp [integral_const_mul]
-    _ = ∫ (v : ℝ), ∑' n, term f σ' n * 𝐞 (-(v * ((1 : ℝ) /
+    _ = ∫ (v : ℝ), ∑' n, _root_.term f σ' n * 𝐞 (-(v * ((1 : ℝ) /
         ((2 : ℝ) * π) * Real.log (n / x)))) • ψ v := by
       refine (integral_tsum ?_ ?_).symm
       · refine fun _ ↦ AEMeasurable.aestronglyMeasurable ?_
@@ -612,7 +611,7 @@ lemma first_fourier (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))
       · simp only [enorm_mul]
         simp_rw [lintegral_const_mul'' _ (first_fourier_aux1 hsupp.aemeasurable _)]
         calc
-          _ = (∑' (i : ℕ), ‖term f σ' i‖ₑ) * ∫⁻ (a : ℝ), ‖ψ a‖ₑ ∂volume := by
+          _ = (∑' (i : ℕ), ‖_root_.term f σ' i‖ₑ) * ∫⁻ (a : ℝ), ‖ψ a‖ₑ ∂volume := by
             simp [ENNReal.tsum_mul_right, enorm_eq_nnnorm]
           _ ≠ ⊤ := ENNReal.mul_ne_top (hf_coe1 hf hσ)
             (ne_top_of_lt hsupp.2)
@@ -675,7 +674,7 @@ lemma second_fourier_aux (hx : 0 < x) :
 
 lemma second_fourier (hcont : Measurable ψ) (hsupp : Integrable ψ)
     {x σ' : ℝ} (hx : 0 < x) (hσ : 1 < σ') :
-    ∫ u in Ici (-log x), Real.exp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)) =
+    ∫ u in Ici (-Real.log x), Real.exp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)) =
     (x^(σ' - 1) : ℝ) * ∫ t, (1 / (σ' + t * I - 1)) * ψ t * x^(t * I) ∂ volume := by
 
   conv in ↑(rexp _) * _ => { rw [Real.fourier_real_eq, ← smul_eq_mul, ← integral_smul] }
@@ -726,12 +725,12 @@ lemma second_fourier (hcont : Measurable ψ) (hsupp : Integrable ψ)
 lemma continuous_LSeries_aux (hf : Summable (nterm f σ')) :
     Continuous fun x : ℝ => LSeries f (σ' + x * I) := by
 
-  have l1 i : Continuous fun x : ℝ ↦ term f (σ' + x * I) i := by
+  have l1 i : Continuous fun x : ℝ ↦ _root_.term f (σ' + x * I) i := by
     by_cases h : i = 0
     · simpa [h] using continuous_const
     · simpa [h] using continuous_const.div (continuous_const.cpow (by fun_prop) (by simp [h]))
         (fun x => by simp [h])
-  have l2 n (x : ℝ) : ‖term f (σ' + x * I) n‖ = nterm f σ' n := by
+  have l2 n (x : ℝ) : ‖_root_.term f (σ' + x * I) n‖ = nterm f σ' n := by
     by_cases h : n = 0
     · simp [h, nterm]
     · simp [h, nterm, cpow_add _ _ (Nat.cast_ne_zero.mpr h),
@@ -741,8 +740,8 @@ lemma continuous_LSeries_aux (hf : Summable (nterm f σ')) :
 lemma limiting_fourier_aux (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re})
     (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (ψ : CS 2 ℂ) (hx : 1 ≤ x) (σ' : ℝ)
     (hσ' : 1 < σ') :
-    ∑' n, term f σ' n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * log (n / x)) -
-    A * (x ^ (1 - σ') : ℝ) * ∫ u in Ici (- log x), rexp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ)
+    ∑' n, _root_.term f σ' n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x)) -
+    A * (x ^ (1 - σ') : ℝ) * ∫ u in Ici (- Real.log x), rexp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ)
       (u / (2 * π)) = ∫ t : ℝ, G (σ' + t * I) * ψ t * x ^ (t * I) := by
   have hint : Integrable ψ := ψ.h1.continuous.integrable_of_hasCompactSupport ψ.h2
   have l3 : 0 < x := zero_lt_one.trans_le hx
