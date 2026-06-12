@@ -56,11 +56,3 @@ ZetaVI.lean（阶段 VI 聚合导入模块）
 
 - 无（全项目 0 axiom + 0 sorry）
 - 所有证明完全依赖于 mathlib 内核
-
-## 2026-06-12 类型修复记录
-
-WienerProof.lean 中 `f : ℕ → ℝ` 与 `LSeries`/`cheby`/`nterm`（要求 `ℕ → ℂ`）的类型不匹配已修复：
-- `LSeries f s` → `LSeries (fun n ↦ (f n : ℂ)) s`
-- `cheby f` / `nterm f σ'` → `cheby (fun n ↦ (f n : ℂ))` / `nterm (fun n ↦ (f n : ℂ)) σ'`
-- `chebyWith C f` → `chebyWith C (fun n ↦ (f n : ℂ))`
-- 新增 `hnorm : ∀ i, ‖(f i : ℂ)‖ = f i` 桥接实数/复数范数
