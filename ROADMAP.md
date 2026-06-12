@@ -113,10 +113,11 @@ RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价
   ├── ✅ Wiener-Ikehara 完整形式化证明 (0 sorry + 0 axiom)
   ├── ✅ WeakPNT 可推导
   ├── ✅ 启动阶段 VI: 零点理论框架 (N(T) 定义 + criticalStrip 紧性 + 零点对称性)
-  └── ✅ Hardy 定理实分析核心 (IVT + criticalLineZeros 闭性/离散性 + 无限变号归约)
+  └── ✅ Hardy 定理完整框架 (实分析核心 + 数论假设归约 + hardyLittlewoodMeanValueHypothesis + xiOscillationHypothesis)
 
 中期（1–3 个月）
   ├── ξ(1/2+it) 渐近估计（Hardy 1914 的数论核心）
+  ├── 复 Gamma 函数 Stirling 渐近公式
   └── Riemann 显式公式 / N(T) ≈ T/2π·log(T/2π)
 
 远期（3–12 个月）
