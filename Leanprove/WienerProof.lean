@@ -454,7 +454,7 @@ lemma limiting_cor (ψ : CS 2 ℂ) (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re}) :
     Tendsto (fun x : ℝ ↦ ∑' n, f n / n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x)) -
       A * ∫ u in Set.Ici (-Real.log x), 𝓕 (ψ : ℝ → ℂ) (u / (2 * π))) atTop (𝓝 0) := by
-  apply limiting_cor_aux.congr'
+  apply (limiting_cor_aux _).congr'
   filter_upwards [eventually_ge_atTop 1] with x hx using
     limiting_fourier hcheby hG hG' hf ψ hx |>.symm
     Integrable (fun t ↦ max |x| 1 * (C / (1 + (t / (2 * π)) ^ 2)))
