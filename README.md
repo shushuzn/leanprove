@@ -4,8 +4,9 @@
 
 [![Lean](https://img.shields.io/badge/Lean-4.31.0--rc2-blue)](https://leanprover.github.io/)
 [![Mathlib](https://img.shields.io/badge/Mathlib-v4.31.0--rc2-green)](https://leanprover-community.github.io/mathlib4/)
-[![Proof Status](https://img.shields.io/badge/proofs-0%20sorry-brightgreen)](./)
-[![Axioms](https://img.shields.io/badge/axioms-1%20remaining-yellow)](./)
+[![Proof Status](https://img.shields.io/badge/Phase%20I–V-0%20sorry-brightgreen)](./)
+[![Axioms](https://img.shields.io/badge/axioms-0-brightgreen)](./)
+[![Phase VI](https://img.shields.io/badge/Phase%20VI-19%20sorry-orange)](./)
 
 ---
 
@@ -15,7 +16,7 @@
 
 ### 当前里程碑
 
-**素数定理全部等价形式已严格证明**：ψ(x) ~ x ↔ θ(x) ~ x ↔ π(x) ~ x/log x。Wiener-Ikehara 定理的 Fourier 分析证明已完整形式化，全项目 **0 sorry + 0 axiom**。
+**素数定理全部等价形式已严格证明**：ψ(x) ~ x ↔ θ(x) ~ x ↔ π(x) ~ x/log x。Wiener-Ikehara 定理的 Fourier 分析证明已完整形式化。阶段 I–V **0 sorry + 0 axiom**，阶段 VI（Hardy 定理框架）进行中。
 
 ---
 
@@ -23,24 +24,24 @@
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  阶段 I    初等数论基础          ████████████████████  100%  ✅ 21 定理
+  阶段 I    初等数论基础          ████████████████████  100%  ✅ ~25 定理
   阶段 II   Chebyshev 与素数分布   ████████████████████  100%  ✅ 20 定理
-  阶段 III  解析数论基础           ████████████████████  100%  ✅ 11 定理
-  阶段 IV   Zeta 函数理论          ████████████████████  100%  ✅ 28 定理
+  阶段 III  解析数论基础           ████████████████████  100%  ✅ ~60 定理
+  阶段 IV   Zeta 函数理论          ████████████████████  100%  ✅ ~26 定理
     ├─ IV-A  ζ(s) 定义与收敛       ████████████████████  100%  ✅
     ├─ IV-B  (σ−1)ζ(σ) 上界       ████████████████████  100%  ✅
     ├─ IV-C  Mertens + Abel 求和   ████████████████████  100%  ✅
     ├─ IV-D  Euler 乘积公式        ████████████████████  100%  ✅
     └─ IV-E  解析延拓与零区域     ████████████████████  100%  ✅
-  阶段 V    素数定理 (PNT)         ████████████████████  100%  ✅ 16 定理
+  阶段 V    素数定理 (PNT)         ████████████████████  100%  ✅ ~143 定理
     ├─ V-A   PNT 等价形式          ████████████████████  100%  ✅
     ├─ V-B   θ~x ↔ π~x/log x      ████████████████████  100%  ✅
     └─ V-C   Wiener-Ikehara 证明   ████████████████████  100%  ✅ 0 axiom
-  阶段 VI   黎曼猜想               ██████████░░░░░░░░░░   55%  🔮 Hardy定理完整框架(模块化重构) + N(T) + ξ特殊值 + Gamma渐近
+  阶段 VI   黎曼猜想               ██████████░░░░░░░░░░   55%  🔮 ~45 定理 (19 sorry)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**统计**: **150+ 定理 / 引理** · **0 sorry** · **0 axiom** · **lake build ✅**
+**统计**: **~330 定理 / 引理** · **Phase I–V: 0 sorry** · **0 axiom** · **Phase VI: 19 sorry (进行中)**
 
 ---
 
@@ -172,7 +173,7 @@ Riemann ζ 函数的分阶段构建，每个子阶段独立可验证。
 
 ---
 
-### 阶段 V · 素数定理 (PNT) ⏳
+### 阶段 V · 素数定理 (PNT) ✅
 
 #### V-A / V-B · 等价形式 ✅
 
@@ -201,18 +202,20 @@ Riemann ζ 函数的分阶段构建，每个子阶段独立可验证。
 | 16 | `prime_number_theorem_pi` | ✅ | π(x) ~ x/log x |
 | — | `WienerIkeharaTheorem` | ✅ **已证明** | 0 sorry + 0 axiom |
 
-> **技术路线**: `LSeriesSummable_vonMangoldt` (可和性) → `G_continuous` (连续性, **已证**) → `LSeries_vonMangoldt_eq_deriv_riemannZeta_div` (G 等式) → `WienerIkeharaTheorem` (axiom) → `WeakPNT` → `prime_number_theorem_psi_from_tauberian` (squeeze theorem 离散→连续)。
+> **技术路线**: `LSeriesSummable_vonMangoldt` (可和性) → `G_continuous` (连续性, **已证**) → `LSeries_vonMangoldt_eq_deriv_riemannZeta_div` (G 等式) → `WienerIkeharaTheorem` (**已证明**, 0 axiom) → `WeakPNT` → `prime_number_theorem_psi_from_tauberian` (squeeze theorem 离散→连续)。
 
 ---
 
-### 阶段 VI · 黎曼猜想 🔮
+### 阶段 VI · 黎曼猜想 🔮 (55%, 19 sorry)
 
-| # | 目标 |
-|:-:|------|
-| 1 | ✅ **ζ(s) 零点计数函数 N(T)** — 定义 `xiZeroCount T = Nat.card {ρ ∈ criticalStrip T | ξ(ρ)=0}`，证明 criticalStrip 的紧性、零点集的对称性（z↔1-z, z↔conj z），以及 N(T) 的单调性 |
-| 2 | 临界线 Re(s) = 1/2 上的零点性质 |
-| 3 | 黎曼假设的等价表述 |
-| 4 | 素数定理误差项改进 |
+| # | 目标 | 状态 |
+|:-:|------|:----:|
+| 1 | **ξ 函数基础** — `riemannXi(s) = s(s-1)π^{-s/2}Γ(s/2)ζ(s)`，对称性 ξ(s)=ξ(1−s)，复共轭 ξ(s̅)=ξ(s)̅，临界线实值性 | ✅ 已证 |
+| 2 | **零点计数 N(T)** — `criticalStrip` 紧致性、`xiZeroCount` 单调性、零点集对称性 | ✅ 已证 |
+| 3 | **Hardy 定理框架** — 临界线参数化、IVT 归约、无限变号→无限零点 | 🚧 框架就绪 (10 sorry) |
+| 4 | **渐近分析** — `gamma_it_norm_le` (Γ(it) 渐近估计)、均值积分归约 | ✅ 核心引理 (0 sorry) |
+| 5 | 黎曼假设的等价表述 | ⬜ 待启动 |
+| 6 | 素数定理误差项改进 | ⬜ 待启动 |
 
 ---
 
@@ -222,26 +225,34 @@ Riemann ζ 函数的分阶段构建，每个子阶段独立可验证。
 leanprove/
 ├── Leanprove.lean                    # 入口：聚合全部阶段
 ├── Leanprove/
-│   ├── Basic.lean                    # 阶段 I   : 初等数论 (21 定理)
+│   ├── Basic.lean                    # 阶段 I   : 初等数论 (25 定理)
 │   ├── Chebyshev.lean                # 阶段 II  : Chebyshev 界 (14 定理)
 │   ├── Bertrand.lean                 # 阶段 II  : Bertrand 假设 (6 定理)
 │   ├── PrimeCounting.lean            # 阶段 I-II: 素数计数 (3 定理)
 │   ├── PrimeReciprocals.lean         # 阶段 I  : 素数倒数和 (1 定理)
-│   ├── Dirichlet.lean                # 阶段 III: 等差数列素数 (11 定理)
-│   ├── VonMangoldt.lean              # 阶段 III-IV: VonMangoldt + Mertens (30+)
-│   ├── Zeta.lean                     # 阶段 IV  : ζ 函数基础
+│   ├── Dirichlet.lean                # 阶段 III: 等差数列素数 (13 定理)
+│   ├── VonMangoldt.lean              # 阶段 III-IV: VonMangoldt + Mertens (47 定理)
 │   ├── ZetaIVB.lean                  # 阶段 IV-B: ζ 上界 (5 引理, 0 sorry)
-│   ├── ZetaIVD.lean                  # 阶段 IV-D: Euler 乘积 (4 定理, 0 sorry)
+│   ├── ZetaIVD.lean                  # 阶段 IV-D: Euler 乘积 (5 定理, 0 sorry)
 │   ├── ZetaIVE.lean                  # 阶段 IV-E: 解析延拓 (16 定理, 0 sorry)
-│   ├── PNTVA.lean                    # 阶段 V-A/B: PNT 等价形式 (13+5, 0 sorry)
-│   ├── Sobolev.lean                  # Sobolev 空间 (CS, W1, W21, TruncFun)
-│   ├── Tauberian.lean                # Wiener-Ikehara + PNT (0 sorry, 0 axiom)
-│   ├── ZetaVI.lean                   # 阶段 VI: ξ 函数 + Hardy 定理
-│   └── Tests.lean                    # 测试与验证
+│   ├── PNTVA.lean                    # 阶段 V-A/B: PNT 等价形式 (13 定理, 0 sorry)
+│   ├── Sobolev.lean                  # Sobolev 空间: CS, W1, W21 (4 定理)
+│   ├── Tauberian.lean                # Wiener-Ikehara + PNT (13 定理, 0 sorry, 0 axiom)
+│   ├── WienerProof.lean              # Wiener-Ikehara 完整证明 (113 引理)
+│   ├── ApiCheck.lean                 # Mathlib API 验证 (6 定理)
+│   ├── Tests.lean                    # 测试与验证
+│   ├── ZetaVI.lean                   # 阶段 VI 入口：聚合子模块
+│   └── ZetaVI/
+│       ├── Definitions.lean          # ξ 函数、N(T)、临界带 (21 定理, 9 sorry)
+│       ├── Hardy.lean                # Hardy 定理框架 (19 定理, 10 sorry)
+│       └── Asymptotics.lean          # Gamma 渐近分析 (5 定理, 0 sorry)
+├── scripts/                          # Git hooks 脚本
 ├── lakefile.toml                     # Lake 构建配置
 ├── lean-toolchain                    # Lean v4.31.0-rc2
-├── README.md                         # 本文件
-└── ROADMAP.md                        # 前瞻规划
+├── AGENT.md                          # 开发纪律规则 (42 条)
+├── DEPENDENCY.md                     # 模块依赖链文档
+├── ROADMAP.md                        # 前瞻规划
+└── README.md                         # 本文件
 ```
 
 ---
@@ -289,10 +300,12 @@ chmod +x .git/hooks/pre-commit
 ## 信任链
 
 ```
-Mathlib 内核 → 本项目 150+ 定理 → 0 sorry → 0 axiom
+Mathlib 内核
+  ├─→ 阶段 I–V: ~310 定理 → 0 sorry → 0 axiom ✅
+  └─→ 阶段 VI:   ~45 定理 → 19 sorry (Hardy 定理框架进行中) 🔮
 ```
 
-所有证明均可通过 `lake build` 独立验证。全项目 **0 sorry + 0 axiom**，完全依赖于 mathlib 内核。
+阶段 I–V 的全部证明均可通过 `lake build Leanprove.Basic Bertrand Chebyshev Dirichlet PrimeCounting PrimeReciprocals VonMangoldt ZetaIVB ZetaIVD ZetaIVE PNTVA Tauberian Sobolev WienerProof` 独立验证，**0 sorry + 0 axiom**，完全依赖于 mathlib 内核。阶段 VI 模块正在推进中。
 
 ---
 
