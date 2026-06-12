@@ -40,9 +40,9 @@ PNTVA.lean
        │    └─ mathlib (FourierTransform, LSeries, ...)
        └─ VonMangoldt.lean
             └─ mathlib (Chebyshev, LSeries, ...)
-ZetaVI.lean (阶段 VI — Γ 反射公式 + ξ特殊值 + N(T) + 临界线Hardy框架)
+ZetaVI.lean (阶段 VI — Γ反射公式 + ξ特殊值 + N(T) + Hardy定理实分析核心)
   ├─ ZetaIVE.lean
-  └─ mathlib (PhragmenLindelof, RiemannZeta, Gamma, Complex.Basic, Continuous)
+  └─ mathlib (PhragmenLindelof, RiemannZeta, Gamma, Complex.Basic, Continuous, AnalyticAt, IntermediateValue)
 ```
 
 ## 顶层假设

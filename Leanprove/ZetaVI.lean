@@ -504,3 +504,204 @@ theorem hardy_theorem_statement :
     Set.Infinite (criticalLineZeros) → True := by
   intro h
   trivial
+
+/-! ### Hardy 定理的实分析核心：IVT、变号论证、无限零点 -/
+
+/-- 连续函数的介值定理（取零的特殊情形）：
+    若 `f` 在 `[a, b]` 上连续且端点值异号（`f a * f b < 0`），
+    则存在 `c ∈ [a, b]` 使 `f(c) = 0`。 -/
+lemma exists_zero_Icc_of_sign_change {f : ℝ → ℝ} {a b : ℝ}
+    (hcont : ContinuousOn f (Set.Icc a b)) (hle : a ≤ b)
+    (h : f a * f b < 0) : ∃ c ∈ Set.Icc a b, f c = 0 := by
+  have hne1 : f a ≠ 0 := by
+    intro h2
+    rw [h2] at h
+    <;> ring_nf at h <;> linarith
+  have hne2 : f b ≠ 0 := by
+    intro h2
+    rw [h2] at h
+    <;> ring_nf at h <;> linarith
+  by_cases h1 : f a < 0
+  · -- 情形 1：f a < 0，则 f b > 0
+    have h2 : 0 < f b := by
+      have h3 : f a * f b < 0 := h
+      nlinarith
+    have h4 : (0 : ℝ) ∈ Set.Icc (f a) (f b) := by
+      simp [Set.mem_Icc, h1, h2] <;> linarith
+    have h5 : (0 : ℝ) ∈ f '' Set.Icc a b :=
+      intermediate_value_Icc hle hcont h4
+    rcases h5 with ⟨c, hc, rfl⟩
+    exact ⟨c, hc, rfl⟩
+  · -- 情形 2：f a > 0，则 f b < 0
+    have h1' : 0 < f a := by
+      have h1'' : ¬f a < 0 := h1
+      have h1''' : f a > 0 := by
+        by_contra h2
+        have h3 : f a = 0 := by linarith
+        exact hne1 h3
+      exact h1'''
+    have h2 : f b < 0 := by
+      have h3 : f a * f b < 0 := h
+      nlinarith
+    have h4 : (0 : ℝ) ∈ Set.Icc (f b) (f a) := by
+      simp [Set.mem_Icc, h1', h2] <;> linarith
+    have h5 : (0 : ℝ) ∈ f '' Set.Icc a b := by
+      simpa [Set.image] using intermediate_value_Icc' hle hcont h4
+    rcases h5 with ⟨c, hc, rfl⟩
+    exact ⟨c, hc, rfl⟩
+
+/-- 通用实分析定理：如果连续实函数 `f` 在正半轴上**既取任意大的正值也取任意大的负值**
+    （即在 `[M, ∞)` 上既存在 `t` 使 `f t > 0`，也存在 `t` 使 `f t < 0`），
+    则 `f` 的零点集 `{t | f t = 0}` 是**无限集**。
+
+    这是 Hardy 定理的分析骨架，与 Riemann ζ 函数的具体数论性质无关。
+
+    **证明思路**（反证法）：
+    假设零点集上方有界（被 C 控制），则在 `(C, ∞)` 上 `f` 不变号（否则由 IVT 会产生一个 > C 的零点）。
+    但这与「任意大的 M 之后既有正又有负值」矛盾。
+    因此零点集上方无界，从而由 `infinite_of_not_bddAbove` 推出无限。 -/
+theorem infinite_zeros_of_infinite_sign_changes
+    {f : ℝ → ℝ} (hcont : Continuous f)
+    (h_pos : ∀ M : ℝ, ∃ t : ℝ, t > M ∧ f t > 0)
+    (h_neg : ∀ M : ℝ, ∃ t : ℝ, t > M ∧ f t < 0) :
+    Set.Infinite {t | f t = 0} := by
+  have h1 : ¬BddAbove {t | f t = 0} := by
+    intro h_bdd
+    rcases h_bdd with ⟨C, hC⟩
+    rcases h_pos C with ⟨t₁, ht₁_gt, ht₁_pos⟩
+    rcases h_neg C with ⟨t₂, ht₂_gt, ht₂_neg⟩
+    let a := min t₁ t₂
+    let b := max t₁ t₂
+    have haC : a > C := by
+      simp [a, t₁, t₂] <;> split_ifs <;> linarith
+    have hle : a ≤ b := le_max_left t₁ t₂
+    have hcont_on : ContinuousOn f (Set.Icc a b) := hcont.continuousOn
+    have h_sign : f a * f b < 0 := by
+      simp [a, b, t₁, t₂]
+      <;> split_ifs <;> simp_all (config := {decide := true}) <;> nlinarith
+    rcases exists_zero_Icc_of_sign_change hcont_on hle h_sign with ⟨c, hc_in, hc_zero⟩
+    have h3 : c ∈ Set.Icc a b := hc_in
+    have h4 : c > C := by
+      have h5 : a ≤ c := h3.1
+      linarith
+    have h6 : c ∈ {t | f t = 0} := by
+      simpa [Set.mem_setOf_eq] using hc_zero
+    have h7 : c ≤ C := hC c h6
+    linarith
+  exact Set.infinite_of_not_bddAbove h1
+
+/-! ### criticalLineZeros 的闭性与离散性 -/
+
+/-- `criticalLineZeros` 是 `ℝ` 中的闭集。
+    这由 `xi_on_critical_line` 的连续性直接推出（闭集 `{0}` 的原像是闭集）。 -/
+lemma criticalLineZeros_isClosed : IsClosed (criticalLineZeros) := by
+  have h1 : criticalLineZeros = xi_on_critical_line ⁻¹' ({0} : Set ℝ) := by
+    ext t
+    simp [criticalLineZeros, Set.mem_preimage, Set.mem_singleton_iff]
+    <;> tauto
+  rw [h1]
+  exact isClosed_singleton.preimage xi_on_critical_line_continuous
+
+/-- `criticalLineZeros` 的离散性（每一个零点都是孤立点）：
+
+    对任意 `t₀ ∈ criticalLineZeros`，存在 `ε > 0` 使得开区间 `(t₀ - ε, t₀ + ε)`
+    与 `criticalLineZeros` 的交只有 `{t₀}`。
+
+    **证明思路**：
+    1. `riemannXi` 是整函数，故在 `z₀ := criticalLine t₀` 处解析；
+    2. 由 `AnalyticAt` 的零点性质，要么 `riemannXi` 在 `z₀` 附近恒为 0，要么 `z₀` 是孤立零点；
+    3. 但 `riemannXi` 不恒为 0（例如 `riemannXi 0 = 1 ≠ 0`），故 `z₀` 是孤立的；
+    4. 这一性质限制到实直线 `criticalLine(ℝ)` 上即给出 `criticalLineZeros` 的离散性。 -/
+lemma criticalLineZeros_isDiscrete : IsDiscrete (criticalLineZeros : Set ℝ) := by
+  rw [isDiscrete_iff_forall_exists_isOpen]
+  intro t₀ ht₀
+  let z₀ : ℂ := criticalLine t₀
+  have hz₀ : riemannXi z₀ = 0 := (criticalLineZeros_iff t₀).mp ht₀
+  have h_analytic : AnalyticAt ℂ riemannXi z₀ :=
+    (riemannXi_isEntire).analyticAt
+  have h_not_const : ¬∀ᶠ z in 𝓝 z₀, riemannXi z = 0 := by
+    by_contra h
+    have h' : ∀ᶠ z in 𝓝 z₀, riemannXi z = 0 := h
+    have h_ident : riemannXi = 0 := by
+      apply h_analytic.eqOn_zero_of_preconnected_of_eventuallyEq_zero (isPreconnected_univ) (mem_univ z₀)
+      simpa [nhdsWithin_univ] using Filter.EventuallyEq.filter_mono h' Filter.sup_le_left
+    have h_contra := congr_fun h_ident (0 : ℂ)
+    simpa [riemannXi_zero] using h_contra
+  have h_eventually_ne : ∀ᶠ z in 𝓝[≠] z₀, riemannXi z ≠ 0 :=
+    (h_analytic.frequently_zero_iff_eventually_zero).not.mp (by tauto)
+  rcases Metric.eventually_nhdsWithin_iff.mp h_eventually_ne with ⟨ε, hε_pos, hε⟩
+  refine' ⟨{t : ℝ | |t - t₀| < ε / 2}, _, _⟩
+  · exact isOpen_lt (by fun_prop) continuous_const
+  · simp only [Set.ext_iff, Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_singleton_iff]
+    intro t
+    constructor
+    · intro h
+      have h1 : |t - t₀| < ε / 2 := h.1
+      have h2 : t ∈ criticalLineZeros := h.2
+      by_contra h3
+      have h4 : t ≠ t₀ := h3
+      have h5 : dist (criticalLine t) z₀ < ε := by
+        simpa [z₀, criticalLine, Complex.dist_eq, Complex.abs, Real.sqrt] using
+          calc
+            dist (criticalLine t) z₀ = |t - t₀| := by
+              simp [criticalLine, Complex.dist_eq, Complex.abs, Real.sqrt]
+              <;> ring_nf
+            _ < ε / 2 := h1
+            _ < ε := by linarith
+      have h6 : criticalLine t ≠ z₀ := by
+        intro h7
+        have h8 : (criticalLine t).im = z₀.im := by rw [h7]
+        simpa [criticalLine] using h4 (by simpa [criticalLine] using h8)
+      have h9 : riemannXi (criticalLine t) ≠ 0 := hε h5 h6
+      have h10 : riemannXi (criticalLine t) = 0 := (criticalLineZeros_iff t).mp h2
+      exact h9 h10
+    · intro h
+      rw [h]
+      constructor
+      · simp [abs_of_pos] <;> linarith
+      · exact ht₀
+
+/-! ### Hardy 定理的正式归约 -/
+
+/-- 将通用的实分析定理应用到 `xi_on_critical_line`：
+
+    **如果** `ξ(1/2+it)` 在 `[M, ∞)` 上对任意 `M` 都既取正值又取负值，
+    **那么**临界线上有无穷多零点。
+
+    这是 Hardy 定理的**完整分析骨架**。剩余的数论部分（证明 ξ(1/2+it) 确实无限次变号）
+    属于解析数论的深刻结果，在此留为假设，由后续工作补充。 -/
+theorem hardys_theorem_by_sign_changes
+    (h_pos : ∀ M : ℝ, ∃ t : ℝ, t > M ∧ xi_on_critical_line t > 0)
+    (h_neg : ∀ M : ℝ, ∃ t : ℝ, t > M ∧ xi_on_critical_line t < 0) :
+    Set.Infinite (criticalLineZeros) :=
+  infinite_zeros_of_infinite_sign_changes xi_on_critical_line_continuous h_pos h_neg
+
+/-- Hardy 定理（1914）的等价陈述：
+    「Riemann ξ 函数在临界线 `Re(s) = 1/2` 上有无穷多零点。」
+
+    本定理给出完整归约：只要 `h_pos` 与 `h_neg`（即 `ξ(1/2+it)` 的正负值都在 t → ∞ 时
+    无限次出现）成立，则 `criticalLineZeros` 是无限集。
+
+    注：`h_pos ∧ h_neg` 的证明涉及 ζ(s) 的深入估计，是 Hardy 原证明中的数论核心。
+    当前项目中已完成所有分析/拓扑/复分析基础设施，仅剩这一数论估计待补充。 -/
+theorem hardys_theorem_reduction
+    (h_sign : (∀ M : ℝ, ∃ t : ℝ, t > M ∧ xi_on_critical_line t > 0) ∧
+              (∀ M : ℝ, ∃ t : ℝ, t > M ∧ xi_on_critical_line t < 0)) :
+    Set.Infinite (criticalLineZeros) :=
+  hardys_theorem_by_sign_changes h_sign.1 h_sign.2
+
+/-! ### 小结：Hardy 定理当前状态
+
+    ✓ `criticalLine t = 1/2 + i·t` — 临界线参数化
+    ✓ `xi_on_critical_line t = ξ(1/2 + it)` — 实值函数（由 ξ 的对称性保证）
+    ✓ `Continuous(xi_on_critical_line)` — 由 riemannXi 的复可微性推出
+    ✓ `criticalLineZeros` 是闭集（连续函数对 {0} 的原像）
+    ✓ `criticalLineZeros` 是离散集（由 riemannXi 的整性 + 解析函数零点性质）
+    ✓ IVT 应用：`exists_zero_Icc_of_sign_change`
+    ✓ 通用定理：`infinite_zeros_of_infinite_sign_changes`（与 ζ 无关的实分析定理）
+    ✓ 归约：`hardys_theorem_by_sign_changes`, `hardys_theorem_reduction`
+
+    剩余待完成（数论核心）：
+      证明 `ξ(1/2+it)` 当 `t → ∞` 时确实无限次变号。
+      这需要对 ζ(1/2+it) 的渐近行为进行估计（Hardy 1914 年的原始工作）。
+-/
