@@ -363,7 +363,27 @@ lemma decay_bounds_W21 (f : W21) (hA : ∀ t, ‖f t‖ ≤ A / (1 + t ^ 2))
 
 lemma W21_integrable_fourier (ψ : W21) (hc : c ≠ 0) :
     Integrable fun u ↦ 𝓕 (ψ : ℝ → ℂ) (u / c) := by
-  sorry
+  have h_bound : ∀ u, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ ψ.w21norm * (1 + (c⁻¹ * u) ^ 2)⁻¹ := by
+    intro u; rw [show u / c = c⁻¹ * u from by ring_nf]; exact decay_bounds_key ψ (c⁻¹ * u)
+  have h_int : Integrable (fun u => ψ.w21norm * (1 + (c⁻¹ * u) ^ 2)⁻¹ : ℝ → ℝ) := by
+    have h : Integrable (fun u => (1 + (c⁻¹ * u) ^ 2)⁻¹ : ℝ → ℝ) := by
+      rw [show (fun u => (1 + (c⁻¹ * u) ^ 2)⁻¹) = (fun u => (fun x => (1 + x ^ 2)⁻¹) (c⁻¹ * u)) from by ext u; rfl]
+      rw [integrable_comp_mul_left_iff (fun x => (1 + x ^ 2)⁻¹) (inv_ne_zero hc)]
+      exact integrable_inv_one_add_sq
+    exact h.const_mul ψ.w21norm
+  have h_meas : AEStronglyMeasurable (fun u => 𝓕 (ψ : ℝ → ℂ) (u / c)) volume := by
+    apply (VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
+      (innerSL ℝ).continuous₂ (W21.hf ψ)).aestronglyMeasurable.comp_measurable
+    exact measurable_id.div_const c
+  have h_bound' : ∀ᵐ u ∂volume, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ ‖ψ.w21norm * (1 + (c⁻¹ * u) ^ 2)⁻¹‖ := by
+    apply Filter.Eventually.of_forall
+    intro u
+    have hpos : 0 ≤ ψ.w21norm * (1 + (c⁻¹ * u) ^ 2)⁻¹ :=
+      mul_nonneg (W21.w21norm_nonneg ψ) (inv_nonneg.mpr (by positivity))
+    rw [show ‖ψ.w21norm * (1 + (c⁻¹ * u) ^ 2)⁻¹‖ = ψ.w21norm * (1 + (c⁻¹ * u) ^ 2)⁻¹ from by
+      rw [Real.norm_eq_abs, abs_of_nonneg hpos]]
+    exact h_bound u
+  exact h_int.mono h_meas h_bound'
 
 lemma W21_integrable_fourier_restrict (ψ : W21) (hc : c ≠ 0) (s : Set ℝ) :
     IntegrableOn (fun u ↦ 𝓕 (ψ : ℝ → ℂ) (u / c)) s :=
