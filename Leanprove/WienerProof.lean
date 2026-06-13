@@ -341,7 +341,25 @@ lemma decay_bounds_aux {f : ℝ → ℂ} (hf : AEStronglyMeasurable f volume)
 lemma decay_bounds_W21 (f : W21) (hA : ∀ t, ‖f t‖ ≤ A / (1 + t ^ 2))
     (hA' : ∀ t, ‖deriv (deriv f) t‖ ≤ A / (1 + t ^ 2)) (u) :
     ‖𝓕 (f : ℝ → ℂ) u‖ ≤ (π + 1 / (4 * π)) * A / (1 + u ^ 2) := by
-  sorry
+  have h_key := decay_bounds_key f u
+  have h_int_f : ∫ v, ‖(f : ℝ → ℂ) v‖ ≤ π * A :=
+    decay_bounds_aux (W21.hf f).aestronglyMeasurable hA
+  have h_int_f'' : ∫ v, ‖deriv (deriv (f : ℝ → ℂ)) v‖ ≤ π * A :=
+    decay_bounds_aux (W21.hf'' f).aestronglyMeasurable hA'
+  have h2 : (1 / (4 * π ^ 2)) * ∫ v, ‖deriv (deriv (f : ℝ → ℂ)) v‖ ≤ A / (4 * π) := by
+    have h := mul_le_mul_of_nonneg_left h_int_f'' (by positivity : 0 ≤ (1 : ℝ) / (4 * π ^ 2))
+    rw [← mul_assoc, show (1 / (4 * π ^ 2)) * π = 1 / (4 * π) from by field_simp] at h
+    rw [show A / (4 * π) = 1 / (4 * π) * A from by ring_nf]
+    exact h
+  have h2' : (4 * π ^ 2)⁻¹ * ∫ v, ‖deriv (deriv (f : ℝ → ℂ)) v‖ ≤ A / (4 * π) := by
+    rw [show (4 * π ^ 2)⁻¹ = 1 / (4 * π ^ 2) from by ring_nf]; exact h2
+  have h_w21 : f.w21norm ≤ (π + 1 / (4 * π)) * A := by
+    unfold W21.w21norm
+    have h3 := add_le_add h_int_f h2'
+    rw [show π * A + A / (4 * π) = (π + 1 / (4 * π)) * A from by ring_nf] at h3
+    exact h3
+  rw [show (π + 1 / (4 * π)) * A / (1 + u ^ 2) = (π + 1 / (4 * π)) * A * (1 + u ^ 2)⁻¹ from by ring]
+  exact h_key.trans (mul_le_mul_of_nonneg_right h_w21 (by positivity))
 
 lemma W21_integrable_fourier (ψ : W21) (hc : c ≠ 0) :
     Integrable fun u ↦ 𝓕 (ψ : ℝ → ℂ) (u / c) := by
