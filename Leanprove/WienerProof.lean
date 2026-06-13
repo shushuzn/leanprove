@@ -86,7 +86,7 @@ lemma summation_by_parts {E : Type*} [Ring E] {a A b : ℕ → E} (ha : a = nabl
     rw [Finset.sum_range_succ]
   have l2 : ∑ x ∈ Finset.range (n + 1), A x * b x = A 0 * b 0 + ∑ x ∈ Finset.range n,
       A (x + 1) * b (x + 1) := by
-    sorry
+    rw [Finset.sum_range_succ'] ; abel
   simp only [cumsum, ha, Pi.mul_apply, nabla, sub_mul, Finset.sum_sub_distrib, l1, l2, shift,
     mul_sub]
   abel
