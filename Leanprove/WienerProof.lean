@@ -93,7 +93,13 @@ lemma summation_by_parts {E : Type*} [Ring E] {a A b : ℕ → E} (ha : a = nabl
 
 lemma summation_by_parts'' {E : Type*} [Ring E] {a b : ℕ → E} :
     shift (cumsum (a * b)) = shift (cumsum a) * b - cumsum (shift (cumsum a) * nabla b) := by
-  sorry
+  have ha : a = nabla (cumsum a) := by
+    ext n; simp [nabla, cumsum, Finset.sum_range_succ]
+  ext n
+  simp only [shift, Pi.sub_apply, Pi.mul_apply]
+  have h := summation_by_parts (a := a) (A := cumsum a) (b := b) ha (n := n)
+  simp only [shift, Pi.mul_apply, nabla, cumsum, Finset.sum_range_zero, zero_mul, sub_zero] at h
+  exact h
 
 lemma summable_iff_bounded {u : ℕ → ℝ} (hu : 0 ≤ u) :
     Summable u ↔ BoundedAtFilter atTop (cumsum u) := by
