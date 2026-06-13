@@ -222,7 +222,31 @@ lemma one_add_sq_pos (u : ℝ) : 0 < 1 + u ^ 2 :=
 theorem fourierIntegral_self_add_deriv_deriv (f : W21) (u : ℝ) :
     (1 + u ^ 2) * 𝓕 (f : ℝ → ℂ) u =
       𝓕 (fun u : ℝ => (f u - (1 / (4 * π ^ 2)) * deriv^[2] f u : ℂ)) u := by
-  sorry
+  -- 𝓕(deriv f) = (2πIu) * 𝓕(f)
+  have h1 := congr_fun (fourier_deriv (W21.hf f) (W21.differentiable f) (W21.hf' f)) u
+  have h2 := congr_fun (fourier_deriv (W21.hf' f) (W21.deriv_differentiable f) (W21.hf'' f)) u
+  -- Rewrite: deriv^[2] f = deriv (deriv f)
+  -- and f - c * deriv(deriv f) = f + (-c) * deriv(deriv f)
+  have heq : (fun v : ℝ => (f v - (1 / (4 * π ^ 2)) * deriv^[2] f v : ℂ)) =
+      (fun v => (f : ℝ → ℂ) v + (-(1 / (4 * π ^ 2))) * deriv (deriv (f : ℝ → ℂ)) v) := by
+    ext v
+    rw [show deriv^[2] (f : ℝ → ℂ) v = deriv (deriv (f : ℝ → ℂ)) v from by
+      rw [← iteratedDeriv_eq_iterate (n := 2), iteratedDeriv_succ, iteratedDeriv_one]]
+    ring
+  -- Use F_add to split: 𝓕(f + g) = 𝓕(f) + 𝓕(g)
+  rw [heq, F_add (W21.hf f) (by
+    rw [show (fun v => (-(1 / (4 * π ^ 2))) * deriv (deriv (f : ℝ → ℂ)) v) =
+        (-(1 / (4 * π ^ 2))) • deriv (deriv (f : ℝ → ℂ)) from by ext; simp [smul_eq_mul]]
+    exact (W21.hf'' f).smul (-(1 / (4 * π ^ 2)))) u, F_mul]
+  -- Now: (1 + u²) * 𝓕 f u = 𝓕 f u + (-(1/(4π²))) * 𝓕(deriv (deriv f)) u
+  -- Use h1, h2: 𝓕(deriv f) = (2πIu) * 𝓕(f), 𝓕(deriv(deriv f)) = (2πIu) * 𝓕(deriv f)
+  rw [h2, h1, smul_eq_mul]
+  -- Normalize the algebraic expression first
+  ring_nf
+  -- Simplify I² = -1
+  simp only [Complex.I_sq]
+  -- Simplify π² * π⁻² = 1
+  field_simp [Real.pi_ne_zero]
 
 /-! #### Fourier decay estimates for W21 functions -/
 
