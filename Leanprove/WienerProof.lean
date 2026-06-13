@@ -309,7 +309,12 @@ lemma log_sq_isbigo_mul {a b : ℝ} (hb : 0 < b) :
     tendsto_log_atTop.comp <| tendsto_id.atTop_div_const hb
 
 lemma log_add_one_sub_log_le {x : ℝ} (hx : 0 < x) : Real.log (x + 1) - Real.log x ≤ x⁻¹ := by
-  sorry
+  rw [← Real.log_div (by linarith) (by linarith), show (x + 1) / x = 1 + x⁻¹ by field_simp]
+  have h : 0 < 1 + x⁻¹ := by positivity
+  have h2 : Real.log (1 + x⁻¹) ≤ x⁻¹ := by
+    have h3 := Real.log_le_sub_one_of_pos h
+    linarith
+  exact h2
 
 lemma nabla_log_main : (fun x : ℝ => Real.log (x + 1) - Real.log x) =O[atTop] fun x ↦ 1 / x := by
   sorry
