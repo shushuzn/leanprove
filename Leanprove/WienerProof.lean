@@ -116,7 +116,25 @@ lemma summable_iff_bounded' {u : ℕ → ℝ} (hu : ∀ᶠ n in atTop, 0 ≤ u n
   have e2 : cumsum (fun i ↦ u (i + N)) = fun n => cumsum u (n + N) - cumsum u N := by
     ext n ; simp_rw [cumsum, add_comm _ N, Finset.sum_range_add] ; ring
   rw [← summable_nat_add_iff N, summable_iff_bounded (fun n => hu _ <| Nat.le_add_left N n), e2]
-  sorry
+  simp only [BoundedAtFilter, isBigO_iff, Pi.one_apply, norm_one, mul_one]
+  constructor
+  · intro ⟨C, hC⟩
+    obtain ⟨N', hC⟩ := eventually_atTop.1 hC
+    refine ⟨C + ‖cumsum u N‖, eventually_atTop.2 ⟨N + N', fun n hn => ?_⟩⟩
+    have h1 : ‖cumsum u (n - N + N) - cumsum u N‖ ≤ C :=
+      hC (n - N) (Nat.le_sub_of_add_le (by omega))
+    rw [Nat.sub_add_cancel (by omega : N ≤ n)] at h1
+    have h2 : ‖cumsum u n‖ ≤ ‖cumsum u n - cumsum u N‖ + ‖cumsum u N‖ := by
+      nth_rw 1 [show cumsum u n = (cumsum u n - cumsum u N) + cumsum u N from by ring]
+      exact norm_add_le _ _
+    linarith
+  · intro ⟨C, hC⟩
+    obtain ⟨N', hC⟩ := eventually_atTop.1 hC
+    refine ⟨C + ‖cumsum u N‖, eventually_atTop.2 ⟨N', fun n _ => ?_⟩⟩
+    have h1 : ‖cumsum u (n + N)‖ ≤ C := hC (n + N) (by omega)
+    have h2 : ‖cumsum u (n + N) - cumsum u N‖ ≤ ‖cumsum u (n + N)‖ + ‖cumsum u N‖ :=
+      norm_sub_le _ _
+    linarith
 
 lemma bounded_of_shift {u : ℕ → ℝ} (h : BoundedAtFilter atTop (shift u)) :
     BoundedAtFilter atTop u := by
