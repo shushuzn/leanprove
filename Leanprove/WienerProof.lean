@@ -311,7 +311,19 @@ lemma decay_bounds_key (f : W21) (u : ℝ) : ‖𝓕 (f : ℝ → ℂ) u‖ ≤ 
   exact (le_div_iff₀ h1pu2).mpr h_final
 
 lemma decay_bounds_cor (ψ : CS 2 ℂ) : ∃ C : ℝ, ∀ u, ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤ C / (1 + u ^ 2) := by
-  sorry
+  have h1 : Integrable (ψ : ℝ → ℂ) :=
+    ψ.h1.continuous.integrable_of_hasCompactSupport ψ.h2
+  have h1' : Integrable (deriv (ψ : ℝ → ℂ)) := by sorry
+  have h1'' : Integrable (deriv (deriv (ψ : ℝ → ℂ))) := by sorry
+  let f : W21 := ⟨ψ, ψ.h1, fun k hk => by
+    interval_cases k
+    · exact h1
+    · simp [iteratedDeriv_succ]; exact h1'
+    · simp [iteratedDeriv_succ]; exact h1''⟩
+  exact ⟨f.w21norm, fun u => by
+    have h := decay_bounds_key f u
+    rw [show f.w21norm * (1 + u ^ 2)⁻¹ = f.w21norm / (1 + u ^ 2) from by ring] at h
+    exact h⟩
 
 lemma continuous_FourierIntegral (ψ : CS 2 ℂ) : Continuous (𝓕 (ψ : ℝ → ℂ)) := by
   exact VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
