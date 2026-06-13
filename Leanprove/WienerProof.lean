@@ -260,7 +260,9 @@ lemma decay_bounds_cor (ψ : CS 2 ℂ) : ∃ C : ℝ, ∀ u, ‖𝓕 (ψ : ℝ �
   sorry
 
 lemma continuous_FourierIntegral (ψ : CS 2 ℂ) : Continuous (𝓕 (ψ : ℝ → ℂ)) := by
-  sorry
+  exact VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
+    (innerSL ℝ).continuous₂
+    (ψ.h1.continuous.integrable_of_hasCompactSupport ψ.h2)
 
 lemma decay_bounds_aux {f : ℝ → ℂ} (hf : AEStronglyMeasurable f volume)
     (h : ∀ t, ‖f t‖ ≤ A * (1 + t ^ 2)⁻¹) : ∫ t, ‖f t‖ ≤ π * A := by
