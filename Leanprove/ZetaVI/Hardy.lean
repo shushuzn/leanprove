@@ -149,19 +149,39 @@ theorem infinite_zeros_of_infinite_sign_changes {f : ℝ → ℝ} (hf : Continuo
   | inl hfa =>
     cases hfb with
     | inl hfb =>
-      have h_contr : f a > 0 ∧ f b > 0 := ⟨hfa, hfb⟩
-      sorry
+      have h_zero := exists_zero_Icc_of_sign_change h_ab hf_cont (by linarith [hfa]) (by linarith [hfb])
+      obtain ⟨c, hc_mem, hc_zero⟩ := h_zero
+      have h_not_zero : c ∉ zeros := by
+        intro hc
+        have : c ≤ supr zeros := le_supr (fun x => x ∈ zeros) hc
+        linarith [ht1, ht2]
+      exact h_not_zero hc_zero
     | inr hfb =>
       have h_zero := exists_zero_Icc_of_sign_change h_ab hf_cont (by linarith [hfa]) (by linarith [hfb])
-      sorry
+      obtain ⟨c, hc_mem, hc_zero⟩ := h_zero
+      have h_not_zero : c ∉ zeros := by
+        intro hc
+        have : c ≤ supr zeros := le_supr (fun x => x ∈ zeros) hc
+        linarith [ht1, ht2]
+      exact h_not_zero hc_zero
   | inr hfa =>
     cases hfb with
     | inl hfb =>
       have h_zero := exists_zero_Icc_of_sign_change' h_ab hf_cont (by linarith [hfb]) (by linarith [hfa])
-      sorry
+      obtain ⟨c, hc_mem, hc_zero⟩ := h_zero
+      have h_not_zero : c ∉ zeros := by
+        intro hc
+        have : c ≤ supr zeros := le_supr (fun x => x ∈ zeros) hc
+        linarith [ht1, ht2]
+      exact h_not_zero hc_zero
     | inr hfb =>
-      sorry
-  sorry
+      have h_zero := exists_zero_Icc_of_sign_change' h_ab hf_cont (by linarith [hfb]) (by linarith [hfa])
+      obtain ⟨c, hc_mem, hc_zero⟩ := h_zero
+      have h_not_zero : c ∉ zeros := by
+        intro hc
+        have : c ≤ supr zeros := le_supr (fun x => x ∈ zeros) hc
+        linarith [ht1, ht2]
+      exact h_not_zero hc_zero
 
 /-! ### criticalLineZeros 的闭性与离散性 -/
 
