@@ -44,6 +44,13 @@ Integrable.add (hf : Integrable f μ) (hg : Integrable g μ) : Integrable (f + g
 
 -- 减法可积
 Integrable.sub (hf : Integrable f μ) (hg : Integrable g μ) : Integrable (f - g) μ
+
+-- 用点态 bound 证明可积 (mono)
+Integrable.mono (hg : Integrable g μ) (hf : AEStronglyMeasurable f μ)
+    (h : ∀ᵐ a ∂μ, ‖f a‖ ≤ ‖g a‖) : Integrable f μ
+
+-- 变量替换: f(a*x) 可积 ↔ f(x) 可积
+integrable_comp_mul_left_iff (f : ℝ → F) {R : ℝ} (hR : R ≠ 0)
 ```
 
 ## Fourier 变换
