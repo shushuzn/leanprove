@@ -317,7 +317,15 @@ lemma log_add_one_sub_log_le {x : ℝ} (hx : 0 < x) : Real.log (x + 1) - Real.lo
   exact h2
 
 lemma nabla_log_main : (fun x : ℝ => Real.log (x + 1) - Real.log x) =O[atTop] fun x ↦ 1 / x := by
-  sorry
+  apply IsBigO.of_bound 1
+  filter_upwards [eventually_gt_atTop 0] with x hx
+  simp only [norm_eq_abs, one_mul]
+  have h1 : 0 ≤ Real.log (x + 1) - Real.log x := by
+    rw [sub_nonneg]; exact Real.log_le_log (by linarith) (by linarith)
+  rw [abs_of_nonneg h1, abs_of_pos (one_div_pos.2 hx)]
+  have h2 := log_add_one_sub_log_le hx
+  rw [show (x : ℝ)⁻¹ = 1 / x from (one_div x).symm] at h2
+  linarith
 
 lemma nabla_log {b : ℝ} (hb : 0 < b) :
     (fun x : ℝ => Real.log ((x + 1) / b) - Real.log (x / b)) =O[atTop] (fun x => 1 / x) := by
