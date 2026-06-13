@@ -264,8 +264,47 @@ lemma decay_bounds_key (f : W21) (u : ℝ) : ‖𝓕 (f : ℝ → ℂ) u‖ ≤ 
     have : (↑(1 + u ^ 2 : ℝ) : ℂ) = (1 : ℂ) + ↑u ^ 2 := by norm_cast
     rw [this, h_eq]; exact h_decay
   have h_w21_bound : ∫ v, ‖(f v - (1 / (4 * π ^ 2)) * deriv^[2] f v : ℂ)‖ ≤ f.w21norm := by
-    -- Triangle inequality: ∫‖f - c*f''‖ ≤ ∫‖f‖ + c*∫‖f''‖ = w21norm
-    sorry
+    -- Step 1: deriv^[2] f = deriv(deriv f)
+    have h_d2 : ∀ v, deriv^[2] (f : ℝ → ℂ) v = deriv (deriv (f : ℝ → ℂ)) v := by
+      intro v; rw [← iteratedDeriv_eq_iterate (n := 2), iteratedDeriv_succ, iteratedDeriv_one]
+    -- Step 2: cast equality
+    set c : ℝ := 1 / (4 * π ^ 2) with hc
+    have c_pos : 0 < c := by rw [hc]; positivity
+    have h_cast : (1 / (4 * (↑π : ℂ) ^ 2) : ℂ) = ↑c := by rw [hc]; push_cast; ring
+    -- Step 3: rewrite LHS
+    rw [show (fun v => ‖(f v - (1 / (4 * π ^ 2)) * deriv^[2] f v : ℂ)‖) =
+        (fun v => ‖(f v - ↑c * deriv (deriv (f : ℝ → ℂ)) v : ℂ)‖) from by
+      ext v; rw [h_d2 v, h_cast]]
+    -- Step 4: pointwise bound
+    have h_ptwise : ∀ v, ‖(f v - ↑c * deriv (deriv (f : ℝ → ℂ)) v : ℂ)‖ ≤
+        ‖(f : ℝ → ℂ) v‖ + c * ‖deriv (deriv (f : ℝ → ℂ)) v‖ := by
+      intro v
+      have h1 := norm_sub_le ((f : ℝ → ℂ) v) (↑c * deriv (deriv (f : ℝ → ℂ)) v)
+      have h2 : ‖(↑c : ℂ) * deriv (deriv (f : ℝ → ℂ)) v‖ = c * ‖deriv (deriv (f : ℝ → ℂ)) v‖ := by
+        rw [norm_mul, norm_real, Real.norm_eq_abs, abs_of_pos c_pos]
+      rw [h2] at h1; exact h1
+    -- Step 5: LHS integrable
+    have h_lhs : Integrable (fun v => ‖(f v - ↑c * deriv (deriv (f : ℝ → ℂ)) v : ℂ)‖) := by
+      apply Integrable.norm; apply (W21.hf f).sub; exact (W21.hf'' f).smul (↑c : ℂ)
+    -- Step 6: RHS integrable
+    have h_rhs : Integrable (fun v => ‖(f : ℝ → ℂ) v‖ + c * ‖deriv (deriv (f : ℝ → ℂ)) v‖) := by
+      apply (W21.hf f).norm.add; exact (W21.hf'' f).norm.const_mul c
+    -- Step 7: apply integral_mono
+    have h_mono := integral_mono h_lhs h_rhs h_ptwise
+    -- Step 8: RHS = ∫‖f‖ + c*∫‖f''‖
+    have h_rhs_eq : ∫ v, ‖(f : ℝ → ℂ) v‖ + c * ‖deriv (deriv (f : ℝ → ℂ)) v‖ =
+        (∫ v, ‖(f : ℝ → ℂ) v‖) + c * ∫ v, ‖deriv (deriv (f : ℝ → ℂ)) v‖ := by
+      rw [integral_add (W21.hf f).norm ((W21.hf'' f).norm.const_mul c)]
+      congr 1
+      rw [show (fun v => c * ‖deriv (deriv (f : ℝ → ℂ)) v‖) =
+          (fun v => ‖deriv (deriv (f : ℝ → ℂ)) v‖ * c) from by ext v; rw [mul_comm]]
+      rw [integral_mul_const]; rw [mul_comm]
+    -- Step 9: combine
+    rw [hc] at h_rhs_eq ⊢
+    have h_w21_eq : (∫ v, ‖(f : ℝ → ℂ) v‖) + 1 / (4 * π ^ 2) * ∫ v, ‖deriv (deriv (f : ℝ → ℂ)) v‖ = f.w21norm := by
+      simp only [W21.w21norm, one_div]
+    rw [← h_w21_eq]
+    exact h_mono.trans (le_of_eq h_rhs_eq)
   have h_final : ‖𝓕 (f : ℝ → ℂ) u‖ * (1 + u ^ 2) ≤ f.w21norm := by
     rw [mul_comm]; exact h_bound1.trans h_w21_bound
   rw [show f.w21norm * (1 + u ^ 2)⁻¹ = f.w21norm / (1 + u ^ 2) from by ring]
