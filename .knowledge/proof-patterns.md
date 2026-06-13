@@ -39,24 +39,36 @@ have h : ‖(↑c : ℂ) * f‖ = c * ‖f‖ := by
 ### 常数提取
 ```lean
 -- 问题: 1/(4π²) * ∫‖f''‖ ≤ A/(4π)
--- 解决方案:
-have h := mul_le_mul_of_nonneg_left h_int_f'' (by positivity)
-rw [show (1 / (4 * π ^ 2)) * (π * A) = A / (4 * π) from by field_simp; ring_nf] at h
-exact h
+-- 步骤:
+-- 1. mul_le_mul_of_nonneg_left h_int_f'' (by positivity)
+-- 2. rw [← mul_assoc]  -- 把 (1/(4π²)) * (π*A) 变成 ((1/(4π²)) * π) * A
+-- 3. rw [show (1 / (4 * π ^ 2)) * π = 1 / (4 * π) from by field_simp]  -- field_simp 关闭等式
+-- 4. rw [show A / (4 * π) = 1 / (4 * π) * A from by ring_nf]  -- mul_comm
+-- 5. exact h
+```
+
+### 代数恒等式: `1/(4π²) * π = 1/(4π)`
+```lean
+-- field_simp 可以直接关闭此等式
+-- 不需要 ring_nf 跟在后面
+rw [show (1 / (4 * π ^ 2)) * π = 1 / (4 * π) from by field_simp]
 ```
 
 ## 代数恒等式模式
 
-### `field_simp` 会关闭目标
+### `field_simp` 在 `show` 内部会关闭目标
 ```lean
--- 问题: field_simp 在 have 内部关闭目标，导致后续 rw 无法使用
--- 解决方案: 使用 field_simp + ring_nf 组合，或使用 mul_assoc 转换
+-- 问题: field_simp 在 show 内部关闭目标，导致 rw 无法使用
+-- 错误: "No goals to be solved"
 
--- 错误用法:
-have h : ... := by field_simp; ring_nf  -- h 已被证明，无法 rw
+-- 解决方案1: 使用 mul_assoc + ring_nf 组合
+rw [show (1 / (4 * π ^ 2)) * (π * A) = (1 / (4 * π ^ 2) * π) * A from by ring_nf]
+rw [show (1 / (4 * π ^ 2)) * π = 1 / (4 * π) from by field_simp; ring_nf]
+ring_nf
 
--- 正确用法:
-rw [show ... from by field_simp; ring_nf]  -- 直接在 rw 中使用
+-- 解决方案2: 直接使用 rw 而不是 show
+rw [← mul_assoc]
+rw [show (1 / (4 * π ^ 2)) * π = 1 / (4 * π) from by field_simp; ring_nf]
 ```
 
 ### `(4*π²)⁻¹` vs `1/(4*π²)`
