@@ -254,7 +254,22 @@ theorem prelim_decay (ψ : ℝ → ℂ) (u : ℝ) : ‖𝓕 (ψ : ℝ → ℂ) u
   VectorFourier.norm_fourierIntegral_le_integral_norm ..
 
 lemma decay_bounds_key (f : W21) (u : ℝ) : ‖𝓕 (f : ℝ → ℂ) u‖ ≤ f.w21norm * (1 + u ^ 2)⁻¹ := by
-  sorry
+  have h_eq := fourierIntegral_self_add_deriv_deriv f u
+  have h_decay := prelim_decay (fun v => (f v - (1 / (4 * π ^ 2)) * deriv^[2] f v : ℂ)) u
+  have h1pu2 : 0 < (1 + u ^ 2 : ℝ) := by positivity
+  have h_mul : ‖(↑(1 + u ^ 2 : ℝ) : ℂ) * 𝓕 (f : ℝ → ℂ) u‖ = (1 + u ^ 2) * ‖𝓕 (f : ℝ → ℂ) u‖ := by
+    rw [norm_mul, norm_real, Real.norm_eq_abs, abs_of_pos h1pu2]
+  have h_bound1 : (1 + u ^ 2) * ‖𝓕 (f : ℝ → ℂ) u‖ ≤ ∫ v, ‖(f v - (1 / (4 * π ^ 2)) * deriv^[2] f v : ℂ)‖ := by
+    rw [← h_mul]
+    have : (↑(1 + u ^ 2 : ℝ) : ℂ) = (1 : ℂ) + ↑u ^ 2 := by norm_cast
+    rw [this, h_eq]; exact h_decay
+  have h_w21_bound : ∫ v, ‖(f v - (1 / (4 * π ^ 2)) * deriv^[2] f v : ℂ)‖ ≤ f.w21norm := by
+    -- Triangle inequality: ∫‖f - c*f''‖ ≤ ∫‖f‖ + c*∫‖f''‖ = w21norm
+    sorry
+  have h_final : ‖𝓕 (f : ℝ → ℂ) u‖ * (1 + u ^ 2) ≤ f.w21norm := by
+    rw [mul_comm]; exact h_bound1.trans h_w21_bound
+  rw [show f.w21norm * (1 + u ^ 2)⁻¹ = f.w21norm / (1 + u ^ 2) from by ring]
+  exact (le_div_iff₀ h1pu2).mpr h_final
 
 lemma decay_bounds_cor (ψ : CS 2 ℂ) : ∃ C : ℝ, ∀ u, ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤ C / (1 + u ^ 2) := by
   sorry
