@@ -279,7 +279,28 @@ lemma log_mul_add_isBigO_log {a : ℝ} (ha : 0 < a) (b : ℝ) :
 
 lemma isBigO_log_mul_add {a : ℝ} (ha : 0 < a) (b : ℝ) :
     Real.log =O[atTop] (fun x => Real.log (a * x + b)) := by
-  sorry
+  refine IsBigO.of_bound 2 ?_
+  have l1 : ∀ᶠ x : ℝ in atTop, 0 ≤ Real.log x := tendsto_atTop.mp tendsto_log_atTop 0
+  have l2 : ∀ᶠ x : ℝ in atTop, 0 ≤ Real.log (a * x + b) :=
+    tendsto_atTop.mp (tendsto_log_atTop.comp (tendsto_mul_add_atTop ha b)) 0
+  have l3 : ∀ᶠ x : ℝ in atTop, (|Real.log a| + Real.log 2) ≤ Real.log (a * x + b) := by
+    exact (tendsto_log_atTop.comp (tendsto_mul_add_atTop ha b)).eventually_ge_atTop _
+  have l4 : ∀ᶠ x : ℝ in atTop, 2 * |b| / a ≤ x := by
+    exact tendsto_id.eventually_ge_atTop _
+  have l5 : ∀ᶠ x : ℝ in atTop, 1 ≤ x := tendsto_id.eventually_ge_atTop 1
+  filter_upwards [l1, l2, l3, l4, l5] with x hx1 hx2 hx3 hx4 hx5
+  simp only [norm_eq_abs, abs_of_nonneg hx1, abs_of_nonneg hx2]
+  have h4 : 2 * |b| ≤ a * x := by linarith [(div_le_iff₀ ha).mp hx4, mul_comm a x]
+  have h5 : a * x / 2 ≤ a * x + b := by
+    have : -a * x / 2 ≤ b := by linarith [le_abs_self b, neg_abs_le b]
+    linarith
+  have h6 : 0 < a * x := by positivity
+  have h7 : Real.log (a * x / 2) ≤ Real.log (a * x + b) :=
+    Real.log_le_log (by positivity) h5
+  have h8 : Real.log (a * x / 2) = Real.log a + Real.log x - Real.log 2 := by
+    rw [div_eq_mul_inv, Real.log_mul (by positivity) (by positivity),
+      Real.log_mul (by positivity) (by positivity), Real.log_inv]; ring
+  linarith [neg_le_abs (Real.log a)]
 
 lemma log_isbigo_log_div {d : ℝ} (hb : 0 < d) :
     (fun n ↦ Real.log n) =O[atTop] (fun n ↦ Real.log (n / d)) := by
