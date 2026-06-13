@@ -200,7 +200,16 @@ lemma one_add_sq_pos (u : ℝ) : 0 < 1 + u ^ 2 :=
 
 @[simp] lemma F_add {f g : ℝ → ℂ} (hf : Integrable f) (hg : Integrable g) (x : ℝ) :
     𝓕 (fun x => f x + g x) x = 𝓕 f x + 𝓕 g x := by
-  sorry
+  simp only [Real.fourier_eq, smul_add]
+  have hf' : Integrable (fun v => 𝐞 (-(inner ℝ v x)) • f v) := by
+    apply Integrable.mono hf
+    · exact (by fun_prop : AEStronglyMeasurable (fun v => 𝐞 (-(inner ℝ v x)) • f v) volume)
+    · filter_upwards with v; simp [norm_smul, Complex.norm_exp]
+  have hg' : Integrable (fun v => 𝐞 (-(inner ℝ v x)) • g v) := by
+    apply Integrable.mono hg
+    · exact (by fun_prop : AEStronglyMeasurable (fun v => 𝐞 (-(inner ℝ v x)) • g v) volume)
+    · filter_upwards with v; simp [norm_smul, Complex.norm_exp]
+  exact integral_add hf' hg'
 
 @[simp] lemma F_sub {f g : ℝ → ℂ} (hf : Integrable f) (hg : Integrable g) (x : ℝ) :
     𝓕 (fun x => f x - g x) x = 𝓕 f x - 𝓕 g x := by
