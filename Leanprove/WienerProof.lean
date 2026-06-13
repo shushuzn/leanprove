@@ -329,7 +329,12 @@ lemma nabla_log_main : (fun x : ℝ => Real.log (x + 1) - Real.log x) =O[atTop] 
 
 lemma nabla_log {b : ℝ} (hb : 0 < b) :
     (fun x : ℝ => Real.log ((x + 1) / b) - Real.log (x / b)) =O[atTop] (fun x => 1 / x) := by
-  sorry
+  have h : (fun x => Real.log ((x + 1) / b) - Real.log (x / b)) =ᶠ[atTop]
+      (fun x => Real.log (x + 1) - Real.log x) := by
+    filter_upwards [eventually_gt_atTop 0] with x hx
+    rw [Real.log_div (by linarith) (by positivity), Real.log_div (by linarith) (by positivity)]
+    ring
+  exact h.isBigO.trans nabla_log_main
 
 lemma nnabla_mul_log_sq (a : ℝ) {b : ℝ} (hb : 0 < b) :
     (fun x : ℝ => x * (a + Real.log (x / b) ^ 2) - (x - 1) * (a + Real.log ((x - 1) / b) ^ 2)) =O[atTop] (fun x => Real.log x ^ 2) := by
