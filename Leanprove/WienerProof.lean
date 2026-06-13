@@ -313,8 +313,10 @@ lemma decay_bounds_key (f : W21) (u : ℝ) : ‖𝓕 (f : ℝ → ℂ) u‖ ≤ 
 lemma decay_bounds_cor (ψ : CS 2 ℂ) : ∃ C : ℝ, ∀ u, ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤ C / (1 + u ^ 2) := by
   have h1 : Integrable (ψ : ℝ → ℂ) :=
     ψ.h1.continuous.integrable_of_hasCompactSupport ψ.h2
-  have h1' : Integrable (deriv (ψ : ℝ → ℂ)) := by sorry
-  have h1'' : Integrable (deriv (deriv (ψ : ℝ → ℂ))) := by sorry
+  have h1' : Integrable (deriv (ψ : ℝ → ℂ)) :=
+    (ψ.h1.continuous_deriv (by norm_num)).integrable_of_hasCompactSupport ψ.h2.deriv
+  have h1'' : Integrable (deriv (deriv (ψ : ℝ → ℂ))) :=
+    (ψ.h1.deriv'.continuous_deriv_one).integrable_of_hasCompactSupport ψ.h2.deriv.deriv
   let f : W21 := ⟨ψ, ψ.h1, fun k hk => by
     interval_cases k
     · exact h1
