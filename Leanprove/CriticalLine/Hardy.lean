@@ -84,11 +84,10 @@ lemma criticalLineZeros_iff {t : ℝ} : t ∈ criticalLineZeros ↔ riemannXi (c
   simp [criticalLineZeros, xi_on_critical_line]
   have h : (riemannXi (criticalLine t)).im = 0 := riemannXi_real_on_critical_line t
   constructor
-  · intro hzero; exact hzero
   · intro hzero
-    have hre : (riemannXi (criticalLine t)).re = 0 := by
-      simpa [hzero] using rfl
-    sorry
+    exact Complex.ext hzero h
+  · intro hzero
+    simpa [hzero]
 
 /-- criticalLineZeros 中的 t 对应 riemannXiZeros 中的点 -/
 lemma criticalLineZeros_mem_riemannXiZeros {t : ℝ} (ht : t ∈ criticalLineZeros) :
