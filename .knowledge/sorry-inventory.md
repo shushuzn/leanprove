@@ -2,42 +2,31 @@
 
 ## 当前状态 (2026-06-14)
 
-**总 sorry 数: 29**
+**总 sorry 数: 28**（从 29 减少）
 
 ## 已证明 (本次session)
 
 1. ✅ `fourierIntegral_self_add_deriv_deriv` - (1+u²)·𝓕(f) = 𝓕(f - 1/(4π²)·f'')
 2. ✅ `continuous_FourierIntegral` - CS函数Fourier变换连续
-3. ✅ `decay_bounds_key` - Fourier衰减估计 (完整证明)
-4. ✅ `decay_bounds_cor` - CS函数衰减估计 (完整证明)
-5. ✅ `decay_bounds_W21` - W21函数衰减估计 (完整证明)
-6. ✅ `W21_integrable_fourier` - Fourier变换可积性 (完整证明)
+3. ✅ `decay_bounds_key` - 含三角不等式
+4. ✅ `decay_bounds_cor` - CS函数嵌入W21
+5. ✅ `decay_bounds_W21` - 含代数恒等式
+6. ✅ `W21_integrable_fourier` - 含变量替换
+7. ✅ `nnabla_mul_log_sq` - BigO渐近分析（本次新增）
 
-## 当前攻克
+## 关键经验
 
-### `nnabla_mul_log_sq` (line 503) - BigO渐近分析证明
+### nnabla_mul_log_sq 证明要点
+- **策略**: 展开 + bound + nlinarith
+- **核心 bound**: `(x-1) * 2/(x-1) * (2|log x| + 2|log b|) = 4|log x| + 4|log b|`
+- **关键转化**: `4|log x| + 4|log b| ≤ (4|log b| + 4) * log²x` 当 `log x ≥ 1` (即 x ≥ 3)
+- **eventually_gt_atTop 3** 代替 2 (因为 2 < e < 3, log 2 < 1)
+- **Real.exp_one_lt_three** 需要 `import Mathlib.Analysis.Complex.ExponentialBounds`
+- **linarith 无法处理 Real.log**，但 nlinarith 配合 `sq_nonneg` 和 `1 ≤ log x` 可以
+- **abs_of_pos 内部用 Real.log_pos 需要显式 `(by linarith : 1 < x)`**
+- **div_pos (by linarith : 0 < x) hx1** 显式类型
+- **不能向前引用 lemma**，需要把被引用的 lemma 放在前面
 
-**目标**: `x*(a + log²(x/b)) - (x-1)*(a + log²((x-1)/b)) = O(log²x)`
+## 待证明 (28个)
 
-**子任务进展**:
-- ✅ 7a: `log(x/b) = O(log x)` - 用 `log_add_div_isBigO_log 0 hb` + `simp only [add_zero]`
-- ✅ 7b: `log(x/b)² = O(log x²)` - 用 `.sq`
-- ✅ 7c: `a = o(log x²)` - 用 `isLittleO_const_of_tendsto_atTop`
-- ✅ 7d1: `log(x/b) - log((x-1)/b) = log(x/(x-1))` - 用 `rw [Real.log_div ...]` + `ring_nf`
-- ✅ 7d2: `|log(x/(x-1))| ≤ 2/(x-1)` - 用 `abs_of_pos` + `log_le_sub_one_of_pos` + `div_sub_one`
-- ✅ 7d3: `|log(x/b) + log((x-1)/b)| ≤ 2|log x| + 2|log b|` - 用 `convert_to` + `norm_add_le` + `abs_sub`
-- ❌ 7e: 组合步骤 - `linarith` 在 `filter_upwards` 上下文中看到 `⊢ False`
-
-**核心困难**: 在 `filter_upwards` + `have` 上下文中，`linarith` 看到 `⊢ False` 而不是正确的目标。独立测试中所有子引理都成功。
-
-**关键发现**:
-1. `rw [← Real.norm_eq_abs]` 在 `have` 内部会影响主目标
-2. `rw [Real.norm_eq_abs] at this` 是安全的
-3. `convert_to` + `congr_arg₂` 可以代替 `rw` 进行等式替换
-4. `linarith [h1, h2, h3, h4]` 需要显式传递假设
-
-## 下一个
-
-- `nnabla_bound_aux` (line 525) - nnabla bound
-- `nnabla_bound` (line 530) - nnabla bound
-- 其他sorry在WienerProof.lean后半部分
+按 skill 继续逐个证明
