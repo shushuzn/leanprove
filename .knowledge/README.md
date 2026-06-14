@@ -34,9 +34,26 @@
 | `F_add-subtasks.md` | F_add 子任务分解 | ~61 |
 | `nnabla_bound_aux-subtasks.md` | nnabla_bound_aux 子任务分解 | ~93 |
 
-## 使用规则
+## 条目格式规范
 
-1. **证明前**: 查阅 `bigo-api.md` / `log-api.md` / `integral-api.md` 找 API，查阅 `proof-patterns.md` 查 Pitfall
-2. **证明中**: 遇到困难查阅 `difficult-proofs.md` 看是否有类似问题
-3. **证明后**: 将新发现的 API 和模式记录到对应文件
-4. **格式**: 所有 API 条目使用 `## 名称` → **Import** / **签名** / **说明** / **Pitfall** 结构
+所有 API 条目必须遵循以下格式：
+
+```markdown
+## API/模式名称
+
+**Import**: `Mathlib.XXX.YYY` — 如果没有明确的 import 路径则写"项目自定义引理"
+**签名**:
+```lean
+theorem lemma_name (args...) : result_type := ...
+```
+**说明**: 一句话说明何时用、做什么。（可选，签名自明则可省略）
+**Pitfall**: 常见错误或注意事项。（可选）
+```
+
+### 格式规则
+
+1. **层级**: 每个 API 一条 `##`，不用 `###`。`#` 只用于文件标题。
+2. **字段顺序**: `**Import**` → `**签名**` → `**说明**` → `**Pitfall**`，不存在的字段跳过。
+3. **代码块**: 签名用 ` ```lean `，示例代码也相同。代码块内不写 `--` 注释描述（标题已说明）。
+4. **简洁**: 不重复标题已在说明的内容。Pitfall 只说"不能做什么"和"应该做什么"。
+5. **文件大小**: 每个 `<200` 行。超过时按主题拆分。
