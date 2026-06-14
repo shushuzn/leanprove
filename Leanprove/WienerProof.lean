@@ -1107,6 +1107,7 @@ lemma interval_approx_sup (ha : 0 < a) (hab : a < b) :
       closure (Function.support ψ) ⊆ Set.Ioi 0 ∧
         indicator (Ico a b) 1 ≤ ψ ∧ ∫ y in Ioi 0, ψ y ≤ b - a + ε := by
   sorry
+/-- WI 可和性 -/
 lemma WI_summable {f : ℕ → ℝ} {g : ℝ → ℝ} (hg : HasCompactSupport g) (hx : 0 < x) :
     Summable (fun n => f n * g (n / x)) := by
   obtain ⟨M, hM⟩ := hg.bddAbove.mono subset_closure
@@ -1115,6 +1116,7 @@ lemma WI_summable {f : ℕ → ℝ} {g : ℝ → ℝ} (hg : HasCompactSupport g)
   simp only [Function.support_mul] ; apply Finite.inter_of_right ; rw [finite_iff_bddAbove]
   exact ⟨Nat.ceil (M * x), fun i hi => by simpa using Nat.ceil_mono ((div_le_iff₀ hx).mp (hM hi))⟩
 
+/-- WI 和不等式 -/
 lemma WI_sum_le {f : ℕ → ℝ} {g₁ g₂ : ℝ → ℝ} (hf : 0 ≤ f) (hg : g₁ ≤ g₂) (hx : 0 < x)
     (hg₁ : HasCompactSupport g₁) (hg₂ : HasCompactSupport g₂) :
     (∑' n, f n * g₁ (n / x)) / x ≤ (∑' n, f n * g₂ (n / x)) / x := by
@@ -1122,6 +1124,7 @@ lemma WI_sum_le {f : ℕ → ℝ} {g₁ g₂ : ℝ → ℝ} (hf : 0 ≤ f) (hg :
   exact Summable.tsum_le_tsum (fun n => mul_le_mul_of_nonneg_left (hg _) (hf _))
     (WI_summable hg₁ hx) (WI_summable hg₂ hx)
 
+/-- 由右侧邻域收敛推不等式 -/
 lemma le_of_eventually_nhdsWithin {a b : ℝ} (h : ∀ᶠ c in 𝓝[>] b, a ≤ c) : a ≤ b := by
   apply le_of_forall_gt ; intro d hd
   have key : ∀ᶠ c in 𝓝[>] b, c < d := by
@@ -1131,6 +1134,7 @@ lemma le_of_eventually_nhdsWithin {a b : ℝ} (h : ∀ᶠ c in 𝓝[>] b, a ≤ 
   obtain ⟨x, h1, h2⟩ := (h.and key).exists
   linarith
 
+/-- 由左侧邻域收敛推不等式 -/
 lemma ge_of_eventually_nhdsWithin {a b : ℝ} (h : ∀ᶠ c in 𝓝[<] b, c ≤ a) : b ≤ a := by
   apply le_of_forall_lt ; intro d hd
   have key : ∀ᶠ c in 𝓝[<] b, c > d := by
@@ -1140,6 +1144,7 @@ lemma ge_of_eventually_nhdsWithin {a b : ℝ} (h : ∀ᶠ c in 𝓝[<] b, c ≤ 
   obtain ⟨x, h1, h2⟩ := (h.and key).exists
   linarith
 
+/-- WI 极限辅助（一）-/
 lemma WI_tendsto_aux (a b : ℝ) {A : ℝ} (hA : 0 < A) :
     Tendsto (fun c => c / A - (b - a)) (𝓝[>] (A * (b - a))) (𝓝[>] 0) := by
   rw [Metric.tendsto_nhdsWithin_nhdsWithin]
@@ -1153,6 +1158,7 @@ lemma WI_tendsto_aux (a b : ℝ) {A : ℝ} (hA : 0 < A) :
       rw [← abs_eq_self.mpr hA.le, ← abs_div, abs_eq_self.mpr hA.le] ; congr ; field_simp
     rwa [this, div_lt_iff₀' hA]
 
+/-- WI 极限辅助（二）-/
 lemma WI_tendsto_aux' (a b : ℝ) {A : ℝ} (hA : 0 < A) :
     Tendsto (fun c => (b - a) - c / A) (𝓝[<] (A * (b - a))) (𝓝[>] 0) := by
   rw [Metric.tendsto_nhdsWithin_nhdsWithin]
@@ -1166,6 +1172,7 @@ lemma WI_tendsto_aux' (a b : ℝ) {A : ℝ} (hA : 0 < A) :
       rw [← abs_eq_self.mpr hA.le, ← abs_div, abs_eq_self.mpr hA.le] ; congr ; field_simp
     rwa [this, div_lt_iff₀' hA, ← neg_sub, abs_neg]
 
+/-- 留数非负 -/
 theorem residue_nonneg {f : ℕ → ℝ} (hpos : 0 ≤ f)
     (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm (fun n ↦ (f n : ℂ)) σ')) (hcheby : cheby fun n ↦ (f n : ℂ))
     (hG : ContinuousOn G {s | 1 ≤ s.re}) (hG' : Set.EqOn G (fun s ↦ LSeries (fun n ↦ (f n : ℂ)) s - (A : ℂ) / (s - 1)) {s | 1 < s.re}) : 0 ≤ A := by
