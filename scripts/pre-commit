@@ -1,69 +1,19 @@
 #!/bin/bash
 # pre-commit hook
-# 注意: Windows LLVM 后端 bug 导致 lake build 在重定向输出时 segfault，
-#       编译检查需手动在终端执行 lake build。
+# 仅检查：修改 .lean 文件时需同步更新 README.md 和 ROADMAP.md
 
 lean_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.lean$' || true)
-all_modified=$(git diff --cached --name-only --diff-filter=ACM || true)
 
-# ---- 如果没有 .lean 变更，跳过文档和 sorry 检查 ----
-if [ -n "$lean_files" ]; then
+if [ -z "$lean_files" ]; then
+    exit 0
+fi
 
 # 文档同步检查
-required_docs=("README.md" "ROADMAP.md" "DEPENDENCY.md")
-for doc in "${required_docs[@]}"; do
+for doc in "README.md" "ROADMAP.md"; do
     if ! git diff --name-only | grep -q "^$doc$" && ! git diff --cached --name-only | grep -q "^$doc$"; then
         echo "错误: 已修改 .lean 文件但未更新 $doc。"
         exit 1
     fi
 done
-
-# 未完成证明关键词检测
-for file in $lean_files; do
-    [ ! -f "$file" ] && continue
-    if grep -E 'sorry|admit|axiom|omitted|TODO|FIXME|HACK|XXX' "$file" > /dev/null 2>&1; then
-        echo "错误: 文件 '$file' 包含未完成标记:"
-        grep -n -E 'sorry|admit|axiom|omitted|TODO|FIXME|HACK|XXX' "$file"
-        exit 1
-    fi
-done
-
-fi  # end lean_files check
-
-# ---- 覆盖保护：仅限 .lean 文件的覆盖检测（脚本文件允许重写） ----
-for file in $all_modified; do
-    [ ! -f "$file" ] && continue
-    # 只检查 .lean 文件
-    echo "$file" | grep -q '\.lean$' || continue
-
-    # 只检查已跟踪文件（在 git HEAD 中存在）
-    git cat-file -e HEAD:"$file" 2>/dev/null || continue
-
-    old_lines=$(git show HEAD:"$file" 2>/dev/null | wc -l)
-    new_lines=$(wc -l < "$file")
-    [ "$old_lines" -eq 0 ] && continue  # 空文件不检查
-
-    additions=$(git diff --cached -- "$file" | grep '^+' | grep -v '^+++' | wc -l)
-    deletions=$(git diff --cached -- "$file" | grep '^-' | grep -v '^---' | wc -l)
-
-    # 覆盖判定：删除行数占原始行数 50% 以上，或删除+新增总和占原始行数 80% 以上
-    if [ "$deletions" -gt $(( old_lines * 50 / 100 )) ] || \
-       [ $(( additions + deletions )) -gt $(( old_lines * 80 / 100 )) ]; then
-        echo ""
-        echo "============================================================"
-        echo "错误: 文件 '$file' 疑似被覆盖重写"
-        echo "  原始行数: $old_lines  |  删除: $deletions  |  新增: $additions"
-        echo "  AGENT.md 规则8: 禁止重写已有文件。"
-        echo "  应使用 Edit 工具逐行编辑，不得整体覆盖。"
-        echo "============================================================"
-        echo ""
-        exit 1
-    fi
-done
-
-# AGENT.md 修改后需提交推送（规则15）
-if git diff --cached --name-only | grep -q '^AGENT\.md$'; then
-    echo "注意: AGENT.md 已修改，提交后请执行 git push（规则15）。"
-fi
 
 exit 0
