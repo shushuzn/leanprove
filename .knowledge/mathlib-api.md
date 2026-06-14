@@ -209,3 +209,91 @@ norm_add_le (a b : E) : ‖a + b‖ ≤ ‖a‖ + ‖b‖
 -- |a - b| ≤ |a| + |b|
 abs_sub (a b : ℝ) : |a - b| ≤ |a| + |b|
 ```
+
+## Log 相关
+
+### Real.log_div
+```lean
+-- log(x/y) = log x - log y
+Real.log_div {x y : ℝ} (hx : x ≠ 0) (hy : y ≠ 0) : Real.log (x / y) = Real.log x - Real.log y
+```
+
+### Real.log_mul
+```lean
+-- log(x*y) = log x + log y
+Real.log_mul {x y : ℝ} (hx : x ≠ 0) (hy : y ≠ 0) : Real.log (x * y) = Real.log x + Real.log y
+```
+
+### Real.log_pos
+```lean
+-- 1 < x → 0 < log x
+Real.log_pos {x : ℝ} (hx : 1 < x) : 0 < Real.log x
+```
+
+### Real.log_pos_iff
+```lean
+-- 0 ≤ x → (0 < log x ↔ 1 < x)
+Real.log_pos_iff {x : ℝ} (hx : 0 ≤ x) : 0 < Real.log x ↔ 1 < x
+```
+
+### Real.log_le_sub_one_of_pos
+```lean
+-- log x ≤ x - 1 (for x > 0)
+Real.log_le_sub_one_of_pos {x : ℝ} (hx : 0 < x) : Real.log x ≤ x - 1
+```
+
+### Real.log_le_log
+```lean
+-- 0 < x → x ≤ y → log x ≤ log y
+Real.log_le_log {x y : ℝ} (hx : 0 < x) (hxy : x ≤ y) : Real.log x ≤ Real.log y
+```
+
+### Real.log_lt_log
+```lean
+-- 0 < x → x < y → log x < log y
+Real.log_lt_log {x y : ℝ} (hx : 0 < x) (h : x < y) : Real.log x < Real.log y
+```
+
+### Real.log_le_log_iff
+```lean
+-- 0 < x → 0 < y → (log x ≤ log y ↔ x ≤ y)
+Real.log_le_log_iff {x y : ℝ} (h : 0 < x) (h₁ : 0 < y) : Real.log x ≤ Real.log y ↔ x ≤ y
+```
+
+### Real.log_lt_log_iff
+```lean
+-- 0 < x → 0 < y → (log x < log y ↔ x < y)
+Real.log_lt_log_iff {x y : ℝ} (hx : 0 < x) (hy : 0 < y) : Real.log x < Real.log y ↔ x < y
+```
+
+## 除法相关
+
+### div_sub_one
+```lean
+-- a/b - 1 = (a - b) / b
+div_sub_one {a b : K} (h : b ≠ 0) : a / b - 1 = (a - b) / b
+```
+
+### one_lt_div
+```lean
+-- 0 < b → (1 < a / b ↔ b < a)
+one_lt_div (hb : 0 < b) : 1 < a / b ↔ b < a
+```
+
+### div_lt_iff₀
+```lean
+-- 0 < c → (a / c < b ↔ a < b * c)
+div_lt_iff₀ (hc : 0 < c) : a / c < b ↔ a < b * c
+```
+
+### lt_div_iff₀'
+```lean
+-- 0 < c → (a < b / c ↔ a * c < b)
+lt_div_iff₀' (hc : 0 < c) : a < b / c ↔ a * c < b
+```
+
+### div_le_div_of_nonneg_right
+```lean
+-- a ≤ b → 0 ≤ c → a / c ≤ b / c
+div_le_div_of_nonneg_right (h : a ≤ b) (hc : 0 ≤ c) : a / c ≤ b / c
+```
