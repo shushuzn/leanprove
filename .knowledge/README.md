@@ -23,16 +23,16 @@
 | `proof-patterns.md` | 证明模式与 Pitfalls（rw 安全、field_simp、linarith 等） | ~90 |
 | `nnabla-api.md` | nnabla/nabla 序列差分 API | ~78 |
 
-### 项目特定
+### 项目结构
 
 | 文件 | 主题 | 行数 |
 |------|------|------|
 | `fourier-transform.md` | 项目 Fourier 衰减定理（decay_bounds_key, decay_bounds_cor 等） | ~94 |
 | `project-structure.md` | 项目文件、依赖关系、构建命令 | ~76 |
-| `sorry-inventory.md` | 当前 sorry 清单和进展 | ~31 |
 | `difficult-proofs.md` | 困难 proof 记录和分析 | ~39 |
-| `F_add-subtasks.md` | F_add 子任务分解 | ~61 |
-| `nnabla_bound_aux-subtasks.md` | nnabla_bound_aux 子任务分解 | ~93 |
+| `sorry-inventory.md` | 当前 sorry 清单和进展 | ~31 |
+
+> 子任务分解文件（`F_add-subtasks.md`、`nnabla_bound_aux-subtasks.md`）已移至 `.tasks/` 目录。
 
 ## 条目格式规范
 
