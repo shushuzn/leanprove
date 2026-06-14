@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: (project contributors)
 -/
 
-/-! # ZetaVI
+/-! # CriticalLine
 
 Phase VI: Riemann Xi function and Hardy's theorem.
 
@@ -22,11 +22,11 @@ Phase VI: Riemann Xi function and Hardy's theorem.
 4. 均值积分 + Gamma 渐近 → 振荡性（Asymptotics）
 5. 振荡性 → 无限零点（Hardy） -/
 
-import Leanprove.ZetaVI.Definitions
-import Leanprove.ZetaVI.Hardy
-import Leanprove.ZetaVI.Asymptotics
+import Leanprove.CriticalLine.Definitions
+import Leanprove.CriticalLine.Hardy
+import Leanprove.CriticalLine.Asymptotics
 
 -- 导出所有子模块的内容
-export Leanprove.ZetaVI.Definitions
-export Leanprove.ZetaVI.Hardy
-export Leanprove.ZetaVI.Asymptotics
+export Leanprove.CriticalLine.Definitions
+export Leanprove.CriticalLine.Hardy
+export Leanprove.CriticalLine.Asymptotics

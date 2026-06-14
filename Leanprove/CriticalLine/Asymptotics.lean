@@ -4,13 +4,13 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: (project contributors)
 -/
 
-/-! # ZetaVI.Asymptotics
+/-! # CriticalLine.Asymptotics
 
 渐近分析核心：Gamma 函数渐近、振荡性假设、均值积分归约
 
 本模块包含 Hardy 定理数论核心的渐近分析部分。 -/
 
-import Leanprove.ZetaVI.Hardy
+import Leanprove.CriticalLine.Hardy
 import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent
 import Mathlib.Analysis.SpecialFunctions.Real.Sinh
 import Mathlib.Analysis.Calculus.ContDiff.Basic

@@ -5,14 +5,14 @@ Authors: (project contributors)
 -/
 
 import Mathlib.Topology.ContinuousOn
-import Leanprove.ZetaVI.Definitions
+import Leanprove.CriticalLine.Definitions
 
 open Complex Real
 open scoped Topology BigOperators ComplexConjugate
 
 noncomputable section
 
-/-! # ZetaVI.Hardy
+/-! # CriticalLine.Hardy
 
 Hardy 定理框架：临界线上的零点理论、IVT、无限变号归约
 本模块包含 Hardy 定理的实分析核心和完整归约结构。

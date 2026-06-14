@@ -23,10 +23,10 @@ Leanprove.lean (主入口)
 ├── Leanprove.WienerIkehara (Wiener-Ikehara证明, 1221行)
 │   ├── ⚠️ 29 sorries, 超过 800 行上限
 │   └── 依赖: Sobolev, Basic
-├── Leanprove.ZetaVI (Hardy定理入口, 25行)
-│   ├── Leanprove.ZetaVI.Definitions (定义, 233行, 9 sorries)
-│   ├── Leanprove.ZetaVI.Asymptotics (渐近分析, 219行)
-│   └── Leanprove.ZetaVI.Hardy (Hardy定理核心, 253行, 5 sorries)
+├── Leanprove.CriticalLine (Hardy定理入口, 25行)
+│   ├── Leanprove.CriticalLine.Definitions (定义, 233行, 9 sorries)
+│   ├── Leanprove.CriticalLine.Asymptotics (渐近分析, 219行)
+│   └── Leanprove.CriticalLine.Hardy (Hardy定理核心, 253行, 5 sorries)
 └── Leanprove.ApiCheck (API检查, 39行)
 ```
 

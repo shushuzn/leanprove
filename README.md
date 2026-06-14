@@ -241,11 +241,11 @@ leanprove/
 │   ├── WienerIkehara.lean            # Wiener-Ikehara 完整证明 (113 引理, 类型修复进行中)
 │   ├── ApiCheck.lean                 # Mathlib API 验证 (6 定理)
 │   ├── Tests.lean                    # 测试与验证
-│   ├── ZetaVI.lean                   # 阶段 VI 入口：聚合子模块
-│   └── ZetaVI/
-│       ├── Definitions.lean          # ξ 函数、N(T)、临界带 (21 定理, 9 sorry)
-│       ├── Hardy.lean                # Hardy 定理框架 (19 定理, 10 sorry)
-│       └── Asymptotics.lean          # Gamma 渐近分析 (5 定理, 0 sorry)
+│   ├── CriticalLine.lean              # 阶段 VI 入口：聚合子模块
+│   ├── CriticalLine/
+│   │   ├── Definitions.lean          # ξ 函数、N(T)、临界带 (21 定理, 9 sorry)
+│   │   ├── Hardy.lean                # Hardy 定理框架 (19 定理, 10 sorry)
+│   │   └── Asymptotics.lean          # Gamma 渐近分析 (5 定理, 0 sorry)
 ├── scripts/                          # Git hooks 脚本
 ├── lakefile.toml                     # Lake 构建配置
 ├── lean-toolchain                    # Lean v4.31.0-rc2
