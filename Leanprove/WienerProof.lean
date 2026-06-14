@@ -11,7 +11,7 @@ import Mathlib.Analysis.SumIntegralComparisons
 import Mathlib.NumberTheory.LSeries.Dirichlet
 import Mathlib.Analysis.Calculus.Deriv.Slope
 import Mathlib.Tactic.GCongr
-import Mathlib.Order.Filter.ZeroAndBoundedAtFilter
+import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 import Leanprove.Sobolev
 
@@ -498,13 +498,86 @@ lemma nabla_log {b : ℝ} (hb : 0 < b) :
     ring
   exact h.isBigO.trans nabla_log_main
 
-lemma nnabla_mul_log_sq (a : ℝ) {b : ℝ} (hb : 0 < b) :
-    (fun x : ℝ => x * (a + Real.log (x / b) ^ 2) - (x - 1) * (a + Real.log ((x - 1) / b) ^ 2)) =O[atTop] (fun x => Real.log x ^ 2) := by
-  sorry
-
 lemma log_add_div_isBigO_log (a : ℝ) {b : ℝ} (hb : 0 < b) :
     (fun x ↦ Real.log ((x + a) / b)) =O[atTop] fun x ↦ Real.log x := by
   convert log_mul_add_isBigO_log (inv_pos.mpr hb) (a / b) using 3 ; ring
+
+lemma nnabla_mul_log_sq (a : ℝ) {b : ℝ} (hb : 0 < b) :
+    (fun x : ℝ => x * (a + Real.log (x / b) ^ 2) - (x - 1) * (a + Real.log ((x - 1) / b) ^ 2)) =O[atTop] (fun x => Real.log x ^ 2) := by
+  have h_expand : ∀ x, x * (a + Real.log (x / b) ^ 2) - (x - 1) * (a + Real.log ((x - 1) / b) ^ 2) =
+      a + Real.log (x / b) ^ 2 + (x - 1) * ((Real.log (x / b) - Real.log ((x - 1) / b)) * (Real.log (x / b) + Real.log ((x - 1) / b))) := by
+    intro x; ring_nf
+  simp_rw [h_expand]
+  apply IsBigO.add
+  · have h1 : (fun x => Real.log (x / b) : ℝ → ℝ) =O[atTop] Real.log := by
+      have h := log_add_div_isBigO_log 0 hb; simp only [add_zero] at h; exact h
+    exact (isLittleO_const_of_tendsto_atTop _ <|
+      (tendsto_pow_atTop (by norm_num : (2 : ℕ) ≠ 0)).comp tendsto_log_atTop).isBigO.add h1.sq
+  · apply IsBigO.of_bound (4 * |Real.log b| + 4)
+    filter_upwards [eventually_gt_atTop 3] with x hx
+    rw [Real.norm_eq_abs, Real.norm_eq_abs]
+    rw [abs_of_nonneg (sq_nonneg (Real.log x))]
+    rw [abs_mul, abs_of_pos (by linarith : 0 < x - 1)]
+    rw [abs_mul]
+    have hx1 : 0 < x - 1 := by linarith
+    have hx1' : x - 1 ≠ 0 := hx1.ne'
+    have hb' : b ≠ 0 := hb.ne'
+    have hx' : x ≠ 0 := by linarith
+    have h_diff : Real.log (x / b) - Real.log ((x - 1) / b) = Real.log (x / (x - 1)) := by
+      rw [Real.log_div hx' hb', Real.log_div (by linarith) hb',
+          show Real.log x - Real.log b - (Real.log (x - 1) - Real.log b) = Real.log x - Real.log (x - 1) from by ring_nf,
+          ← Real.log_div hx' hx1']
+    rw [h_diff]
+    rw [abs_of_pos (Real.log_pos (by rw [one_lt_div hx1]; linarith : 1 < x / (x - 1)))]
+    have h_sum : |Real.log (x / b) + Real.log ((x - 1) / b)| ≤ 2 * |Real.log x| + 2 * |Real.log b| := by
+      convert_to |Real.log x - Real.log b + (Real.log (x - 1) - Real.log b)| ≤ 2 * |Real.log x| + 2 * |Real.log b| using 1
+      · exact congr_arg₂ (fun a b => |a + b|) (Real.log_div hx' hb') (Real.log_div (by linarith) hb')
+      have h1_raw := norm_add_le (Real.log x - Real.log b) (Real.log (x - 1) - Real.log b)
+      rw [Real.norm_eq_abs, Real.norm_eq_abs, Real.norm_eq_abs] at h1_raw
+      have h2 : |Real.log x - Real.log b| ≤ |Real.log x| + |Real.log b| := abs_sub _ _
+      have h3 : |Real.log (x - 1) - Real.log b| ≤ |Real.log (x - 1)| + |Real.log b| := abs_sub _ _
+      have h4 : |Real.log (x - 1)| ≤ |Real.log x| := by
+        rw [abs_of_pos (Real.log_pos (by linarith)), abs_of_pos (Real.log_pos (by linarith))]
+        exact Real.log_le_log (by linarith) (by linarith)
+      nlinarith [h1_raw, h2, h3, h4]
+    have h_log_bound : Real.log (x / (x - 1)) ≤ 2 / (x - 1) := by
+      have h := Real.log_le_sub_one_of_pos (div_pos (by linarith : 0 < x) hx1)
+      rw [div_sub_one hx1'] at h
+      rw [show (x - (x - 1)) / (x - 1) = (1 : ℝ) / (x - 1) from by ring] at h
+      have h2 : (1 : ℝ) / (x - 1) ≤ 2 / (x - 1) := div_le_div_of_nonneg_right (by norm_num) (le_of_lt hx1)
+      linarith [h, h2]
+    have h_pos2 : 0 ≤ 2 / (x - 1) := by positivity
+    have h1 : Real.log (x / (x - 1)) * |Real.log (x / b) + Real.log ((x - 1) / b)| ≤
+        (2 / (x - 1)) * (2 * |Real.log x| + 2 * |Real.log b|) :=
+      mul_le_mul h_log_bound h_sum (abs_nonneg _) h_pos2
+    have h2 : (x - 1) * (Real.log (x / (x - 1)) * |Real.log (x / b) + Real.log ((x - 1) / b)|) ≤
+        (x - 1) * ((2 / (x - 1)) * (2 * |Real.log x| + 2 * |Real.log b|)) :=
+      mul_le_mul_of_nonneg_left h1 (le_of_lt hx1)
+    have h3 : (x - 1) * ((2 / (x - 1)) * (2 * |Real.log x| + 2 * |Real.log b|)) =
+        4 * |Real.log x| + 4 * |Real.log b| := by
+      rw [← mul_assoc]
+      rw [show (x - 1) * (2 / (x - 1)) = 2 from by field_simp [hx1']]
+      ring_nf
+    have h_log_gt1 : (1 : ℝ) < Real.log x := by
+      have h_exp_pos : (0 : ℝ) < Real.exp 1 := Real.exp_pos 1
+      have h_exp_lt_x : Real.exp 1 < x := lt_trans Real.exp_one_lt_three hx
+      rw [← Real.log_exp 1]
+      exact Real.log_lt_log h_exp_pos h_exp_lt_x
+    have h_log_pos : (0 : ℝ) < Real.log x := lt_trans (by norm_num) h_log_gt1
+    have h_log_abs : |Real.log x| = Real.log x := abs_of_pos h_log_pos
+    have h3' : (4 : ℝ) * |Real.log x| + 4 * |Real.log b| = 4 * Real.log x + 4 * |Real.log b| := by
+      rw [h_log_abs]
+    have h4 : (4 : ℝ) * Real.log x ≤ 4 * Real.log x * Real.log x := by
+      have : (1 : ℝ) ≤ Real.log x := le_of_lt h_log_gt1
+      nlinarith [sq_nonneg (Real.log x), this]
+    have h5 : (4 : ℝ) * |Real.log b| ≤ 4 * |Real.log b| * Real.log x * Real.log x := by
+      have : (1 : ℝ) ≤ Real.log x := le_of_lt h_log_gt1
+      nlinarith [sq_nonneg (Real.log x), this, abs_nonneg (Real.log b)]
+    have h6 : (4 : ℝ) * Real.log x + 4 * |Real.log b| ≤ 4 * Real.log x * Real.log x + 4 * |Real.log b| * Real.log x * Real.log x := by
+      linarith [h4, h5]
+    have h7 : (4 : ℝ) * Real.log x * Real.log x + 4 * |Real.log b| * Real.log x * Real.log x = (4 * |Real.log b| + 4) * Real.log x ^ 2 := by
+      ring
+    linarith [h2, h3', h6, h7]
 
 lemma nnabla_bound_aux1 (a : ℝ) {b : ℝ} (hb : 0 < b) :
     Tendsto (fun x => x * (a + Real.log (x / b) ^ 2)) atTop atTop :=
