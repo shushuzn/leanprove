@@ -31,14 +31,19 @@ variable {f : ℕ → ℂ} {A a b c d u x y t σ' : ℝ} {ψ Ψ : ℝ → ℂ} {
 
 /-! #### Basic discrete analysis definitions -/
 
+/-- 累积和算子: cumsum u n = Σ_{i<n} u(i) -/
 def cumsum [AddCommMonoid E] (u : ℕ → E) (n : ℕ) : E := ∑ i ∈ Finset.range n, u i
 
+/-- 后向差分算子: ∇u(n) = u(n+1) - u(n) -/
 def nabla [Sub E] (u : ℕ → E) (n : ℕ) : E := u (n + 1) - u n
 
+/-- 前向差分算子: ∇̄u(n) = u(n) - u(n+1) -/
 def nnabla [Sub E] (u : ℕ → E) (n : ℕ) : E := u n - u (n + 1)
 
+/-- 平移算子: shift u(n) = u(n+1) -/
 def shift (u : ℕ → E) (n : ℕ) : E := u (n + 1)
 
+/-- cumsum 保非负性 -/
 lemma cumsum_nonneg {u : ℕ → ℝ} (hu : ∀ n, 0 ≤ u n) : ∀ n, 0 ≤ cumsum u n :=
   fun _n => Finset.sum_nonneg (fun i _ => hu i)
 
@@ -46,6 +51,7 @@ lemma cumsum_nonneg {u : ℕ → ℝ} (hu : ∀ n, 0 ≤ u n) : ∀ n, 0 ≤ cum
     For `f : ℕ → ℂ` and `σ' : ℝ`, we have `nterm f σ' n = ‖f n‖ / n ^ σ'`. -/
 noncomputable def nterm (f : ℕ → ℂ) (σ' : ℝ) (n : ℕ) : ℝ := if n = 0 then 0 else ‖f n‖ / n ^ σ'
 
+/-- nterm 等于 ‖term‖ -/
 lemma nterm_eq_norm_term (f : ℕ → ℂ) (σ' : ℝ) (n : ℕ) : nterm f σ' n = ‖term f σ' n‖ := by
   by_cases h : n = 0 <;> simp [nterm, term, h]
 
@@ -55,35 +61,44 @@ noncomputable def term (f : ℕ → ℂ) (s : ℂ) (n : ℕ) : ℂ := if n = 0 t
 /-- Chebyshev-type bound for complex `f` (using norms). -/
 def chebyWith (C : ℝ) (f : ℕ → ℂ) : Prop := ∀ n, cumsum (‖f ·‖) n ≤ C * n
 
+/-- Chebyshev 有界条件（存在常数 C 满足 chebyWith C f）-/
 def cheby (f : ℕ → ℂ) : Prop := ∃ C, chebyWith C f
 
 /-! #### Discrete analysis lemmas (ported from Wiener.lean) -/
 
+/-- cumsum 的递推公式 -/
 lemma cumsum_succ [AddCommMonoid E] {u : ℕ → E} (n : ℕ) :
     cumsum u (n + 1) = cumsum u n + u n := by
   simp [cumsum, Finset.sum_range_succ]
 
+/-- cumsum 与负号可交换 -/
 lemma neg_cumsum [AddCommGroup E] {u : ℕ → E} : -(cumsum u) = cumsum (-u) :=
   funext (fun n => by simp [cumsum])
 
+/-- nabla 与 nnabla 的关系：-(∇u) = ∇̄u -/
 lemma neg_nabla [Ring E] {u : ℕ → E} : -(nabla u) = nnabla u := by
   ext n ; simp [nabla, nnabla]
 
+/-- nabla 与数乘可交换 -/
 @[simp] lemma nabla_mul [Ring E] {u : ℕ → E} {c : E} : nabla (fun n => c * u n) = c • nabla u := by
   ext n ; simp [nabla, mul_sub]
 
+/-- nnabla 与数乘可交换 -/
 @[simp] lemma nnabla_mul [Ring E] {u : ℕ → E} {c : E} :
     nnabla (fun n => c * u n) = c • nnabla u := by
   ext n ; simp [nnabla, mul_sub]
 
+/-- 移位求和公式 -/
 lemma Finset.sum_shift_front {E : Type*} [Ring E] {u : ℕ → E} {n : ℕ} :
     cumsum u (n + 1) = u 0 + cumsum (shift u) n := by
   simp_rw [add_comm n, cumsum, Finset.sum_range_add, Finset.sum_range_one, add_comm 1] ; rfl
 
+/-- 移位求和公式（反向版本）-/
 lemma Finset.sum_shift_back' {E : Type*} [Ring E] {u : ℕ → E} :
     shift (cumsum u) = cumsum u + u := by
   ext n ; simp [cumsum, Finset.sum_range_succ, shift]
 
+/-- 分部求和公式 -/
 lemma summation_by_parts {E : Type*} [Ring E] {a A b : ℕ → E} (ha : a = nabla A) {n : ℕ} :
     cumsum (a * b) (n + 1) = A (n + 1) * b n - A 0 * b 0 -
     cumsum (shift A * fun i => (b (i + 1) - b i)) n := by
@@ -97,6 +112,7 @@ lemma summation_by_parts {E : Type*} [Ring E] {a A b : ℕ → E} (ha : a = nabl
     mul_sub]
   abel
 
+/-- 分部求和公式（推广形式）-/
 lemma summation_by_parts'' {E : Type*} [Ring E] {a b : ℕ → E} :
     shift (cumsum (a * b)) = shift (cumsum a) * b - cumsum (shift (cumsum a) * nabla b) := by
   have ha : a = nabla (cumsum a) := by
@@ -107,6 +123,7 @@ lemma summation_by_parts'' {E : Type*} [Ring E] {a b : ℕ → E} :
   simp only [shift, Pi.mul_apply, nabla, cumsum, Finset.sum_range_zero, zero_mul, sub_zero] at h
   exact h
 
+/-- 非负序列可和 ⇔ 部分和有界 -/
 lemma summable_iff_bounded {u : ℕ → ℝ} (hu : 0 ≤ u) :
     Summable u ↔ BoundedAtFilter atTop (cumsum u) := by
   have l1 : (cumsum u =O[atTop] 1) ↔ _ := isBigO_one_nat_atTop_iff
@@ -116,6 +133,7 @@ lemma summable_iff_bounded {u : ℕ → ℝ} (hu : 0 ≤ u) :
   · exact ⟨C, fun n => sum_le_hasSum _ (fun i _ => hu i) h1⟩
   · exact summable_of_sum_range_le hu h1
 
+/-- 最终非负序列可和 ⇔ 部分和有界 -/
 lemma summable_iff_bounded' {u : ℕ → ℝ} (hu : ∀ᶠ n in atTop, 0 ≤ u n) :
     Summable u ↔ BoundedAtFilter atTop (cumsum u) := by
   obtain ⟨N, hu⟩ := eventually_atTop.mp hu
@@ -142,6 +160,7 @@ lemma summable_iff_bounded' {u : ℕ → ℝ} (hu : ∀ᶠ n in atTop, 0 ≤ u n
       norm_sub_le _ _
     linarith
 
+/-- 平移保持有界性 -/
 lemma bounded_of_shift {u : ℕ → ℝ} (h : BoundedAtFilter atTop (shift u)) :
     BoundedAtFilter atTop u := by
   simp only [BoundedAtFilter, isBigO_iff, eventually_atTop] at h ⊢
@@ -152,6 +171,7 @@ lemma bounded_of_shift {u : ℕ → ℝ} (h : BoundedAtFilter atTop (shift u)) :
   have r2 : n - 1 + 1 = n := Nat.sub_add_cancel (by omega)
   simpa [r2] using hC (n - 1) r1
 
+/-- Dirichlet 判别法（非负版本）-/
 lemma dirichlet_test' {a b : ℕ → ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b)
     (hAb : BoundedAtFilter atTop (shift (cumsum a) * b)) (hbb : ∀ᶠ n in atTop, b (n + 1) ≤ b n)
     (h : Summable (shift (cumsum a) * nnabla b)) : Summable (a * b) := by
@@ -170,20 +190,25 @@ namespace W21
 
 variable {f : W21}
 
+/-- W21 函数可积 -/
 lemma hf (f : W21) : Integrable f := by
   have := f.integrable (by norm_num : 0 ≤ 2)
   simp only [iteratedDeriv_zero] at this
   exact this
 
+/-- W21 函数的导数可积 -/
 lemma hf' (f : W21) : Integrable (deriv f) := by
   simpa [iteratedDeriv_succ] using f.integrable (by norm_num : 1 ≤ 2)
 
+/-- W21 函数的二阶导数可积 -/
 lemma hf'' (f : W21) : Integrable (deriv (deriv f)) := by
   simpa [iteratedDeriv_succ] using f.integrable (by norm_num : 2 ≤ 2)
 
+/-- W21 函数可微 -/
 lemma differentiable (f : W21) : Differentiable ℝ f :=
   f.smooth.differentiable (by norm_num)
 
+/-- W21 函数的导数可微 -/
 lemma deriv_differentiable (f : W21) : Differentiable ℝ (deriv f) :=
   ContDiff.differentiable_deriv_two f.smooth
 
@@ -191,6 +216,7 @@ lemma deriv_differentiable (f : W21) : Differentiable ℝ (deriv f) :=
 noncomputable def w21norm (f : W21) : ℝ :=
   (∫ v, ‖f v‖) + (4 * π ^ 2)⁻¹ * (∫ v, ‖deriv (deriv f) v‖)
 
+/-- W21 范数非负 -/
 lemma w21norm_nonneg (f : W21) : 0 ≤ w21norm f := by
   dsimp [w21norm] ; positivity
 
@@ -198,6 +224,7 @@ end W21
 
 /-! #### Fourier transform conventions and basic properties -/
 
+/-- 1 + u² > 0 -/
 lemma one_add_sq_pos (u : ℝ) : 0 < 1 + u ^ 2 :=
   zero_lt_one.trans_le (by simpa using sq_nonneg u)
 
@@ -225,6 +252,7 @@ lemma one_add_sq_pos (u : ℝ) : 0 < 1 + u ^ 2 :=
     𝓕 (fun x => c * f x) u = c * 𝓕 f u := by
   exact congr_fun (VectorFourier.fourierIntegral_const_smul 𝐞 _ _ f c) u
 
+/-- Fourier 变换：f 和 f'' 的 Fourier 变换满足恒等式 -/
 theorem fourierIntegral_self_add_deriv_deriv (f : W21) (u : ℝ) :
     (1 + u ^ 2) * 𝓕 (f : ℝ → ℂ) u =
       𝓕 (fun u : ℝ => (f u - (1 / (4 * π ^ 2)) * deriv^[2] f u : ℂ)) u := by
@@ -256,9 +284,11 @@ theorem fourierIntegral_self_add_deriv_deriv (f : W21) (u : ℝ) :
 
 /-! #### Fourier decay estimates for W21 functions -/
 
+/-- 初步衰减估计 -/
 theorem prelim_decay (ψ : ℝ → ℂ) (u : ℝ) : ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤ ∫ t, ‖ψ t‖ :=
   VectorFourier.norm_fourierIntegral_le_integral_norm ..
 
+/-- 衰减估计关键引理 -/
 lemma decay_bounds_key (f : W21) (u : ℝ) : ‖𝓕 (f : ℝ → ℂ) u‖ ≤ f.w21norm * (1 + u ^ 2)⁻¹ := by
   have h_eq := fourierIntegral_self_add_deriv_deriv f u
   have h_decay := prelim_decay (fun v => (f v - (1 / (4 * π ^ 2)) * deriv^[2] f v : ℂ)) u
@@ -316,6 +346,7 @@ lemma decay_bounds_key (f : W21) (u : ℝ) : ‖𝓕 (f : ℝ → ℂ) u‖ ≤ 
   rw [show f.w21norm * (1 + u ^ 2)⁻¹ = f.w21norm / (1 + u ^ 2) from by ring]
   exact (le_div_iff₀ h1pu2).mpr h_final
 
+/-- 衰减估计推论 -/
 lemma decay_bounds_cor (ψ : CS 2 ℂ) : ∃ C : ℝ, ∀ u, ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤ C / (1 + u ^ 2) := by
   have h1 : Integrable (ψ : ℝ → ℂ) :=
     ψ.h1.continuous.integrable_of_hasCompactSupport ψ.h2
@@ -333,6 +364,7 @@ lemma decay_bounds_cor (ψ : CS 2 ℂ) : ∃ C : ℝ, ∀ u, ‖𝓕 (ψ : ℝ �
     rw [show f.w21norm * (1 + u ^ 2)⁻¹ = f.w21norm / (1 + u ^ 2) from by ring] at h
     exact h⟩
 
+/-- Fourier 变换的连续性 -/
 lemma continuous_FourierIntegral (ψ : CS 2 ℂ) : Continuous (𝓕 (ψ : ℝ → ℂ)) := by
   exact VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
     (innerSL ℝ).continuous₂
