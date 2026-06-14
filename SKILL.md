@@ -23,11 +23,13 @@ triggers:
    - 查阅 `.knowledge/proof-patterns.md` 搜索类似证明模式
    - 查阅 `.knowledge/bigo-api.md` 搜索 BigO 相关 API（如果涉及渐近分析）
    - 查阅 `.knowledge/nnabla-api.md` 搜索 nnabla/nabla 相关 API（如果涉及序列差分）
+   - **查阅 `STYLE.md` 了解代码格式规范**（文件结构、docstring、命名、证明格式）
 
 2. **第二步：判断 RAG 完整性**
    - 如果 RAG 中已有相关 API 和模式 → 直接开始证明（但 RAG 中的引理要先在独立测试中验证）
    - 如果 RAG 缺少相关 API → **必须先用 `grep` 在 Mathlib 源码中搜索并补充到 RAG，然后再开始证明**
    - 用户的明确偏好："如果没有相关内容就先完善RAG" —— 不要跳过 RAG 完善步骤直接尝试证明
+   - **STYLE.md 中定义了完整的 mathlib4 规范格式，所有新增代码必须符合该规范**
 
 3. **第三步：开始证明**
    - 先在 `/tmp/test_X.lean` 独立测试中验证策略
