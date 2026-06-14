@@ -789,21 +789,25 @@ theorem limiting_fourier_lim3 (hG : ContinuousOn G {s | 1 ≤ s.re}) (ψ : CS 2 
 noncomputable def limiting_fourier_lim2_aux (x : ℝ) (C : ℝ) : ℝ → ℝ :=
   fun u => max |x| 1 * (C / (1 + (u / (2 * π)) ^ 2))
 
+/-- Fourier 极限（引理二）-/
 theorem limiting_fourier_lim2 (A : ℝ) (ψ : CS 2 ℂ) (hx : 1 ≤ x) :
     Tendsto (fun σ' ↦ A * ↑(x ^ (1 - σ')) *
         ∫ u in Ici (-Real.log x), rexp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)))
       (𝓝[>] 1) (𝓝 (A * ∫ u in Ici (-Real.log x), 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)))) := by
   sorry
+/-- 第一 Fourier 引理（可测性）-/
 lemma first_fourier_aux1 (hψ : AEMeasurable ψ) {x : ℝ} (n : ℕ) : AEMeasurable fun (u : ℝ) ↦
     (‖fourierChar (-(u * ((1 : ℝ) / ((2 : ℝ) * π) * (n / x).log))) • ψ u‖ₑ : ENNReal) := by
   fun_prop
 
+/-- 第一 Fourier 引理（辅助2a）-/
 lemma first_fourier_aux2a :
     (2 : ℂ) * π * -(y * (1 / (2 * π) * Real.log ((n) / x))) = -(y * ((n) / x).log) := by
   calc
     _ = -(y * (((2 : ℂ) * π) / (2 * π) * Real.log ((n) / x))) := by ring
     _ = _ := by rw [div_self (by norm_num), one_mul]
 
+/-- 第一 Fourier 引理（辅助二）-/
 lemma first_fourier_aux2 (hx : 0 < x) (n : ℕ) :
     _root_.term f σ' n * 𝐞 (-(y * (1 / (2 * π) * Real.log (n / x)))) • ψ y =
     _root_.term f (σ' + y * I) n • (ψ y * x ^ (y * I)) := by
@@ -833,25 +837,30 @@ lemma first_fourier_aux2 (hx : 0 < x) (n : ℕ) :
     _ = _ := by simp ; group
 
 -- TODO: 实现 norm_term_eq_nterm_re
+/-- norm_term 等于 nterm_re -/
 lemma norm_term_eq_nterm_re {f : ℕ → ℂ} {σ' : ℝ} {n : ℕ} (h : n ≠ 0) :
     ‖_root_.term f σ' n‖ = ‖f n‖ / ↑n ^ σ' := by
   simp [_root_.term, nterm, h]
 
+/-- hf_coe1 -/
 lemma hf_coe1 (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (hσ : 1 < σ') :
     ∑' i, (‖_root_.term f σ' i‖₊ : ENNReal) ≠ ⊤ := by
   sorry
 
 
+/-- 第二 Fourier 可积性（辅助1a）-/
 lemma second_fourier_integrable_aux1a (hσ : 1 < σ') :
     IntegrableOn (fun (x : ℝ) ↦ cexp (-((x : ℂ) * ((σ' : ℂ) - 1)))) (Ici (-Real.log x)) := by
   sorry
 
+/-- 第二 Fourier 可积性（辅助一）-/
 lemma second_fourier_integrable_aux1 (hcont : Measurable ψ) (hsupp : Integrable ψ) (hσ : 1 < σ') :
     let ν : Measure (ℝ × ℝ) := (volume.restrict (Ici (-Real.log x))).prod volume
     Integrable (Function.uncurry fun (u : ℝ) (a : ℝ) ↦ ((rexp (-u * (σ' - 1))) : ℂ) •
     (𝐞 (Multiplicative.ofAdd (-(a * (u / (2 * π))))) : ℂ) • ψ a) ν := by
   sorry
 
+/-- 第二 Fourier 可积性（辅助二）-/
 lemma second_fourier_integrable_aux2 (hσ : 1 < σ') :
     IntegrableOn (fun (u : ℝ) ↦ cexp ((1 - ↑σ' - ↑t * I) * ↑u)) (Ioi (-Real.log x)) := by
   refine (integrable_norm_iff (Measurable.aestronglyMeasurable <| by fun_prop)).mp ?_
