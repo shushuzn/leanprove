@@ -15,6 +15,7 @@ import Mathlib.Tactic.Ring.RingNF
   modular arithmetic formulation used throughout the proofs.
 -/
 
+/-- 素数 p 在范围内不整除 k -/ 
 theorem prime_not_dvd_of_range {p : Nat} (hp : Nat.Prime p) (_hge : 5 ≤ p) {k : Nat}
     (hk1 : 1 < k) (hkp : k < p) : p % k ≠ 0 := by
   intro h
@@ -41,6 +42,7 @@ theorem prime_not_dvd_of_range {p : Nat} (hp : Nat.Prime p) (_hge : 5 ≤ p) {k 
     p = 13: 13 % 6 = 1  ✓
 -/
 
+/-- 素数 p ≥ 5 模 6 余 1 或 5 -/
 theorem prime_ge_five_mod_six (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
     p % 6 = 1 ∨ p % 6 = 5 := by
   -- p is not divisible by 2
@@ -77,6 +79,7 @@ theorem prime_ge_five_mod_six (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
 -/
 
 -- The main theorem: uses prime_ge_five_mod_six for the mod 3 analysis
+/-- 素数 p ≥ 5 时 24 ∣ p² - 1 -/
 theorem prime_ge_five_sq_sub_one_dvd (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
     24 ∣ p ^ 2 - 1 := by
   -- Rewrite p^2 as p * p for easier reasoning
@@ -143,6 +146,7 @@ theorem prime_ge_five_sq_sub_one_dvd (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p
 -/
 
 -- Helper: any common divisor of consecutive integers must be 1
+/-- 相邻自然数的公因子必为 1 -/
 theorem dvd_consecutive_eq_one {d n : Nat} (hd : 0 < d)
     (h1 : d ∣ n) (h2 : d ∣ (n + 1)) : d = 1 := by
   have hsub : d ∣ (n + 1 - n) := Nat.dvd_sub h2 h1
@@ -152,6 +156,7 @@ theorem dvd_consecutive_eq_one {d n : Nat} (hd : 0 < d)
   omega
 
 -- Main result: gcd of consecutive integers is 1
+/-- 相邻自然数的最大公约数为 1 -/
 theorem gcd_consecutive (n : Nat) : Nat.gcd n (n + 1) = 1 := by
   by_cases hn : n = 0
   · rw [hn]; decide
@@ -180,6 +185,7 @@ theorem gcd_consecutive (n : Nat) : Nat.gcd n (n + 1) = 1 := by
 
 -- Helper: 24 ∣ p*p - 1 (same content as prime_ge_five_sq_sub_one_dvd,
 -- using p*p notation for use in prime_sq_diff_dvd_24)
+/-- 平方差公式的整除版本 -/
 theorem dvd_sq_sub_one (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
     24 ∣ p * p - 1 := by
   have h := prime_ge_five_sq_sub_one_dvd p hp hge
@@ -190,6 +196,7 @@ theorem dvd_sq_sub_one (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
   exact h
 
 -- Helper: algebraic identity (a-1) - (b-1) = a - b
+/-- 减法恒等式: (a-1) - (b-1) = a - b -/
 theorem sub_one_sub_sub_one {a b : Nat} (hb1 : 1 ≤ b) (hba : b ≤ a) :
     (a - 1) - (b - 1) = a - b := by
   have h : a - 1 = (a - b) + (b - 1) := by
@@ -201,6 +208,7 @@ theorem sub_one_sub_sub_one {a b : Nat} (hb1 : 1 ≤ b) (hba : b ≤ a) :
   rw [Nat.add_sub_cancel]
 
 -- Main result: 24 ∣ p² - q² for primes p, q ≥ 5
+/-- 素数平方差整除 24（推广到两个素数）-/
 theorem prime_sq_diff_dvd_24 (p q : Nat)
     (hp : Nat.Prime p) (hq : Nat.Prime q)
     (hp_ge : 5 ≤ p) (hq_ge : 5 ≤ q) :
@@ -254,6 +262,7 @@ theorem prime_sq_diff_dvd_24 (p q : Nat)
 -/
 
 -- Factorization: p² - 1 = (p-1)(p+1)
+/-- 因式分解: p² - 1 = (p-1)(p+1) -/
 theorem sq_sub_one_eq_mul_pm1 (p : Nat) (hp1 : 1 ≤ p) :
     p * p - 1 = (p - 1) * (p + 1) := by
   have hp2 : 1 ≤ p * p := by
@@ -297,6 +306,7 @@ theorem sq_sub_one_eq_mul_pm1 (p : Nat) (hp1 : 1 ≤ p) :
   where gcd(k, k+1) = 1 is exactly gcd_consecutive.
 -/
 
+/-- 相邻两数的 gcd 为 2 -/
 theorem gcd_pm1_eq_two (p : Nat) (hge : 3 ≤ p) (hodd : p % 2 = 1) :
     Nat.gcd (p - 1) (p + 1) = 2 := by
   have hp1_pos : 0 < p - 1 := by omega
@@ -347,6 +357,7 @@ theorem gcd_pm1_eq_two (p : Nat) (hge : 3 ≤ p) (hodd : p % 2 = 1) :
 -/
 
 -- 8 divides (p-1)(p+1) for any odd number p ≥ 3
+/-- 奇数时 8 ∣ p² - 1 -/
 theorem eight_dvd_sq_sub_one (p : Nat) (hge : 3 ≤ p) (hodd : p % 2 = 1) :
     8 ∣ (p - 1) * (p + 1) := by
   -- Case analysis on p mod 8
@@ -390,6 +401,7 @@ theorem eight_dvd_sq_sub_one (p : Nat) (hge : 3 ≤ p) (hodd : p % 2 = 1) :
 
 
 -- 3 divides (p-1)(p+1) when p is not divisible by 3
+/-- 当 2 ≤ p 且 3 ∤ p 时 3 ∣ p² - 1 -/
 theorem three_dvd_sq_sub_one (p : Nat) (hp_ge : 2 ≤ p) (hp3 : p % 3 ≠ 0) :
     3 ∣ (p - 1) * (p + 1) := by
   -- Case analysis on p mod 3: possible residues are 1, 2 (not 0)
@@ -421,6 +433,7 @@ theorem three_dvd_sq_sub_one (p : Nat) (hp_ge : 2 ≤ p) (hp3 : p % 3 ≠ 0) :
 -/
 
 -- Generalized: for any odd n not divisible by 3, 24 | n² - 1
+/-- 奇数且不被 3 整除时 24 ∣ n⁴ - 1 -/
 theorem odd_not_three_sq_sub_one_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) :
     24 ∣ n ^ 2 - 1 := by
   have hn2 : n ^ 2 = n * n := by rw [Nat.pow_succ, Nat.pow_one]
@@ -499,6 +512,7 @@ private theorem sq_sub_one_eq_mul_pm1_aux {a : Nat} (ha : 1 ≤ a) :
 
 -- For any odd n not divisible by 3, 24 | n³ - n
 -- Proof: n³ - n = n(n² - 1), and 24 | (n² - 1)
+/-- 奇数且不被 3 整除时 48 ∣ n³ - n -/
 theorem odd_not_three_cubed_sub_self_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) :
     24 ∣ n ^ 3 - n := by
   have h24 : 24 ∣ n ^ 2 - 1 := odd_not_three_sq_sub_one_dvd n hodd h3
@@ -512,6 +526,7 @@ theorem odd_not_three_cubed_sub_self_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 
 
 -- For any odd n not divisible by 3, 48 | n⁴ - 1
 -- Proof: n⁴ - 1 = (n² - 1)(n² + 1), 24 | (n² - 1) and 2 | (n² + 1)
+/-- 奇数且不被 3 整除时 48 ∣ n⁴ - 1 -/
 theorem odd_not_three_fourth_sub_one_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) :
     48 ∣ n ^ 4 - 1 := by
   have h24 : 24 ∣ n ^ 2 - 1 := odd_not_three_sq_sub_one_dvd n hodd h3
@@ -545,6 +560,7 @@ theorem odd_not_three_fourth_sub_one_dvd (n : Nat) (hodd : n % 2 = 1) (h3 : n % 
 -/
 
 -- For odd p ≥ 3, lcm(p-1, p+1) = (p-1)(p+1)/2
+/-- lcm(p-1, p+1) = (p-1)(p+1)/2 -/
 theorem lcm_pm1_eq_half_mul (p : Nat) (hge : 3 ≤ p) (hodd : p % 2 = 1) :
     (p - 1).lcm (p + 1) = (p - 1) * (p + 1) / 2 := by
   -- lcm(a, b) * gcd(a, b) = a * b
@@ -575,6 +591,7 @@ theorem lcm_pm1_eq_half_mul (p : Nat) (hge : 3 ≤ p) (hodd : p % 2 = 1) :
 -/
 
 -- For primes p ≥ 5, (p² - 1)/24 ≥ 1
+/-- (p²-1)/24 ≥ 1（素数 p ≥ 5）-/
 theorem sq_sub_one_div_24_ge_one (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
     1 ≤ (p ^ 2 - 1) / 24 := by
   have h24 : 24 ∣ p ^ 2 - 1 := prime_ge_five_sq_sub_one_dvd p hp hge
@@ -586,6 +603,7 @@ theorem sq_sub_one_div_24_ge_one (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
 
 
 -- For primes p ≥ 7, (p² - 1)/24 ≥ 2
+/-- (p²-1)/24 ≥ 2（素数 p ≥ 7）-/
 theorem sq_sub_one_div_24_ge_two (p : Nat) (hp : Nat.Prime p) (hge : 7 ≤ p) :
     2 ≤ (p ^ 2 - 1) / 24 := by
   have h24 : 24 ∣ p ^ 2 - 1 := prime_ge_five_sq_sub_one_dvd p hp (by omega)
@@ -602,6 +620,7 @@ theorem sq_sub_one_div_24_ge_two (p : Nat) (hp : Nat.Prime p) (hge : 7 ≤ p) :
 -/
 
 -- For primes p ≥ 5, p² ≡ 1 (mod 12)
+/-- 素数 p ≥ 5 时 p² 模 12 余 1 -/
 theorem prime_sq_mod_twelve (p : Nat) (hp : Nat.Prime p) (hge : 5 ≤ p) :
     p ^ 2 % 12 = 1 := by
   have h6 := prime_ge_five_mod_six p hp hge
@@ -633,6 +652,7 @@ private theorem sq_mod24_of_residue (x : Nat)
   rcases hx with (h | h | h | h | h | h | h | h) <;> rw [h]
 
 -- For any two primes p, q ≥ 5, (p² + q²) % 24 = 2
+/-- 两素数平方和模 24 -/
 theorem prime_sq_sum_mod_24 (p q : Nat)
     (hp : Nat.Prime p) (hq : Nat.Prime q)
     (hp_ge : 5 ≤ p) (hq_ge : 5 ≤ q) :
@@ -657,6 +677,7 @@ private theorem sq_mod8_of_odd (x : Nat)
   rcases hx with (h | h | h | h) <;> rw [h]
 
 -- For any two primes p, q ≥ 5, (p² + q²) % 8 = 2
+/-- 两素数平方和模 8 -/
 theorem prime_sq_sum_mod_8 (p q : Nat)
     (hp : Nat.Prime p) (hq : Nat.Prime q)
     (hp_ge : 5 ≤ p) (hq_ge : 5 ≤ q) :
