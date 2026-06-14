@@ -595,6 +595,33 @@ lemma Real.log_eventually_gt_atTop (a : ℝ) :
 lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
     nnabla (fun n ↦ 1 / (n * ((2 * π) ^ 2 + Real.log (n / x) ^ 2))) =O[atTop]
     (fun n ↦ 1 / (Real.log n ^ 2 * n ^ 2)) := by
+  -- 策略: 用 IsBigO.of_bound 1
+  apply IsBigO.of_bound 1
+  filter_upwards [eventually_gt_atTop 3] with n hn
+  simp only [nnabla, norm_eq_abs, one_mul]
+  -- 用 exact_mod_cast 处理类型转换
+  have h_n : 0 < (n : ℝ) := by exact_mod_cast (show 0 < n from by linarith)
+  have h_n1 : 0 < ((n : ℝ) + 1) := by linarith
+  -- 定义 a n
+  set a : ℕ → ℝ := fun n => (2 * π) ^ 2 + Real.log (↑n / x) ^ 2
+  -- 证明 a n > 0
+  have ha : 0 < a n := by
+    simp only [a]
+    positivity
+  have ha1 : 0 < a (n + 1) := by
+    simp only [a]
+    positivity
+  -- 证明 u n > 0
+  have hu : 0 < 1 / ((n : ℝ) * a n) := by
+    apply div_pos (by norm_num)
+    exact mul_pos h_n ha
+  have hu1 : 0 < 1 / (((n : ℝ) + 1) * a (n + 1)) := by
+    apply div_pos (by norm_num)
+    exact mul_pos h_n1 ha1
+  -- 证明 u 递减
+  have h_decr : 1 / (((n : ℝ) + 1) * a (n + 1)) ≤ 1 / ((n : ℝ) * a n) := by
+    sorry
+  -- |u n - u (n+1)| = u n - u (n+1) ≤ u n
   sorry
 
 lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :

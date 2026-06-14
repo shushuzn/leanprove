@@ -224,3 +224,9 @@ linarith [h1, h2, h3, h4]
 -- IsBigO.mul 需要 f₁ : α → R, f₂ : α → R, g₁ : α → S, g₂ : α → S
 -- 如果类型不匹配，需要用 IsBigO.trans 先转换
 ```
+
+### sub_le_self
+```lean
+-- a - b ≤ a 当 b ≥ 0
+sub_le_self {a b : ℝ} (h : 0 ≤ b) : a - b ≤ a
+```

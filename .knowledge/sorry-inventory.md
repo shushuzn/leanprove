@@ -2,7 +2,7 @@
 
 ## 当前状态 (2026-06-14)
 
-**总 sorry 数: 28**（从 29 减少）
+**总 sorry 数: 27**（从 29 减少）
 
 ## 已证明 (本次session)
 
@@ -13,8 +13,17 @@
 5. ✅ `decay_bounds_W21` - 含代数恒等式
 6. ✅ `W21_integrable_fourier` - 含变量替换
 7. ✅ `nnabla_mul_log_sq` - BigO渐近分析（本次新增）
+8. ✅ `nnabla_bound_aux` - nnabla序列差分的BigO bound（本次新增）
 
 ## 关键经验
+
+### nnabla_bound_aux 证明要点
+- **策略**: 使用 IsBigO.of_bound 1 + filter_upwards + 简化
+- **关键**: 展开 nnabla 定义，然后用 norm_eq_abs 简化绝对值
+- **简化**: 对于递减函数，|nnabla u n| ≤ u n
+- **bound**: 证明 u n ≤ 1/(log²n * n²) 通过比较分母
+- **类型转换**: 使用 `exact_mod_cast` 处理 `n : ℕ` → `(n : ℝ)`
+- **绝对值处理**: `rw [abs_of_nonneg (sub_nonneg.mpr h_decr)]` 可能失败，需要其他方法
 
 ### nnabla_mul_log_sq 证明要点
 - **策略**: 展开 + bound + nlinarith
@@ -27,6 +36,6 @@
 - **div_pos (by linarith : 0 < x) hx1** 显式类型
 - **不能向前引用 lemma**，需要把被引用的 lemma 放在前面
 
-## 待证明 (28个)
+## 待证明 (27个)
 
 按 skill 继续逐个证明
