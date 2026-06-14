@@ -1,0 +1,806 @@
+⚠ [3251/3265] Replayed Leanprove.VonMangoldt
+warning: Leanprove/VonMangoldt.lean:699:17: This simp argument is unused:
+  Finset.mem_image
+
+Hint: Omit it from the simp argument list.
+  simp [Finset.mem_i̵m̵a̵g̵e̵,̵ ̵F̵i̵n̵s̵e̵t̵.̵m̵e̵m̵_̵Ico, Finset.mem_Icc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: Leanprove/VonMangoldt.lean:943:90: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Leanprove/VonMangoldt.lean:1014:8: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+info: Leanprove/VonMangoldt.lean:1071:51: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+ℹ [8572/8581] Replayed Leanprove.Tests
+info: Leanprove/Tests.lean:19:0: prime_ge_five_mod_six (p : ℕ) (hp : Nat.Prime p) (hge : 5 ≤ p) : p % 6 = 1 ∨ p % 6 = 5
+info: Leanprove/Tests.lean:20:0: prime_ge_five_sq_sub_one_dvd (p : ℕ) (hp : Nat.Prime p) (hge : 5 ≤ p) : 24 ∣ p ^ 2 - 1
+info: Leanprove/Tests.lean:21:0: dvd_consecutive_eq_one {d n : ℕ} (hd : 0 < d) (h1 : d ∣ n) (h2 : d ∣ n + 1) : d = 1
+info: Leanprove/Tests.lean:22:0: gcd_consecutive (n : ℕ) : n.gcd (n + 1) = 1
+info: Leanprove/Tests.lean:23:0: dvd_sq_sub_one (p : ℕ) (hp : Nat.Prime p) (hge : 5 ≤ p) : 24 ∣ p * p - 1
+info: Leanprove/Tests.lean:24:0: sub_one_sub_sub_one {a b : ℕ} (hb1 : 1 ≤ b) (hba : b ≤ a) : a - 1 - (b - 1) = a - b
+info: Leanprove/Tests.lean:25:0: prime_sq_diff_dvd_24 (p q : ℕ) (hp : Nat.Prime p) (hq : Nat.Prime q) (hp_ge : 5 ≤ p) (hq_ge : 5 ≤ q) :
+  24 ∣ p * p - q * q
+info: Leanprove/Tests.lean:26:0: sq_sub_one_eq_mul_pm1 (p : ℕ) (hp1 : 1 ≤ p) : p * p - 1 = (p - 1) * (p + 1)
+info: Leanprove/Tests.lean:27:0: gcd_pm1_eq_two (p : ℕ) (hge : 3 ≤ p) (hodd : p % 2 = 1) : (p - 1).gcd (p + 1) = 2
+info: Leanprove/Tests.lean:28:0: eight_dvd_sq_sub_one (p : ℕ) (hge : 3 ≤ p) (hodd : p % 2 = 1) : 8 ∣ (p - 1) * (p + 1)
+info: Leanprove/Tests.lean:29:0: three_dvd_sq_sub_one (p : ℕ) (hp_ge : 2 ≤ p) (hp3 : p % 3 ≠ 0) : 3 ∣ (p - 1) * (p + 1)
+info: Leanprove/Tests.lean:30:0: odd_not_three_sq_sub_one_dvd (n : ℕ) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) : 24 ∣ n ^ 2 - 1
+info: Leanprove/Tests.lean:31:0: odd_not_three_cubed_sub_self_dvd (n : ℕ) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) : 24 ∣ n ^ 3 - n
+info: Leanprove/Tests.lean:32:0: odd_not_three_fourth_sub_one_dvd (n : ℕ) (hodd : n % 2 = 1) (h3 : n % 3 ≠ 0) : 48 ∣ n ^ 4 - 1
+info: Leanprove/Tests.lean:33:0: lcm_pm1_eq_half_mul (p : ℕ) (hge : 3 ≤ p) (hodd : p % 2 = 1) : (p - 1).lcm (p + 1) = (p - 1) * (p + 1) / 2
+info: Leanprove/Tests.lean:34:0: sq_sub_one_div_24_ge_one (p : ℕ) (hp : Nat.Prime p) (hge : 5 ≤ p) : 1 ≤ (p ^ 2 - 1) / 24
+info: Leanprove/Tests.lean:35:0: sq_sub_one_div_24_ge_two (p : ℕ) (hp : Nat.Prime p) (hge : 7 ≤ p) : 2 ≤ (p ^ 2 - 1) / 24
+info: Leanprove/Tests.lean:36:0: prime_sq_mod_twelve (p : ℕ) (hp : Nat.Prime p) (hge : 5 ≤ p) : p ^ 2 % 12 = 1
+info: Leanprove/Tests.lean:37:0: prime_sq_sum_mod_24 (p q : ℕ) (hp : Nat.Prime p) (hq : Nat.Prime q) (hp_ge : 5 ≤ p) (hq_ge : 5 ≤ q) :
+  (p ^ 2 + q ^ 2) % 24 = 2
+info: Leanprove/Tests.lean:38:0: prime_sq_sum_mod_8 (p q : ℕ) (hp : Nat.Prime p) (hq : Nat.Prime q) (hp_ge : 5 ≤ p) (hq_ge : 5 ≤ q) :
+  (p ^ 2 + q ^ 2) % 8 = 2
+info: Leanprove/Tests.lean:41:0: prime_counting_gap (n : ℕ) (hn : n ≠ 0) : ∃ p, Nat.Prime p ∧ n < p ∧ p ≤ 2 * n
+info: Leanprove/Tests.lean:42:0: interval_contains_prime (n : ℕ) (hn : n ≠ 0) : ∃ p, Nat.Prime p ∧ p ≥ n + 1 ∧ p ≤ 2 * n
+info: Leanprove/Tests.lean:43:0: infinite_prime_pairs (N : ℕ) : ∃ p q, Nat.Prime p ∧ Nat.Prime q ∧ p > N ∧ p ≠ q ∧ q ≤ 2 * p
+info: Leanprove/Tests.lean:44:0: infinite_primes (N : ℕ) : ∃ p, Nat.Prime p ∧ p > N
+info: Leanprove/Tests.lean:45:0: prime_ratio_bounded (p : ℕ) (hp : Nat.Prime p) : ∃ q, Nat.Prime q ∧ q > p ∧ q ≤ 2 * p
+info: Leanprove/Tests.lean:46:0: bertrand_interval (n : ℕ) (hn : 1 ≤ n) : ∃ p, Nat.Prime p ∧ n ≤ p ∧ p ≤ 2 * n
+info: Leanprove/Tests.lean:49:0: theta_le_psi_le_const_mul (x : ℝ) (hx : 0 ≤ x) : θ x ≤ (Real.log 4 + 4) * x
+info: Leanprove/Tests.lean:50:0: psi_le_explicit (x : ℝ) (hx : 1 ≤ x) : ψ x ≤ Real.log 4 * x + 2 * √x * Real.log x
+info: Leanprove/Tests.lean:51:0: psi_zero_of_lt_two' {x : ℝ} (hx : x < 2) : ψ x = 0
+info: Leanprove/Tests.lean:52:0: theta_zero_of_lt_two' {x : ℝ} (hx : x < 2) : θ x = 0
+info: Leanprove/Tests.lean:53:0: psi_eq_log_lcm (n : ℕ) : ψ ↑n = Real.log ↑n.lcmUpto
+info: Leanprove/Tests.lean:54:0: theta_eq_log_primorial' (x : ℝ) : θ x = Real.log ↑(primorial ⌊x⌋₊)
+info: Leanprove/Tests.lean:55:0: pi_lower_bound (x : ℝ) (hx : 1 < x) : ((x - 1) * Real.log 2 - Real.log (x + 2)) / Real.log x ≤ ↑⌊x⌋₊.primeCounting
+info: Leanprove/Tests.lean:56:0: pi_upper_bound (x : ℝ) (hx : 1 < x) : ↑⌊x⌋₊.primeCounting ≤ Real.log 4 * x / Real.log √x + √x
+info: Leanprove/Tests.lean:57:0: theta_le_pi_mul_log' (n : ℕ) : θ ↑n ≤ ↑n.primeCounting * Real.log ↑n
+info: Leanprove/Tests.lean:58:0: psi_le_pi_mul_log' (n : ℕ) : ψ ↑n ≤ ↑n.primeCounting * Real.log ↑n
+info: Leanprove/Tests.lean:59:0: psi_ten_le : ψ 10 ≤ (Real.log 4 + 4) * 10
+info: Leanprove/Tests.lean:60:0: theta_ten_le : θ 10 ≤ Real.log 4 * 10
+info: Leanprove/Tests.lean:61:0: psi_hundred_le : ψ 100 ≤ (Real.log 4 + 4) * 100
+info: Leanprove/Tests.lean:62:0: theta_hundred_le : θ 100 ≤ Real.log 4 * 100
+info: Leanprove/Tests.lean:65:0: exists_prime_mod_four_eq_one_gt (N : ℕ) : ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 1
+info: Leanprove/Tests.lean:66:0: infinite_primes_mod_four_eq_one (N : ℕ) : ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 1
+info: Leanprove/Tests.lean:67:0: prime_dvd_sq_add_one_mod_four (p n : ℕ) (hp : Nat.Prime p) (hp_ne2 : p ≠ 2) (hpdvd : p ∣ n ^ 2 + 1) : p % 4 = 1
+info: Leanprove/Tests.lean:68:0: prime_factor_sq_add_one (p n : ℕ) (hp : Nat.Prime p) (hpdvd : p ∣ n ^ 2 + 1) : p = 2 ∨ p % 4 = 1
+info: Leanprove/Tests.lean:69:0: exists_prime_mod_four_eq_one_gt_elementary (N : ℕ) : ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 1
+info: Leanprove/Tests.lean:70:0: exists_prime_factor_mod_four_eq_three (n : ℕ) (hn : n % 4 = 3) : ∃ p, Nat.Prime p ∧ p ∣ n ∧ p % 4 = 3
+info: Leanprove/Tests.lean:71:0: exists_prime_mod_four_eq_three_gt (N : ℕ) : ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 3
+info: Leanprove/Tests.lean:72:0: infinite_primes_mod_four_eq_three (N : ℕ) : ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 3
+info: Leanprove/Tests.lean:73:0: exists_prime_factor_mod_six_eq_five (n : ℕ) (hn : n % 6 = 5) : ∃ p, Nat.Prime p ∧ p ∣ n ∧ p % 6 = 5
+info: Leanprove/Tests.lean:74:0: exists_prime_mod_six_eq_five_gt (N : ℕ) : ∃ p, Nat.Prime p ∧ p > N ∧ p % 6 = 5
+info: Leanprove/Tests.lean:75:0: infinite_primes_mod_six_eq_five (N : ℕ) : ∃ p, Nat.Prime p ∧ p > N ∧ p % 6 = 5
+info: Leanprove/Tests.lean:78:0: pi_lower_bound_simple (n : ℕ) (_hn : 2 ≤ n) : (↑n * Real.log 2 - Real.log (↑n + 1)) / Real.log ↑n ≤ ↑n.primeCounting
+info: Leanprove/Tests.lean:79:0: pi_upper_bound_simple (n : ℕ) (hn : 2 ≤ n) : ↑n.primeCounting ≤ Real.log 4 * ↑n / Real.log √↑n + √↑n
+info: Leanprove/Tests.lean:80:0: pi_tendsto_top : Filter.Tendsto Nat.primeCounting Filter.atTop Filter.atTop
+info: Leanprove/Tests.lean:83:0: not_summable_prime_reciprocal : ¬Summable fun p => 1 / ↑↑p
+info: Leanprove/Tests.lean:86:0: mertens_abel_identity (x : ℝ) (hx : 2 ≤ x) :
+  ∑ n ∈ Finset.Icc 2 ⌊x⌋₊, ArithmeticFunction.vonMangoldt n / ↑n = ψ x / x + ∫ (t : ℝ) in Set.Ioc 2 x, ψ t / (t * t)
+info: Leanprove/Tests.lean:87:0: psi_integral_sub_log_isBigO :
+  (fun x => (∫ (t : ℝ) in Set.Ioc 1 x, ψ t / (t * t)) - Real.log x) =O[Filter.atTop] fun x => 1
+info: Leanprove/Tests.lean:88:0: mertens_first_theorem :
+  (fun x => ∑ p ∈ Finset.Ioc 1 ⌊x⌋₊ with Nat.Prime p, Real.log ↑p / ↑p - Real.log x) =O[Filter.atTop] fun x => 1
+info: Leanprove/Tests.lean:89:0: mertens_first_theorem_bounded :
+  ∃ C, ∀ (x : ℝ), 2 ≤ x → |∑ p ∈ Finset.Ioc 1 ⌊x⌋₊ with Nat.Prime p, Real.log ↑p / ↑p - Real.log x| ≤ C
+✖ [8577/8581] Building Leanprove.WienerProof (236s)
+trace: .> LEAN_PATH=D:\OpenClaw\leanprove\.lake\packages\Cli\.lake\build\lib\lean;D:\OpenClaw\leanprove\.lake\packages\batteries\.lake\build\lib\lean;D:\OpenClaw\leanprove\.lake\packages\Qq\.lake\build\lib\lean;D:\OpenClaw\leanprove\.lake\packages\aesop\.lake\build\lib\lean;D:\OpenClaw\leanprove\.lake\packages\proofwidgets\.lake\build\lib\lean;D:\OpenClaw\leanprove\.lake\packages\importGraph\.lake\build\lib\lean;D:\OpenClaw\leanprove\.lake\packages\LeanSearchClient\.lake\build\lib\lean;D:\OpenClaw\leanprove\.lake\packages\plausible\.lake\build\lib\lean;D:\OpenClaw\leanprove\.lake\packages\mathlib\.lake\build\lib\lean;D:\OpenClaw\leanprove\.lake\build\lib\lean c:\Users\35234\.elan\toolchains\leanprover--lean4-v4.31.0-rc2\bin\lean.exe D:\OpenClaw\leanprove\Leanprove\WienerProof.lean -o D:\OpenClaw\leanprove\.lake\build\lib\lean\Leanprove\WienerProof.olean -i D:\OpenClaw\leanprove\.lake\build\lib\lean\Leanprove\WienerProof.ilean -c D:\OpenClaw\leanprove\.lake\build\ir\Leanprove\WienerProof.c --setup D:\OpenClaw\leanprove\.lake\build\ir\Leanprove\WienerProof.setup.json --json
+warning: Leanprove/WienerProof.lean:81:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:94:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:107:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:177:14: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:189:8: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:199:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:202:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:205:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:214:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:219:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:256:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:287:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:290:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:293:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:297:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:318:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:347:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:368:62: This simp argument is unused:
+  ge_iff_le
+
+Hint: Omit it from the simp argument list.
+  simp only [BoundedAtFilter, isBigO_iff, norm_eq_abs, Pi.one_apply, one_mem,
+      CStarRing.norm_of_mem_unitary, mul_one, eventually_atTop,̵ ̵g̵e̵_̵i̵f̵f̵_̵l̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Leanprove/WienerProof.lean:385:6: declaration uses `sorry`
+error: Leanprove/WienerProof.lean:391:14: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ') n : ℂ
+  
+  LSeries.term f (↑σ') n : ℂ
+error: Leanprove/WienerProof.lean:399:38: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term : (ℕ → ℂ) → ℂ → ℕ → ℂ
+  
+  LSeries.term : (ℕ → ℂ) → ℂ → ℕ → ℂ
+error: Leanprove/WienerProof.lean:399:38: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term : (ℕ → ℂ) → ℂ → ℕ → ℂ
+  
+  LSeries.term : (ℕ → ℂ) → ℂ → ℕ → ℂ
+error: Leanprove/WienerProof.lean:401:38: unsolved goals
+f : ℕ → ℂ
+x : ℝ
+hcheby : cheby f
+ψ : W21
+hx : 0 < x
+C : ℝ
+hC : ∀ (u : ℝ), ‖𝓕 ψ.toFun u‖ ≤ C / (1 + u ^ 2)
+this : 0 ≤ C
+n : ℕ
+h : n = 0
+⊢ ¬?m.182 = 0
+warning: Leanprove/WienerProof.lean:399:47: This simp argument is unused:
+  ↓reduceIte
+
+Hint: Omit it from the simp argument list.
+  simp only [term, h, ↓̵r̵e̵d̵u̵c̵e̵I̵t̵e̵,̵ ̵CharP.cast_eq_zero, div_zero, tendsto_const_nhds_iff]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Leanprove/WienerProof.lean:401:47: This simp argument is unused:
+  h
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Leanprove/WienerProof.lean:413:8: declaration uses `sorry`
+error: Leanprove/WienerProof.lean:417:4: unexpected token '·'; expected command
+error: Leanprove/WienerProof.lean:422:49: Ambiguous term
+  log
+Possible interpretations:
+  Complex.log (↑n / ↑x) : ℂ
+  
+  Real.log (↑n / x) : ℝ
+error: Leanprove/WienerProof.lean:423:27: Ambiguous term
+  log
+Possible interpretations:
+  Complex.log ↑x : ℂ
+  
+  Real.log x : ℝ
+error: Leanprove/WienerProof.lean:426:42: Application type mismatch: The argument
+  ψ
+has type
+  CS 2 ℂ
+but is expected to have type
+  W21
+in the application
+  limiting_fourier_lim1 hcheby ψ
+error: Leanprove/WienerProof.lean:427:13: Unknown identifier `limiting_fourier_lim2`
+error: Leanprove/WienerProof.lean:424:58: unsolved goals
+f : ℕ → ℂ
+A x : ℝ
+G : ℂ → ℂ
+hcheby : cheby f
+hG : ContinuousOn G {s | 1 ≤ s.re}
+hG' : EqOn G (fun s => LSeries f s - ↑A / (s - 1)) {s | 1 < s.re}
+hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')
+ψ : CS 2 ℂ
+hx : 1 ≤ x
+l1 :
+  Tendsto (fun σ' => ∑' (n : ℕ), sorry * 𝓕 sorry.toFun (1 / (2 * π) * Real.log (↑n / x))) (𝓝[>] 1)
+    (𝓝 (∑' (n : ℕ), f n / ↑n * 𝓕 sorry.toFun (1 / (2 * π) * Real.log (↑n / x))))
+⊢ ∑' (n : ℕ), f n / ↑n * 𝓕 ψ.toFun (↑1 / (↑2 * π) * sorry) - ↑A * ∫ (u : ℝ) in Ici (-sorry), 𝓕 ψ.toFun (u / (2 * π)) =
+    ∫ (t : ℝ), G (1 + ↑t * I) * ψ.toFun t * ↑x ^ (↑t * I)
+error: Leanprove/WienerProof.lean:434:54: overloaded, errors 
+  434:59 Ambiguous term
+    log
+  Possible interpretations:
+    Complex.log ↑x : ℂ
+    
+    Real.log x : ℝ
+  
+  434:59 Ambiguous term
+    log
+  Possible interpretations:
+    Complex.log ↑x : ℂ
+    
+    Real.log x : ℝ
+error: Leanprove/WienerProof.lean:434:40: failed to synthesize instance of type class
+  HPow ℝ ℂ ?m.39
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: Leanprove/WienerProof.lean:438:67: overloaded, errors 
+  438:72 Ambiguous term
+    log
+  Possible interpretations:
+    Complex.log ↑x : ℂ
+    
+    Real.log x : ℝ
+  
+  438:72 Ambiguous term
+    log
+  Possible interpretations:
+    Complex.log ↑x : ℂ
+    
+    Real.log x : ℝ
+error: Leanprove/WienerProof.lean:440:61: unsolved goals
+f : ℝ → ℂ
+l1 : ∀ᶠ (x : ℝ) in atTop, ∀ (t : ℝ), sorry
+x✝ : ℝ
+hx : ∀ (t : ℝ), sorry
+x : ℝ
+⊢ ↑x✝ ^ (↑x * I) = sorry () ∨ f x = 0
+error: Leanprove/WienerProof.lean:442:11: `simp` made no progress
+warning: Leanprove/WienerProof.lean:440:70: This simp argument is unused:
+  hx
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵x̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: Leanprove/WienerProof.lean:458:8: Unknown constant `limiting_cor_aux.congr'`
+error: Leanprove/WienerProof.lean:459:2: No goals to be solved
+error: Leanprove/WienerProof.lean:462:52: unexpected token ':='; expected command
+error: Leanprove/WienerProof.lean:483:7: Unknown identifier `limiting_fourier_lim2_aux`
+error: Leanprove/WienerProof.lean:539:58: Application type mismatch: The argument
+  hbound
+has type
+  ∀ (u : ℝ), ‖𝓕 ψ.toFun (u / c)‖ ≤ ψ.w21norm / (1 + (u / c) ^ 2)
+but is expected to have type
+  ∀ (x : ℝ), ‖‖𝓕 ψ.toFun (x / c)‖‖ ≤ ψ.w21norm / (1 + (x / c) ^ 2)
+in the application
+  Eventually.of_forall hbound
+error: Leanprove/WienerProof.lean:542:48: unsolved goals
+c : ℝ
+ψ : W21
+hc : c ≠ 0
+hbound : ∀ (u : ℝ), ‖𝓕 ψ.toFun (u / c)‖ ≤ ψ.w21norm / (1 + (u / c) ^ 2)
+hint : Integrable (fun u => ψ.w21norm / (1 + (u / c) ^ 2)) volume
+hmeas : AEStronglyMeasurable (fun u => ‖𝓕 ψ.toFun (u / c)‖) volume
+h_int_norm : ∫ (u : ℝ), ‖𝓕 ψ.toFun (u / c)‖ ≤ ∫ (u : ℝ), ψ.w21norm / (1 + (u / c) ^ 2)
+⊢ ∫ (u : ℝ), (1 + (u * c⁻¹) ^ 2)⁻¹ * ψ.w21norm = ψ.w21norm * ∫ (u : ℝ), (1 + (u * c⁻¹) ^ 2)⁻¹
+warning: Leanprove/WienerProof.lean:543:38: This simp argument is unused:
+  integral_const_mul
+
+Hint: Omit it from the simp argument list.
+  simp [div_eq_mul_inv, mul_comm,̵ ̵i̵n̵t̵e̵g̵r̵a̵l̵_̵c̵o̵n̵s̵t̵_̵m̵u̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: Leanprove/WienerProof.lean:548:12: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ') i : ℂ
+  
+  LSeries.term f (↑σ') i : ℂ
+error: Leanprove/WienerProof.lean:548:44: unsolved goals
+f : ℕ → ℂ
+σ' : ℝ
+hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')
+hσ : 1 < σ'
+i : ℕ
+⊢ ‖sorry ()‖ = ‖LSeries.term f (↑σ') i‖
+error: Leanprove/WienerProof.lean:566:4: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ') n : ℂ
+  
+  LSeries.term f (↑σ') n : ℂ
+error: Leanprove/WienerProof.lean:567:4: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ' + ↑y * I) n : ℂ
+  
+  LSeries.term f (↑σ' + ↑y * I) n : ℂ
+error: Leanprove/WienerProof.lean:595:14: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ') n : ℂ
+  
+  LSeries.term f (↑σ') n : ℂ
+error: Leanprove/WienerProof.lean:595:58: Ambiguous term
+  log
+Possible interpretations:
+  Complex.log (↑n / ↑x) : ℂ
+  
+  Real.log (↑n / x) : ℝ
+error: Leanprove/WienerProof.lean:599:14: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ') n : ℂ
+  
+  LSeries.term f (↑σ') n : ℂ
+error: Leanprove/WienerProof.lean:603:25: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ') n : ℂ
+  
+  LSeries.term f (↑σ') n : ℂ
+error: Leanprove/WienerProof.lean:606:25: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ') n : ℂ
+  
+  LSeries.term f (↑σ') n : ℂ
+error: Leanprove/WienerProof.lean:600:53: unsolved goals
+f : ℕ → ℂ
+x σ' : ℝ
+ψ : ℝ → ℂ
+hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')
+hsupp : Integrable ψ volume
+hx : 0 < x
+hσ : 1 < σ'
+⊢ ∑' (n : ℕ), sorry * ∫ (v : ℝ), 𝐞 (-(v * (↑1 / (↑2 * π) * sorry))) • ψ v =
+    ∑' (n : ℕ), sorry * ∫ (v : ℝ), 𝐞 (-(v * (π⁻¹ * 2⁻¹ * Real.log (↑n / x)))) • ψ v
+error: Leanprove/WienerProof.lean:611:8: `fun_prop` was unable to prove `AEMeasurable (fun v => sorry * 𝐞 (-(v * (1 / (2 * π) * Real.log (↑x✝ / x)))) • ψ v) volume`
+
+Issues:
+  No theorems found for `sorryAx` in order to prove `AEMeasurable (fun a => sorry) ?ν`
+  Failed to infer `(?ν : Measure ℂ)` when applying theorem `aemeasurable_const`.
+  Failed to infer `(?ν : Measure ℂ)` when applying theorem `aemeasurable_id'`.
+  Failed to infer `(?ν : Measure ℂ)` when applying theorem `aemeasurable_id`.
+error: Leanprove/WienerProof.lean:615:28: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ') i : ℂ
+  
+  LSeries.term f (↑σ') i : ℂ
+error: Leanprove/WienerProof.lean:615:75: unsolved goals
+f : ℕ → ℂ
+x σ' : ℝ
+ψ : ℝ → ℂ
+hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')
+hsupp : Integrable ψ volume
+hx : 0 < x
+hσ : 1 < σ'
+⊢ ∑' (i : ℕ), ↑‖sorry ()‖₊ * ∫⁻ (a : ℝ), ↑‖𝐞 (-(a * (π⁻¹ * 2⁻¹ * Real.log (↑i / x)))) • ψ a‖₊ =
+    ⊤ * ↑‖sorry ()‖₊ * ∫⁻ (a : ℝ), ↑‖ψ a‖₊
+error: Leanprove/WienerProof.lean:623:17: Unknown identifier `first_fourier_aux2`
+error: Leanprove/WienerProof.lean:626:12: Unknown identifier `norm_term_eq_nterm_re`
+warning: Leanprove/WienerProof.lean:616:18: This simp argument is unused:
+  ENNReal.tsum_mul_right
+
+Hint: Omit it from the simp argument list.
+  simp [̵E̵N̵N̵R̵e̵a̵l̵.̵t̵s̵u̵m̵_̵m̵u̵l̵_̵r̵i̵g̵h̵t̵,̵ ̵e̵n̵o̵r̵m̵_̵e̵q̵_̵n̵n̵n̵o̵r̵m̵]̵[̲e̲n̲o̲r̲m̲_̲e̲q̲_̲n̲n̲n̲o̲r̲m̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: Leanprove/WienerProof.lean:653:6: Tactic `assumption` failed
+
+x σ' : ℝ
+ψ : ℝ → ℂ
+hcont : Measurable ψ
+hsupp : Integrable ψ volume
+hσ : 1 < σ'
+ν : Measure (ℝ × ℝ) := (volume.restrict (Ici (-Real.log x))).prod volume
+f1 : ℝ → ENNReal := fun a1 => ‖cexp (-(↑a1 * (↑σ' - 1)))‖ₑ
+f2 : ℝ → ENNReal := fun a2 => ‖ψ a2‖ₑ
+this : ∫⁻ (a : ℝ × ℝ), f1 a.1 * f2 a.2 ∂ν < ⊤
+⊢ ∫⁻ (a : ℝ × ℝ),
+      ↑‖cexp (-(↑a.1 * (↑σ' - 1)))‖₊ * (↑‖↑(𝐞 (Multiplicative.ofAdd (a.2 * (a.1 / (2 * π))))⁻¹)‖₊ * ↑‖ψ a.2‖₊) ∂ν <
+    ⊤
+error: Leanprove/WienerProof.lean:678:17: Ambiguous term
+  log
+Possible interpretations:
+  Complex.log ↑x : ℂ
+  
+  Real.log x : ℝ
+error: Leanprove/WienerProof.lean:729:37: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ' + ↑x * I) i : ℂ
+  
+  LSeries.term f (↑σ' + ↑x * I) i : ℂ
+error: Leanprove/WienerProof.lean:732:70: `fun_prop` was unable to prove `Continuous[?m.79, _] ?m.81`
+
+Issues:
+error: Leanprove/WienerProof.lean:732:84: `simp` made no progress
+error: Leanprove/WienerProof.lean:733:18: unsolved goals
+f : ℕ → ℂ
+σ' : ℝ
+hf : Summable (nterm f σ')
+i : ℕ
+h : ¬i = 0
+x : ?m.78
+⊢ ?m.77 = 0 → ?m.81 x = 0
+error: Leanprove/WienerProof.lean:734:23: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ' + ↑x * I) n : ℂ
+  
+  LSeries.term f (↑σ' + ↑x * I) n : ℂ
+error: Leanprove/WienerProof.lean:736:4: unsolved goals
+case pos
+f : ℕ → ℂ
+σ' : ℝ
+hf : Summable (nterm f σ')
+l1 : ∀ (i : ℕ), Continuous fun x => sorry
+n : ℕ
+x : ℝ
+h : n = 0
+⊢ sorry () = 0
+error: Leanprove/WienerProof.lean:737:4: unsolved goals
+case neg
+f : ℕ → ℂ
+σ' : ℝ
+hf : Summable (nterm f σ')
+l1 : ∀ (i : ℕ), Continuous fun x => sorry
+n : ℕ
+x : ℝ
+h : ¬n = 0
+⊢ ‖sorry ()‖ = ‖f n‖ / ↑n ^ σ'
+warning: Leanprove/WienerProof.lean:733:27: This simp argument is unused:
+  h
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Leanprove/WienerProof.lean:737:22: This simp argument is unused:
+  cpow_add _ _ (Nat.cast_ne_zero.mpr h)
+
+Hint: Omit it from the simp argument list.
+  simp [h, nterm, c̵p̵o̵w̵_̵a̵d̵d̵ ̵_̵ ̵_̵ ̵(̵N̵a̵t̵.̵c̵a̵s̵t̵_̵n̵e̵_̵z̵e̵r̵o̵.̵m̵p̵r̵ ̵h̵)̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵ ̵ ̵Complex.norm_natCast_cpow_of_pos (Nat.pos_of_ne_zero h)]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Leanprove/WienerProof.lean:738:8: This simp argument is unused:
+  Complex.norm_natCast_cpow_of_pos (Nat.pos_of_ne_zero h)
+
+Hint: Omit it from the simp argument list.
+  simp [h, nterm, cpow_add _ _ (Nat.cast_ne_zero.mpr h),̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵ ̵ ̵C̵o̵m̵p̵l̵e̵x̵.̵n̵o̵r̵m̵_̵n̵a̵t̵C̵a̵s̵t̵_̵c̵p̵o̵w̵_̵o̵f̵_̵p̵o̵s̵ ̵(̵N̵a̵t̵.̵p̵o̵s̵_̵o̵f̵_̵n̵e̵_̵z̵e̵r̵o̵ ̵h̵)̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: Leanprove/WienerProof.lean:744:10: Ambiguous term
+  term
+Possible interpretations:
+  _root_.term f (↑σ') n : ℂ
+  
+  LSeries.term f (↑σ') n : ℂ
+error: Leanprove/WienerProof.lean:744:53: Ambiguous term
+  log
+Possible interpretations:
+  Complex.log (↑n / ↑x) : ℂ
+  
+  Real.log (↑n / x) : ℝ
+error: Leanprove/WienerProof.lean:745:43: Ambiguous term
+  log
+Possible interpretations:
+  Complex.log ↑x : ℂ
+  
+  Real.log x : ℝ
+warning: Leanprove/WienerProof.lean:798:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:802:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:868:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:877:34: Variable name `f` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Leanprove/WienerProof.lean:877:46: Variable name `Ψ` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Leanprove/WienerProof.lean:879:6: declaration uses `sorry`
+warning: Leanprove/WienerProof.lean:887:6: declaration uses `sorry`
+error: Leanprove/WienerProof.lean:906:55: Application type mismatch: The argument
+  Ioo_subset_Ico_self
+has type
+  Ioo ?m.269 ?m.270 ⊆ Ico ?m.269 ?m.270
+but is expected to have type
+  Ioo (b - ε / 2) b ⊆ Ico a b
+in the application
+  indicator_le_indicator_of_subset Ioo_subset_Ico_self
+error: Leanprove/WienerProof.lean:918:16: Tactic `apply` failed: could not unify the type of `setIntegral_mono ?m.593 l8 h3`
+  ∫ (x : ℝ) in Ioi 0, (Icc a (a + ε / 2)).indicator 1 x ≤ ∫ (x : ℝ) in Ioi 0, ψ x
+with the goal
+  ∫ (y : ℝ) in Ioi 0, (Icc (a + ε / 2) (b - ε / 2)).indicator 1 y ≤ ∫ (y : ℝ) in Ioi 0, ψ y
+
+case refine_3
+a b : ℝ
+ha : 0 < a
+hab : a < b
+l1 : Iio ((b - a) / 3) ∈ 𝓝[>] 0
+ε : ℝ
+hε : 0 < ε
+hε' : ε < (b - a) / 3
+l2 : a < a + ε / 2
+l3 : b - ε / 2 < b
+ψ : ℝ → ℝ
+h1 : ContDiff ℝ ∞ ψ
+h2 : HasCompactSupport ψ
+h3 : (Icc a (a + ε / 2)).indicator 1 ≤ ψ
+h4 : ψ ≤ (Ioo (b - ε / 2) b).indicator 1
+h5 : closure (Function.support ψ) ⊆ Ioi 0
+l4 : 0 ≤ b - a - ε
+l5 : Icc (a + ε / 2) (b - ε / 2) ⊆ Ioi 0
+l6 : Icc (a + ε / 2) (b - ε / 2) ∩ Ioi 0 = Icc (a + ε / 2) (b - ε / 2)
+l7 : ∫ (y : ℝ) in Ioi 0, (Icc (a + ε / 2) (b - ε / 2)).indicator 1 y = b - a - ε
+l8 : IntegrableOn ψ (Ioi 0) volume
+⊢ ∫ (y : ℝ) in Ioi 0, (Icc (a + ε / 2) (b - ε / 2)).indicator 1 y ≤ ∫ (y : ℝ) in Ioi 0, ψ y
+warning: Leanprove/WienerProof.lean:905:14: This simp argument is unused:
+  hab.ne
+
+Hint: Omit it from the simp argument list.
+  simp [h5, h̵a̵b̵.̵n̵e̵,̵ ̵Icc_subset_Ioi_iff hab.le, ha]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Leanprove/WienerProof.lean:905:22: This simp argument is unused:
+  Icc_subset_Ioi_iff hab.le
+
+Hint: Omit it from the simp argument list.
+  simp [h5, hab.ne, I̵c̵c̵_̵s̵u̵b̵s̵e̵t̵_̵I̵o̵i̵_̵i̵f̵f̵ ̵h̵a̵b̵.̵l̵e̵,̵ ̵ha]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Leanprove/WienerProof.lean:905:49: This simp argument is unused:
+  ha
+
+Hint: Omit it from the simp argument list.
+  simp [h5, hab.ne, Icc_subset_Ioi_iff hab.le,̵ ̵h̵a̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: Leanprove/WienerProof.lean:938:4: Tactic `apply` failed: could not unify the type of `indicator_le_indicator_of_subset Ico_subset_Icc_self ?m.413`
+  (Ico ?m.412 ?m.411).indicator ?m.408 ≤ (Icc ?m.412 ?m.411).indicator ?m.408
+with the goal
+  (Ico a b).indicator 1 ≤ (Icc (a - ε / 2) a).indicator 1
+
+a b : ℝ
+ha : 0 < a
+hab : a < b
+l1 : Iio (a / 2) ∈ 𝓝[>] 0
+ε : ℝ
+hε : 0 < ε
+hε' : ε < a / 2
+l2 : a - ε / 2 < a
+l3 : b < b + ε / 2
+ψ : ℝ → ℝ
+h1 : ContDiff ℝ ∞ ψ
+h2 : HasCompactSupport ψ
+h3 : (Icc (a - ε / 2) a).indicator 1 ≤ ψ
+h4 : ψ ≤ (Ioo b (b + ε / 2)).indicator 1
+h5 : closure (Function.support ψ) ⊆ Ioi 0
+⊢ (Ico a b).indicator 1 ≤ (Icc (a - ε / 2) a).indicator 1
+error: Leanprove/WienerProof.lean:938:64: unsolved goals
+a b : ℝ
+ha : 0 < a
+hab : a < b
+l1 : Iio (a / 2) ∈ 𝓝[>] 0
+ε : ℝ
+hε : 0 < ε
+hε' : ε < a / 2
+l2 : a - ε / 2 < a
+l3 : b < b + ε / 2
+ψ : ℝ → ℝ
+h1 : ContDiff ℝ ∞ ψ
+h2 : HasCompactSupport ψ
+h3 : (Icc (a - ε / 2) a).indicator 1 ≤ ψ
+h4 : ψ ≤ (Ioo b (b + ε / 2)).indicator 1
+h5 : closure (Function.support ψ) ⊆ Ioi 0
+⊢ 0 ≤ ?m.408
+error: Leanprove/WienerProof.lean:950:34: Application type mismatch: The argument
+  h4
+has type
+  ψ ≤ (Ioo b (b + ε / 2)).indicator 1
+but is expected to have type
+  ψ ≤ (Ioo (a - ε / 2) (b + ε / 2)).indicator 1
+in the application
+  setIntegral_mono l8 ?m.758 h4
+warning: Leanprove/WienerProof.lean:936:14: This simp argument is unused:
+  l4.ne
+
+Hint: Omit it from the simp argument list.
+  simp [h5, l̵4̵.̵n̵e̵,̵ ̵Icc_subset_Ioi_iff l4.le, l5]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Leanprove/WienerProof.lean:936:21: This simp argument is unused:
+  Icc_subset_Ioi_iff l4.le
+
+Hint: Omit it from the simp argument list.
+  simp [h5, l4.ne, I̵c̵c̵_̵s̵u̵b̵s̵e̵t̵_̵I̵o̵i̵_̵i̵f̵f̵ ̵l̵4̵.̵l̵e̵,̵ ̵l5]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Leanprove/WienerProof.lean:936:47: This simp argument is unused:
+  l5
+
+Hint: Omit it from the simp argument list.
+  simp [h5, l4.ne, Icc_subset_Ioi_iff l4.le,̵ ̵l̵5̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: Leanprove/WienerProof.lean:1022:14: Function expected at
+  wiener_ikehara_smooth_real
+but this term has type
+  True
+
+Note: Expected a function because this term is being applied to the argument
+  hf
+error: Leanprove/WienerProof.lean:1016:146: unsolved goals
+A : ℝ
+G : ℂ → ℂ
+f : ℕ → ℝ
+hpos : 0 ≤ f
+hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm (fun n => ↑(f n)) σ')
+hcheby : cheby fun n => ↑(f n)
+hG : ContinuousOn G {s | 1 ≤ s.re}
+hG' : EqOn G (fun s => LSeries (fun n => ↑(f n)) s - ↑A / (s - 1)) {s | 1 < s.re}
+S : (ℝ → ℝ) → ℝ → ℝ := fun g x => (∑' (n : ℕ), f n * g (↑n / x)) / x
+hSnonneg : ∀ {g : ℝ → ℝ}, 0 ≤ g → ∀ᶠ (x : ℝ) in atTop, 0 ≤ S g x
+ε : ℝ
+ψ : ℝ → ℝ
+h1 : ContDiff ℝ ∞ ψ
+h2 : HasCompactSupport ψ
+h3 : closure (Function.support ψ) ⊆ Ioi 0
+h4 : (Ico 1 2).indicator 1 ≤ ψ
+⊢ 0 ≤ A
+error: Leanprove/WienerProof.lean:1039:77: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  chebyWith C f
+error: Leanprove/WienerProof.lean:1054:28: `simp` made no progress
+error: Leanprove/WienerProof.lean:1062:78: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  chebyWith C f
+error: Leanprove/WienerProof.lean:1066:98: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  nterm f
+error: Leanprove/WienerProof.lean:1067:20: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  cheby f
+error: Leanprove/WienerProof.lean:1068:39: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  LSeries f
+error: Leanprove/WienerProof.lean:1099:41: Function expected at
+  wiener_ikehara_smooth_real
+but this term has type
+  True
+
+Note: Expected a function because this term is being applied to the argument
+  hf
+error: Leanprove/WienerProof.lean:1116:41: Function expected at
+  wiener_ikehara_smooth_real
+but this term has type
+  True
+
+Note: Expected a function because this term is being applied to the argument
+  hf
+error: Leanprove/WienerProof.lean:1180:66: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  cheby f
+error: Leanprove/WienerProof.lean:1195:2: Type mismatch: After simplification, term
+  LE.le.trans_lt l2 h1
+ has type
+  @LT.lt ℝ instPreorder.toLT |S f 0 N - S f ε N| δ
+but is expected to have type
+  @LT.lt ℝ instLT (dist (S f 0 N) (S f ε N)) δ
+warning: Leanprove/WienerProof.lean:1192:15: This simp argument is unused:
+  norm_real
+
+Hint: Omit it from the simp argument list.
+  simp only [norm_r̵e̵a̵l̵,̵ ̵n̵or̵m̵_̵o̵f_nonneg (hpos _), norm_div,
+  ̵  ̵ ̵ ̵ ̵ ̵norm_of_nonneg r2, Real.norm_natCast] at r1 ⊢
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Leanprove/WienerProof.lean:1192:26: This simp argument is unused:
+  norm_of_nonneg (hpos _)
+
+Hint: Omit it from the simp argument list.
+  simp only [norm_real, n̵o̵r̵m̵_̵o̵f̵_̵n̵o̵n̵n̵e̵g̵ ̵(̵h̵p̵o̵s̵ ̵_̵)̵,̵ ̵norm_div, norm_of_nonneg r2, Real.norm_natCast] at r1 ⊢
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: Leanprove/WienerProof.lean:1197:107: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  nterm f
+error: Leanprove/WienerProof.lean:1198:20: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  cheby f
+error: Leanprove/WienerProof.lean:1199:39: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  LSeries f
+error: Leanprove/WienerProof.lean:1205:108: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  nterm f
+error: Leanprove/WienerProof.lean:1206:20: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  cheby f
+error: Leanprove/WienerProof.lean:1207:39: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  LSeries f
+error: Leanprove/WienerProof.lean:1212:47: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  nterm f
+error: Leanprove/WienerProof.lean:1213:20: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  cheby f
+error: Leanprove/WienerProof.lean:1214:39: Application type mismatch: The argument
+  f
+has type
+  ℕ → ℝ
+but is expected to have type
+  ℕ → ℂ
+in the application
+  LSeries f
+error: Leanprove/WienerProof.lean:1222:4: Type mismatch: After simplification, term
+  WienerIkeharaInterval_discrete' hpos hf hcheby hG hG' hε.left hε.right
+ has type
+  @Tendsto ℕ ℝ (fun N => (∑ x ∈ Finset.Ico ⌈ε * ↑N⌉₊ N, f x) / ↑N) atTop (𝓝 (A * (1 - ε)))
+but is expected to have type
+  @Tendsto ℕ ℝ (S f ε) atTop (𝓝 (A * (1 - ε)))
+error: Lean exited with code 1
+Some required targets logged failures:
+- Leanprove.WienerProof
+error: build failed
