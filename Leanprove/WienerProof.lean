@@ -1065,6 +1065,7 @@ theorem wiener_ikehara_smooth_sub (h1 : Integrable Ψ)
     rw [abs_le] ; constructor <;> linarith
   simp [ht]
 
+/-- Wiener-Ikehara 光滑主引理 -/
 lemma wiener_ikehara_smooth (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (hcheby : cheby f)
     (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re})
@@ -1074,8 +1075,10 @@ lemma wiener_ikehara_smooth (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f
       atTop (𝓝 0) := by
   sorry
 
+/-- Wiener-Ikehara 光滑（实值版本）-/
 lemma wiener_ikehara_smooth_real {f : ℕ → ℝ} {Ψ : ℝ → ℝ} : True := trivial
 
+/-- 极限推论（Schwarz 空间版本）-/
 lemma limiting_cor_schwartz (ψ : 𝓢(ℝ, ℂ)) (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))
     (hcheby : cheby f) (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re}) :
@@ -1084,18 +1087,21 @@ lemma limiting_cor_schwartz (ψ : 𝓢(ℝ, ℂ)) (hf : ∀ (σ' : ℝ), 1 < σ'
   sorry
 
 -- Smooth Urysohn lemma: construct a smooth bump function on intervals
+/-- 光滑 Urysohn 引理 -/
 lemma smooth_urysohn_support_Ioo {a b c d : ℝ} (hab : a < b) (hcd : c < d) :
     ∃ Ψ : ℝ → ℝ, ContDiff ℝ ∞ Ψ ∧ HasCompactSupport Ψ ∧
       Set.indicator (Set.Icc a b) 1 ≤ Ψ ∧ Ψ ≤ Set.indicator (Set.Ioo c d) 1 ∧
       closure (Function.support Ψ) ⊆ Set.Ioi 0 := by
   sorry
 
+/-- 区间近似取下界 -/
 lemma interval_approx_inf (ha : 0 < a) (hab : a < b) :
     ∀ᶠ ε in 𝓝[>] 0, ∃ ψ : ℝ → ℝ, ContDiff ℝ ∞ ψ ∧ HasCompactSupport ψ ∧
       closure (Function.support ψ) ⊆ Set.Ioi 0 ∧
       indicator (Icc a b) 1 ≤ ψ ∧
       ψ ≤ indicator (Ico a b) 1 ∧ b - a - ε ≤ ∫ y in Ioi 0, ψ y := by
   sorry
+/-- 区间近似取上界 -/
 lemma interval_approx_sup (ha : 0 < a) (hab : a < b) :
     ∀ᶠ ε in 𝓝[>] 0, ∃ ψ : ℝ → ℝ, ContDiff ℝ ∞ ψ ∧ HasCompactSupport ψ ∧
       closure (Function.support ψ) ⊆ Set.Ioi 0 ∧
