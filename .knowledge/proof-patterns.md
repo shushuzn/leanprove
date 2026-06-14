@@ -125,3 +125,60 @@ let f : W21 := {
 -- 二阶导数
 (ψ.h1.deriv'.continuous_deriv_one).integrable_of_hasCompactSupport ψ.h2.deriv.deriv
 ```
+
+## BigO 渐近分析模式
+
+### IsBigO.of_bound + filter_upwards
+```lean
+-- 目标: f =O[atTop] g
+-- 步骤:
+-- 1. apply IsBigO.of_bound C  -- C 是常数
+-- 2. filter_upwards [eventually_gt_atTop N] with x hx
+-- 3. simp only [norm_eq_abs, one_mul]  -- 转换 ‖‖ 到 |...|
+-- 4. 处理双重 |...|: rw [abs_of_nonneg (abs_nonneg _)]
+-- 5. 处理 |a²|: rw [abs_of_nonneg (sq_nonneg _)]
+-- 6. 处理 |a*b|: rw [abs_mul]
+-- 7. 处理 |a| when a > 0: rw [abs_of_pos h]
+```
+
+### log 恒等式
+```lean
+-- log(x/b) = log x - log b
+Real.log_div hx' hb' : Real.log (x / b) = Real.log x - Real.log b
+
+-- log(x/(x-1)) = log x - log(x-1)
+Real.log_div hx' hx1' : Real.log (x / (x - 1)) = Real.log x - Real.log (x - 1)
+
+-- log(x/b) = O(log x)
+log_add_div_isBigO_log 0 hb : (fun x => Real.log (x + 0 / b)) =O[atTop] Real.log
+-- 需要 simp only [add_zero] 来简化
+
+-- a²-b² = (a-b)(a+b)
+-- 用 ring_nf 证明
+```
+
+### BigO 组合
+```lean
+-- IsBigO.add: f₁ =O g → f₂ =O g → (f₁ + f₂) =O g
+-- IsBigO.mul: f₁ =O g₁ → f₂ =O g₂ → (f₁ * f₂) =O (g₁ * g₂)
+-- IsBigO.pow: f =O g → f^n =O g^n
+-- isLittleO_const_of_tendsto_atTop: const =o g when g → ∞
+```
+
+### rw 在 filter_upwards 上下文中的行为
+```lean
+-- 问题: rw [← Real.norm_eq_abs] 在 have 内部会影响主目标
+-- 解决方案:
+--   1. 用 convert_to + congr_arg₂ 代替 rw
+--   2. 用 rw [Real.norm_eq_abs] at this (安全，不影响主目标)
+--   3. linarith 需要显式传递假设: linarith [h1, h2, h3, h4]
+
+-- convert_to 用法:
+convert_to new_goal using 1
+· exact congr_arg₂ (fun a b => |a + b|) eq1 eq2
+
+-- norm_add_le 转换:
+have h_raw := norm_add_le a b
+rw [Real.norm_eq_abs, Real.norm_eq_abs, Real.norm_eq_abs] at h_raw
+-- h_raw : |a + b| ≤ |a| + |b|
+```

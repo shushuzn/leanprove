@@ -19,11 +19,21 @@
 - `log(x/(x-1)) ≤ 2/(x-1)` ✅ (用 log_le_sub_one_of_pos + div_sub_one)
 - 组合: `(x-1) * 2/(x-1) * (2|log x| + 2|log b|) = 4|log x| + 4|log b|` ✅
 
-**关键困难**: `rw [← Real.norm_eq_abs]` 在 `have` 内部会改写主目标中的 `|...|` 为 `‖...‖`，导致后续 `linarith` 看到 `⊢ False`。
+**关键困难**: 在 `filter_upwards` + `have` 上下文中，`linarith` 看到 `⊢ False` 而不是正确的目标。
+
+**根因分析**:
+1. `rw [← Real.norm_eq_abs]` 在 `have` 内部会影响主目标中的 `|...|` 为 `‖...‖`
+2. 这导致主目标被意外修改，后续 `linarith` 看到 `⊢ False`
+3. 独立测试中所有子引理都成功，说明问题在于组合上下文
 
 **解决方案**:
-1. 用 `convert_to` + `congr_arg₂` 代替 `rw` 来替换等式
+1. 用 `convert_to` + `congr_arg₂` 代替 `rw` 进行等式替换
 2. 用 `rw [Real.norm_eq_abs] at this` 而不是 `rw [← Real.norm_eq_abs]`
-3. 处理双重绝对值: `|(|a|)|` → `|a|` 用 `abs_of_nonneg (abs_nonneg _)`
+3. `linarith` 需要显式传递假设: `linarith [h1, h2, h3, h4]`
 
-**当前状态**: 所有子引理已证明，但组合步骤中 `rw [← Real.norm_eq_abs]` 的问题尚未完全解决。
+**当前状态**: 所有子引理已证明，但组合步骤中 `linarith` 的 `⊢ False` 问题尚未完全解决。
+
+**建议**: 
+- 尝试用 `omega` 或 `nlinarith` 代替 `linarith`
+- 尝试用 `calc` 分步证明而不是 `have` + `linarith`
+- 尝试在 `filter_upwards` 外部证明所有引理，然后在内部只用 `exact`

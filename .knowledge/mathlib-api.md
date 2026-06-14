@@ -134,3 +134,78 @@ norm_real (x : ℝ) : ‖(↑x : ℂ)‖ = ‖x‖
 -- 实数范数等于绝对值
 Real.norm_eq_abs (x : ℝ) : ‖x‖ = |x|
 ```
+
+## BigO / 渐近分析
+
+### IsBigO.of_bound
+```lean
+-- 用常数 bound 证明 BigO
+IsBigO.of_bound (c : ℝ) (h : ∀ᶠ x in l, ‖f x‖ ≤ c * ‖g x‖) : f =O[l] g
+```
+
+### IsBigO.add
+```lean
+-- BigO 加法: f₁ =O g → f₂ =O g → (f₁ + f₂) =O g
+IsBigO.add (h₁ : f₁ =O[l] g) (h₂ : f₂ =O[l] g) : (fun x => f₁ x + f₂ x) =O[l] g
+```
+
+### IsBigO.pow
+```lean
+-- BigO 幂次: f =O g → f^n =O g^n
+IsBigO.pow (h : f =O[l] g) (n : ℕ) : (fun x => f x ^ n) =O[l] (fun x => g x ^ n)
+-- 对于 n=2: h.sq
+```
+
+### isLittleO_const_of_tendsto_atTop
+```lean
+-- 常数 =o g 当 g → ∞
+isLittleO_const_of_tendsto_atTop (c : ℝ) (hg : Tendsto g atTop atTop) :
+    (fun _ => c) =o[atTop] g
+```
+
+### log_add_div_isBigO_log
+```lean
+-- log(x + a / b) = O(log x)
+log_add_div_isBigO_log (a : ℝ) {b : ℝ} (hb : 0 < b) :
+    (fun x => Real.log (x + a / b)) =O[atTop] Real.log
+-- 对于 log(x/b): 用 a = 0, 然后 simp only [add_zero]
+```
+
+### Real.log_div
+```lean
+-- log(x/y) = log x - log y
+Real.log_div {x y : ℝ} (hx : x ≠ 0) (hy : y ≠ 0) :
+    Real.log (x / y) = Real.log x - Real.log y
+```
+
+### Real.log_pos
+```lean
+-- 1 < x → 0 < log x
+Real.log_pos {x : ℝ} (hx : 1 < x) : 0 < Real.log x
+```
+
+### Real.log_le_sub_one_of_pos
+```lean
+-- log x ≤ x - 1 (for x > 0)
+Real.log_le_sub_one_of_pos {x : ℝ} (hx : 0 < x) : Real.log x ≤ x - 1
+```
+
+### div_sub_one
+```lean
+-- x/y - 1 = (x - y) / y
+div_sub_one {x y : ℝ} (hy : y ≠ 0) : x / y - 1 = (x - y) / y
+```
+
+### norm_add_le
+```lean
+-- ‖a + b‖ ≤ ‖a‖ + ‖b‖
+norm_add_le (a b : E) : ‖a + b‖ ≤ ‖a‖ + ‖b‖
+-- 对于 |a + b| ≤ |a| + |b|, 需要:
+-- rw [Real.norm_eq_abs, Real.norm_eq_abs, Real.norm_eq_abs] at h
+```
+
+### abs_sub
+```lean
+-- |a - b| ≤ |a| + |b|
+abs_sub (a b : ℝ) : |a - b| ≤ |a| + |b|
+```
