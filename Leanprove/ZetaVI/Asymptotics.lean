@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: (project contributors)
+-/
+
 /-! # ZetaVI.Asymptotics
 
 渐近分析核心：Gamma 函数渐近、振荡性假设、均值积分归约

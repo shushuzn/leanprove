@@ -6,7 +6,7 @@
 [![Mathlib](https://img.shields.io/badge/Mathlib-v4.31.0--rc2-green)](https://leanprover-community.github.io/mathlib4/)
 [![Proof Status](https://img.shields.io/badge/Phase%20I–V-0%20sorry-brightgreen)](./)
 [![Axioms](https://img.shields.io/badge/axioms-0-brightgreen)](./)
-[![Phase VI](https://img.shields.io/badge/Phase%20VI-19%20sorry-orange)](./)
+[![Phase VI](https://img.shields.io/badge/Phase%20VI-15%20sorry-orange)](./)
 
 ---
 
@@ -37,11 +37,11 @@
     ├─ V-A   PNT 等价形式          ████████████████████  100%  ✅
     ├─ V-B   θ~x ↔ π~x/log x      ████████████████████  100%  ✅
     └─ V-C   Wiener-Ikehara 证明   ████████████████████  100%  ✅ 0 axiom
-  阶段 VI   黎曼猜想               ██████████░░░░░░░░░░   55%  🔮 ~45 定理 (19 sorry)
+  阶段 VI   黎曼猜想               ██████████░░░░░░░░░░   55%  🔮 ~45 定理 (15 sorry)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**统计**: **~330 定理 / 引理** · **Phase I–V: 0 sorry** · **0 axiom** · **Phase VI: 19 sorry (进行中)**
+**统计**: **~330 定理 / 引理** · **Phase I–V: 0 sorry** · **0 axiom** · **Phase VI: 15 sorry (进行中)**
 
 ---
 
@@ -249,7 +249,7 @@ leanprove/
 ├── scripts/                          # Git hooks 脚本
 ├── lakefile.toml                     # Lake 构建配置
 ├── lean-toolchain                    # Lean v4.31.0-rc2
-├── AGENT.md                          # 开发纪律规则 (42 条)
+├── AGENT.md                          # 开发纪律规则 (12 条)
 ├── DEPENDENCY.md                     # 模块依赖链文档
 ├── ROADMAP.md                        # 前瞻规划
 └── README.md                         # 本文件
@@ -302,7 +302,7 @@ chmod +x .git/hooks/pre-commit
 ```
 Mathlib 内核
   ├─→ 阶段 I–V: ~310 定理 → 0 sorry → 0 axiom ✅
-  └─→ 阶段 VI:   ~45 定理 → 19 sorry (Hardy 定理框架进行中) 🔮
+  └─→ 阶段 VI:   ~45 定理 → 15 sorry (Hardy 定理框架进行中) 🔮
 ```
 
 阶段 I–V 的全部证明均可通过 `lake build Leanprove.Basic Bertrand Chebyshev Dirichlet PrimeCounting PrimeReciprocals VonMangoldt ZetaIVB ZetaIVD ZetaIVE PNTVA Tauberian Sobolev WienerProof` 独立验证，**0 sorry + 0 axiom**，完全依赖于 mathlib 内核。阶段 VI 模块正在推进中。

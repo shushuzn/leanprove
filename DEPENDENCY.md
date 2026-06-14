@@ -1,5 +1,13 @@
 # 依赖链
 
+## 格式规范
+
+所有 .lean 文件遵循 STYLE.md（基于 mathlib4 标准），包含：
+- 版权头 (`Copyright (c) 2026`)
+- `/- ... -/` docstring 格式
+- `snake_case` 定理/引理命名
+- 导入顺序：mathlib → 项目内部
+
 ## WeakPNT → 顶层 axiom
 
 ```
