@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: (project contributors)
+-/
+
 -- 等差数列中素数的特殊情形 (Special cases of Dirichlet's theorem)
 -- 阶段3的初步成果: p ≡ 1 (mod 4) 和 p ≡ 3 (mod 4) 的素数无穷性
 import Mathlib.Data.Nat.Prime.Defs

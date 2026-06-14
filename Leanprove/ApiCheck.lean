@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: (project contributors)
+-/
+
 -- ApiCheck.lean: verify Mathlib API names for sum ≤ tsum
 -- These are the correct names in Mathlib v4.31.0-rc2
 

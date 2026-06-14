@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: (project contributors)
+-/
+
 -- Phase V-A: Prime Number Theorem Equivalences
 import Mathlib.NumberTheory.Chebyshev
 import Mathlib.NumberTheory.LSeries.RiemannZeta

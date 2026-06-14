@@ -16,7 +16,7 @@
 
 ### 当前里程碑
 
-**素数定理全部等价形式已严格证明**：ψ(x) ~ x ↔ θ(x) ~ x ↔ π(x) ~ x/log x。Wiener-Ikehara 定理的 Fourier 分析证明已完整形式化。阶段 I–V **0 sorry + 0 axiom**，阶段 VI（Hardy 定理框架）进行中。
+**素数定理全部等价形式已严格证明**：ψ(x) ~ x ↔ θ(x) ~ x ↔ π(x) ~ x/log x。Wiener-Ikehara 定理的 Fourier 分析证明已完整形式化。阶段 I–V **0 sorry + 0 axiom**，阶段 VI（Hardy 定理框架）进行中。全部代码遵循 STYLE.md（基于 mathlib4 标准）。
 
 ---
 

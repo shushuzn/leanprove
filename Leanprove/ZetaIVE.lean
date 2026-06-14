@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: (project contributors)
+-/
+
 -- Phase IV-E: Analytic Continuation and Zero-Free Region
 import Mathlib.NumberTheory.LSeries.Nonvanishing
 import Mathlib.NumberTheory.LSeries.HurwitzZetaValues

@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: (project contributors)
+-/
+
 -- Bertrand 假设 (Mathlib 已证明)
 -- Mathlib.NumberTheory.Bertrand 包含完整证明
 

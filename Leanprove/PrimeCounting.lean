@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: (project contributors)
+-/
+
 -- 素数计数函数 π(x) 的形式化
 -- 基于 Mathlib.NumberTheory.PrimeCounting 的定义
 -- 和 Mathlib.NumberTheory.Chebyshev 的 Chebyshev 界

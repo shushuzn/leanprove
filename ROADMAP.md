@@ -2,7 +2,7 @@
 
 > 前瞻性规划与战略路径。项目现状与完整定理清单见 [README.md](README.md)。
 > 
-> **格式规范已更新**：所有 .lean 文件遵循 STYLE.md（mathlib4 风格），版权头、docstring、snake_case 命名已合规。
+> **格式规范已更新**：全部 22 个 .lean 文件已添加标准版权头，代码风格完全遵循 STYLE.md（mathlib4 标准）。
 
 ---
 

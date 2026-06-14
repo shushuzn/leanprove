@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: (project contributors)
+-/
+
 -- 回归测试: 验证所有关键定理的类型签名
 -- 确保重构和新增代码不会破坏已有定理的接口
 import Leanprove.Basic

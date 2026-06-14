@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: (project contributors)
+-/
+
 -- 素数倒数和的发散性
 -- 基于 Mathlib.NumberTheory.SumPrimeReciprocals (Michael Stoll)
 import Mathlib.NumberTheory.SumPrimeReciprocals
