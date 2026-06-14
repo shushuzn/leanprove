@@ -921,6 +921,7 @@ lemma limiting_fourier_aux (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1
 lemma fourier_surjection_on_schwartz (f : 𝓢(ℝ, ℂ)) : ∃ g : 𝓢(ℝ, ℂ), 𝓕 g = f := by
   sorry
 
+/-- Fourier 极限主定理 -/
 theorem limiting_fourier (hcheby : cheby f)
     (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re})
@@ -935,6 +936,7 @@ theorem limiting_fourier (hcheby : cheby f)
   apply tendsto_nhds_unique_of_eventuallyEq (l1.sub l2) l3
   simpa [eventuallyEq_nhdsWithin_iff] using Eventually.of_forall (limiting_fourier_aux hG' hf ψ hx)
 
+/-- 极限推论（辅助）-/
 lemma limiting_cor_aux (f : ℝ → ℂ) : Tendsto (fun x : ℝ ↦ ∫ t, f t * x ^ (t * I)) atTop (𝓝 0) := by
 
   have l1 : ∀ᶠ x : ℝ in atTop, ∀ t : ℝ, x ^ (t * I) = exp (Real.log x * t * I) := by
@@ -956,6 +958,7 @@ lemma limiting_cor_aux (f : ℝ → ℂ) : Tendsto (fun x : ℝ ↦ ∫ t, f t *
   refine (Real.zero_at_infty_fourier f).comp <| Tendsto.mono_right ?_ _root_.atBot_le_cocompact
   exact (tendsto_neg_atBot_iff.mpr tendsto_log_atTop).atBot_mul_const (inv_pos.mpr two_pi_pos)
 
+/-- 极限推论（主定理）-/
 lemma limiting_cor (ψ : CS 2 ℂ) (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (hcheby : cheby f)
     (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re}) :
@@ -963,6 +966,7 @@ lemma limiting_cor (ψ : CS 2 ℂ) (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (
       A * ∫ u in Set.Ici (-Real.log x), 𝓕 (ψ : ℝ → ℂ) (u / (2 * π))) atTop (𝓝 0) := by
   sorry
 
+/-- W21 Fourier 积分范数上界 -/
 lemma W21_norm_fourier_integral_le (ψ : W21) (hc : c ≠ 0) :
     ∫ u, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ ψ.w21norm * ∫ u, (1 + (u / c) ^ 2)⁻¹ := by
   sorry
@@ -970,6 +974,7 @@ lemma W21_norm_fourier_integral_le (ψ : W21) (hc : c ≠ 0) :
 /-! #### First Fourier identity -/
 /-! #### Key limit: linking G to LSeries -/
 
+/-- LSeries 连续性辅助引理 -/
 lemma continuous_LSeries_aux (hf : Summable (nterm f σ')) :
     Continuous fun x : ℝ => LSeries f (σ' + x * I) := by
   sorry
