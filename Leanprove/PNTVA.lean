@@ -473,7 +473,6 @@ theorem log_deriv_zeta_eq_vonMangoldt_series (s : ℂ) (hs : 1 < s.re) :
 
 /-- -ζ'(s)/ζ(s) 在 {Re(s) ≥ 1} \ {1} 上全纯
     (由 ζ(s) ≠ 0 和解析性; s=1 处有简单极点) -/
-/-- 对数derivζanalytic -/
 theorem log_deriv_zeta_analytic :
     AnalyticOnNhd ℂ (fun s => -deriv riemannZeta s / riemannZeta s)
       {s : ℂ | 1 ≤ s.re ∧ s ≠ 1} := by
@@ -491,7 +490,6 @@ theorem log_deriv_zeta_analytic :
 /-- **素数定理** (第二 Chebyshev 形式): ψ(x) ~ x
     基于 Wiener-Ikehara Tauberian 定理 (见 Tauberian.lean)。
     全项目 0 sorry + 0 axiom。-/
-/-- 素数number定理ψ -/
 theorem prime_number_theorem_psi :
     ψ ~[atTop] (fun x : ℝ => x) :=
   prime_number_theorem_psi_from_tauberian

@@ -55,7 +55,6 @@ open scoped Nat.Prime
 -/
 
 -- 定理: 对任意 N, 存在素数 p > N 使得 p ≡ 1 (mod 4)
-/-- 存在素数模四等于一大于 -/
 theorem exists_prime_mod_four_eq_one_gt (N : ℕ) :
     ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 1 := by
   obtain ⟨p, hp_prime, hp_gt, hp_mod⟩ := Nat.exists_prime_gt_modEq_one N (by decide : 4 ≠ 0)
@@ -67,7 +66,6 @@ theorem exists_prime_mod_four_eq_one_gt (N : ℕ) :
 
 
 -- 定理: p ≡ 1 (mod 4) 的素数有无穷多个
-/-- 无穷primes模四等于一 -/
 theorem infinite_primes_mod_four_eq_one :
     ∀ N, ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 1 :=
   exists_prime_mod_four_eq_one_gt
@@ -93,7 +91,6 @@ theorem infinite_primes_mod_four_eq_one :
 -/
 
 -- 引理: 若奇素数 p 整除 n² + 1, 则 p ≡ 1 (mod 4)
-/-- 素数整除平方和一模四 -/
 theorem prime_dvd_sq_add_one_mod_four (p n : ℕ) (hp : Nat.Prime p) (hp_ne2 : p ≠ 2)
     (hpdvd : p ∣ n ^ 2 + 1) : p % 4 = 1 := by
   letI : Fact (Nat.Prime p) := ⟨hp⟩
@@ -163,7 +160,6 @@ theorem prime_dvd_sq_add_one_mod_four (p n : ℕ) (hp : Nat.Prime p) (hp_ne2 : p
 
 
 -- 推论: n² + 1 的素因子只能是 2 或 ≡ 1 (mod 4)
-/-- 素数factor平方和一 -/
 theorem prime_factor_sq_add_one (p n : ℕ) (hp : Nat.Prime p)
     (hpdvd : p ∣ n ^ 2 + 1) : p = 2 ∨ p % 4 = 1 := by
   by_cases hp2 : p = 2
@@ -181,7 +177,6 @@ theorem prime_factor_sq_add_one (p n : ℕ) (hp : Nat.Prime p)
 -/
 
 -- 定理 (初等): 对任意 N, 存在素数 p > N 使得 p ≡ 1 (mod 4)
-/-- 存在素数模四等于一大于elementary -/
 theorem exists_prime_mod_four_eq_one_gt_elementary (N : ℕ) :
     ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 1 := by
   -- 对 N = 0, 直接给出 p = 5
@@ -289,7 +284,6 @@ private theorem list_prod_mod_four_eq_one : ∀ {l : List ℕ},
 
 
 -- 引理: ≡ 3 (mod 4) 的自然数必有 ≡ 3 (mod 4) 的素因子
-/-- 存在素数factor模四等于三 -/
 theorem exists_prime_factor_mod_four_eq_three (n : ℕ) (hn : n % 4 = 3) :
     ∃ p, Nat.Prime p ∧ p ∣ n ∧ p % 4 = 3 := by
   -- n ≡ 3 (mod 4) → n ≥ 3, 所以 n ≠ 0
@@ -351,7 +345,6 @@ theorem exists_prime_factor_mod_four_eq_three (n : ℕ) (hn : n % 4 = 3) :
 -/
 
 -- 定理: 对任意 N, 存在素数 p > N 使得 p ≡ 3 (mod 4)
-/-- 存在素数模四等于三大于 -/
 theorem exists_prime_mod_four_eq_three_gt (N : ℕ) :
     ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 3 := by
   -- 构造: 收集所有 ≤ N 的 ≡ 3 (mod 4) 素数
@@ -406,7 +399,6 @@ theorem exists_prime_mod_four_eq_three_gt (N : ℕ) :
 
 
 -- 定理: p ≡ 3 (mod 4) 的素数有无穷多个
-/-- 无穷primes模四等于三 -/
 theorem infinite_primes_mod_four_eq_three :
     ∀ N, ∃ p, Nat.Prime p ∧ p > N ∧ p % 4 = 3 :=
   exists_prime_mod_four_eq_three_gt
@@ -437,7 +429,6 @@ private theorem list_prod_mod_six_eq_one : ∀ {l : List ℕ},
 
 
 -- 引理: ≡ 5 (mod 6) 的自然数必有 ≡ 5 (mod 6) 的素因子
-/-- 存在素数factor模六等于五 -/
 theorem exists_prime_factor_mod_six_eq_five (n : ℕ) (hn : n % 6 = 5) :
     ∃ p, Nat.Prime p ∧ p ∣ n ∧ p % 6 = 5 := by
   have hn_pos : n ≠ 0 := by omega
@@ -491,7 +482,6 @@ theorem exists_prime_factor_mod_six_eq_five (n : ℕ) (hn : n % 6 = 5) :
 
 
 -- 定理: 对任意 N, 存在素数 p > N 使得 p ≡ 5 (mod 6)
-/-- 存在素数模六等于五大于 -/
 theorem exists_prime_mod_six_eq_five_gt (N : ℕ) :
     ∃ p, Nat.Prime p ∧ p > N ∧ p % 6 = 5 := by
   let S := (Finset.range (N + 1)).filter (fun p => Nat.Prime p ∧ p % 6 = 5)
@@ -538,7 +528,6 @@ theorem exists_prime_mod_six_eq_five_gt (N : ℕ) :
 
 
 -- 定理: p ≡ 5 (mod 6) 的素数有无穷多个
-/-- 无穷primes模六等于五 -/
 theorem infinite_primes_mod_six_eq_five :
     ∀ N, ∃ p, Nat.Prime p ∧ p > N ∧ p % 6 = 5 :=
   exists_prime_mod_six_eq_five_gt

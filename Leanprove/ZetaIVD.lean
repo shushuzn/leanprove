@@ -59,7 +59,6 @@ private lemma ofReal_euler_factor_base (p : ℕ) (hp : p.Prime) (σ : ℝ) :
 
 /-- Euler 乘积实数形式 (有限乘积极限):
     ∏_{p<n, p prime} (1 - p^{-σ})⁻¹ → ζ(σ), σ > 1 -/
-/-- Eulerproductreal极限 -/
 theorem euler_product_real_tendsto (σ : ℝ) (hσ : 1 < σ) :
     Tendsto (fun n : ℕ => ∏ p ∈ primesBelow n,
       (ofReal ((1 : ℝ) - (p : ℝ) ^ (-σ)))⁻¹)
@@ -89,7 +88,6 @@ theorem euler_product_real_tendsto (σ : ℝ) (hσ : 1 < σ) :
 
 /-- Euler 乘积实数形式 (HasProd):
     ∏_p (1 - p^{-σ})⁻¹ (作为复数) 收敛到 ζ(σ), σ > 1 -/
-/-- EulerproductrealhasProd -/
 theorem euler_product_real_hasProd (σ : ℝ) (hσ : 1 < σ) :
     HasProd (fun p : Primes =>
       (ofReal ((1 : ℝ) - ((p : ℕ) : ℝ) ^ (-σ)))⁻¹)

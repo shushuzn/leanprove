@@ -31,7 +31,6 @@ set_option maxHeartbeats 400000
 /-- Chebyshev-type bound for real-valued `f` (no norms needed since `0 ≤ f`). -/
 def chebyWithReal (C : ℝ) (f : ℕ → ℝ) : Prop := ∀ n, cumsum f n ≤ C * n
 
-/-- ChebyReal -/
 def chebyReal (f : ℕ → ℝ) : Prop := ∃ C, chebyWithReal C f
 
 /-- `ntermReal`: real-valued term of the Dirichlet series for `f : ℕ → ℝ`. -/
@@ -118,7 +117,6 @@ noncomputable def G_weakPNT : ℂ → ℂ := fun s => if s = 1 then
 /-- **G continuity**: G_weakPNT is continuous on {Re(s) ≥ 1}.
     The poles of -ζ'/ζ and 1/(s-1) at s=1 cancel, leaving a removable singularity
     with limit -γ (proven via H(s) = (s-1)ζ(s)). -/
-/-- G连续性 -/
 theorem G_continuous : ContinuousOn G_weakPNT {s : ℂ | 1 ≤ s.re} := by
   let H_set : Set ℂ := {s | 1 ≤ s.re}
   let f_ext : ℂ → ℂ := fun s ↦ -deriv riemannZeta s / riemannZeta s - 1 / (s - 1)
@@ -332,7 +330,6 @@ theorem WeakPNT : Tendsto (fun N : ℕ => cumsum vonMangoldt N / (N : ℝ))
 
 /-- The Prime Number Theorem: ψ(x) ~ x.
     Converts discrete WeakPNT to continuous ψ~x via squeeze theorem. -/
-/-- 素数number定理ψfromtauberian -/
 theorem prime_number_theorem_psi_from_tauberian :
     Chebyshev.psi ~[atTop] (fun x : ℝ => x) := by
   have h_psi_cumsum : ∀ x : ℝ, 0 ≤ x →

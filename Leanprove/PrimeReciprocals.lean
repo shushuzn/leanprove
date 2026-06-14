@@ -23,7 +23,6 @@ import Mathlib.NumberTheory.SumPrimeReciprocals
 
 -- 核心定理: 素数倒数级数不收敛
 -- Σ_{p∈Nat.Primes} 1/p 不收敛
-/-- 不可和素数reciprocal -/
 theorem not_summable_prime_reciprocal :
     ¬ Summable (fun p : Nat.Primes ↦ (1 : ℝ) / p) :=
   Nat.Primes.not_summable_one_div

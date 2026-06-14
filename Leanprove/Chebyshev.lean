@@ -58,7 +58,6 @@ open scoped Nat.Prime
 
 -- 推论1: θ(x) ≤ ψ(x) ≤ (ln(4)+4)·x
 -- 即 Chebyshev 上界的传递链
-/-- Θ小于等于ψ小于等于const积 -/
 theorem theta_le_psi_le_const_mul (x : ℝ) (hx : 0 ≤ x) :
     θ x ≤ (log 4 + 4) * x := by
   have h1 : θ x ≤ ψ x := Chebyshev.theta_le_psi x
@@ -67,33 +66,28 @@ theorem theta_le_psi_le_const_mul (x : ℝ) (hx : 0 ≤ x) :
 
 
 -- 推论2: 对 x ≥ 1, ψ(x) ≤ log 4 · x + 2·√x·ln(x)
-/-- Ψ小于等于explicit -/
 theorem psi_le_explicit (x : ℝ) (hx : 1 ≤ x) :
     ψ x ≤ log 4 * x + 2 * x.sqrt * x.log :=
   Chebyshev.psi_le hx
 
 
 -- 推论3: ψ(x) = 0 当 x < 2
-/-- Ψ零的小于二 -/
 theorem psi_zero_of_lt_two' {x : ℝ} (hx : x < 2) : ψ x = 0 :=
   Chebyshev.psi_eq_zero_of_lt_two hx
 
 
 -- 推论4: θ(x) = 0 当 x < 2
-/-- Θ零的小于二 -/
 theorem theta_zero_of_lt_two' {x : ℝ} (hx : x < 2) : θ x = 0 :=
   Chebyshev.theta_eq_zero_of_lt_two hx
 
 
 -- 推论5: ψ(n) = log(lcm(1,2,...,n))
-/-- Ψ等于对数lcm -/
 theorem psi_eq_log_lcm (n : ℕ) : ψ n = log (Nat.lcmUpto n) :=
   Chebyshev.psi_eq_log_lcmUpto n
 
 
 -- 推论6: θ(x) = log(primorial(⌊x⌋))
 -- primorial(n) = ∏_{p≤n} p
-/-- Θ等于对数primorial -/
 theorem theta_eq_log_primorial' (x : ℝ) : θ x = log (primorial ⌊x⌋₊) :=
   Chebyshev.theta_eq_log_primorial x
 
@@ -129,27 +123,23 @@ theorem theta_eq_log_primorial' (x : ℝ) : θ x = log (primorial ⌊x⌋₊) :=
 -/
 
 -- π(x) 的下界
-/-- Π下界 -/
 theorem pi_lower_bound (x : ℝ) (hx : 1 < x) :
     ((x - 1) * log 2 - log (x + 2)) / log x ≤ π ⌊x⌋₊ :=
   Chebyshev.pi_ge' hx
 
 
 -- π(x) 的上界
-/-- Π上界 -/
 theorem pi_upper_bound (x : ℝ) (hx : 1 < x) :
     π ⌊x⌋₊ ≤ log 4 * x / log (Real.sqrt x) + Real.sqrt x :=
   Chebyshev.pi_le_log4_mul_div hx
 
 
 -- θ(n) ≤ π(n) · ln(n)
-/-- Θ小于等于π积对数 -/
 theorem theta_le_pi_mul_log' (n : ℕ) : θ n ≤ (π n) * log n :=
   Chebyshev.theta_le_pi_mul_log n
 
 
 -- ψ(n) ≤ π(n) · ln(n)
-/-- Ψ小于等于π积对数 -/
 theorem psi_le_pi_mul_log' (n : ℕ) : ψ n ≤ (π n) * log n :=
   Chebyshev.psi_le_primeCounting_mul_log n
 
@@ -159,26 +149,22 @@ theorem psi_le_pi_mul_log' (n : ℕ) : ψ n ≤ (π n) * log n :=
 -/
 
 -- ψ(10) 的可计算上界
-/-- Ψten小于等于 -/
 theorem psi_ten_le : ψ 10 ≤ (log 4 + 4) * 10 :=
   Chebyshev.psi_le_const_mul_self (by norm_num : (0 : ℝ) ≤ 10)
 
 
 -- θ(10) 的可计算上界
 -- θ(10) = ln(2·3·5·7) = ln(210)
-/-- Θten小于等于 -/
 theorem theta_ten_le : θ 10 ≤ log 4 * 10 :=
   Chebyshev.theta_le_log4_mul_x (by norm_num : (0 : ℝ) ≤ 10)
 
 
 -- ψ(100) 的可计算上界
-/-- Ψ百小于等于 -/
 theorem psi_hundred_le : ψ 100 ≤ (log 4 + 4) * 100 :=
   Chebyshev.psi_le_const_mul_self (by norm_num : (0 : ℝ) ≤ 100)
 
 
 -- θ(100) 的可计算上界
-/-- Θ百小于等于 -/
 theorem theta_hundred_le : θ 100 ≤ log 4 * 100 :=
   Chebyshev.theta_le_log4_mul_x (by norm_num : (0 : ℝ) ≤ 100)
 
