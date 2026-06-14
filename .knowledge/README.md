@@ -20,8 +20,8 @@
 
 | 文件 | 主题 | 行数 |
 |------|------|------|
-| `proof-patterns.md` | 证明模式与 Pitfalls（rw 安全、field_simp、linarith 等） | ~90 |
-| `nnabla-api.md` | nnabla/nabla 序列差分 API | ~78 |
+| `proof-patterns.md` | 证明模式与 Pitfalls（rw 安全、field_simp、linarith 等） | ~99 |
+| `nnabla-api.md` | nnabla/nabla 序列差分 API（新格式） | ~55 |
 
 ### 项目结构
 
