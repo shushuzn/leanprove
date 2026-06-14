@@ -62,7 +62,7 @@ lemma gamma_it_norm_le (t : ℝ) (ht : 1 ≤ |t|) :
   have h_norm_sq : ‖Gamma (I * (t : ℂ))‖ ^ 2 = Real.pi / |t| / |Real.sinh (Real.pi * t)| := h_sq
   have h_abs_sinh : |Real.sinh (Real.pi * t)| = Real.sinh (Real.pi * |t|) := by
     have h1 : Real.sinh (Real.pi * t) = Real.sinh (Real.pi * |t|) ∨ Real.sinh (Real.pi * t) = -Real.sinh (Real.pi * |t|) := by
-      cases' le_total 0 t with h h
+      rcases le_total 0 t with h | h
       · left
         rw [abs_of_nonneg h]
       · right
