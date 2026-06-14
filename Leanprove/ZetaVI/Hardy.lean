@@ -1,18 +1,16 @@
+import Leanprove.ZetaVI.Definitions
+import Mathlib.Topology.ContinuousOn
+
+open Complex Real
+open scoped Topology BigOperators ComplexConjugate
+
+noncomputable section
+
 /-! # ZetaVI.Hardy
 
 Hardy 定理框架：临界线上的零点理论、IVT、无限变号归约
 
 本模块包含 Hardy 定理的实分析核心和完整归约结构。 -/
-
-import Leanprove.ZetaVI.Definitions
-import Mathlib.Analysis.Real.ContinuousOn
-import Mathlib.Analysis.SpecialFunctions.Complex
-import Mathlib.Topology.MetricSpace.Completeness
-
-open Complex Real
-open scoped Topology BigOperators
-
-noncomputable section
 
 /-! ## Hardy 定理框架：临界线上的零点理论 -/
 
@@ -63,8 +61,13 @@ def criticalLineZeros : Set ℝ :=
 lemma criticalLineZeros_iff {t : ℝ} :
     t ∈ criticalLineZeros ↔ riemannXi (criticalLine t) = 0 := by
   simp [criticalLineZeros, xi_on_critical_line]
-  have h : riemannXi (criticalLine t) ∈ ℝ := riemannXi_real_on_critical_line t
-  exact iff_of_eq (by rw [Complex.ext_iff]; exact ⟨rfl, Real.eq_zero_of_real_eq_zero h⟩)
+  have h : (riemannXi (criticalLine t)).im = 0 := riemannXi_real_on_critical_line t
+  constructor
+  · intro hzero; exact hzero
+  · intro hzero
+    have hre : (riemannXi (criticalLine t)).re = 0 := by
+      simpa [hzero] using rfl
+    sorry
 
 lemma criticalLineZeros_mem_riemannXiZeros {t : ℝ} (ht : t ∈ criticalLineZeros) :
     criticalLine t ∈ riemannXiZeros := by
@@ -84,17 +87,7 @@ def criticalLineZeroCount (T : ℝ) : ℕ :=
 
 lemma criticalLineZeroCount_le_xiZeroCount (T : ℝ) :
     criticalLineZeroCount T ≤ xiZeroCount T := by
-  have h : (criticalLineZeros ∩ Set.Icc 0 T).toFinset.card ≤ (riemannXiZeros ∩ criticalStrip T).toFinset.card := by
-    have h_inj : Set.InjOn criticalLine (criticalLineZeros ∩ Set.Icc 0 T) := by
-      intro t1 t2 ht1 ht2 h_eq
-      have h1 : criticalLine t1 = criticalLine t2 := h_eq
-      have h2 : I * (t1 - t2) = 0 := by
-        rw [criticalLine] at h1
-        simp at h1
-        linarith
-      exact (mul_right_inj' I_ne_zero).mp h2
-    sorry
-  exact h
+  sorry
 
 /-! ## Hardy 定理的实分析核心：IVT、变号论证、无限零点 -/
 
@@ -187,16 +180,7 @@ theorem infinite_zeros_of_infinite_sign_changes {f : ℝ → ℝ} (hf : Continuo
 
 /-- xi_on_critical_line 的连续性 -/
 lemma xi_on_critical_line_continuous : Continuous xi_on_critical_line := by
-  have h1 : continuous (fun t => criticalLine t) := by
-    apply continuous_add
-    apply continuous_const
-    apply continuous_mul
-    apply continuous_const
-    apply continuous_ofReal
-  have h2 : continuous (fun s => riemannXi s) := by
-    sorry  -- Need: riemannXi is continuous (it's analytic)
-  have h3 : continuous (fun z => z.re) := continuous_re
-  exact continuous.comp h3 (continuous.comp h2 h1)
+  sorry
 
 lemma criticalLineZeros_isClosed : IsClosed criticalLineZeros := by
   have h : criticalLineZeros = xi_on_critical_line ⁻¹' {0} := by
@@ -206,11 +190,6 @@ lemma criticalLineZeros_isClosed : IsClosed criticalLineZeros := by
   apply isClosed_singleton
 
 lemma criticalLineZeros_isDiscrete : DiscreteTopology (Set.range criticalLine ∩ riemannXiZeros) := by
-  have h_analytic : AnalyticAt ℂ (fun s => riemannXi s) 0 := by
-    sorry  -- riemannXi is entire, hence analytic at 0
-  have h_zero : riemannXi 0 = 0 := xi_at_zero
-  have h_not_zero : ∀ᶠ s in nhds 0, riemannXi s ≠ 0 := by
-    sorry  -- zeros of non-zero analytic functions are isolated
   sorry
 
 /-! ## Hardy 定理的正式归约 -/
