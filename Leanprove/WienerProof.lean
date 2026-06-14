@@ -723,6 +723,7 @@ lemma Filter.EventuallyEq.summable {u v : ℕ → ℝ} (h : u =ᶠ[atTop] v) (hu
 lemma summable_congr_ae {u v : ℕ → ℝ} (huv : u =ᶠ[atTop] v) : Summable u ↔ Summable v := by
   constructor <;> intro h <;> simp [huv.summable, huv.symm.summable, h]
 
+/-- BoundedAtFilter 加常数保持有界 -/
 lemma BoundedAtFilter.add_const {u : ℕ → ℝ} {c : ℝ} :
     BoundedAtFilter atTop (fun n => u n + c) ↔ BoundedAtFilter atTop u := by
   have : u = fun n => (u n + c) + (-c) := by ext n ; ring
@@ -731,6 +732,7 @@ lemma BoundedAtFilter.add_const {u : ℕ → ℝ} {c : ℝ} :
   on_goal 1 => rw [this]
   all_goals { exact h.add (const_boundedAtFilter _ _) }
 
+/-- BoundedAtFilter 平移保持有界 -/
 lemma BoundedAtFilter.comp_add {u : ℕ → ℝ} {N : ℕ} :
     BoundedAtFilter atTop (fun n => u (n + N)) ↔ BoundedAtFilter atTop u := by
   simp only [BoundedAtFilter, isBigO_iff, norm_eq_abs, Pi.one_apply, one_mem,
@@ -743,6 +745,7 @@ lemma BoundedAtFilter.comp_add {u : ℕ → ℝ} {N : ℕ} :
 
 /-! #### Chebyshev bound for complex-valued functions -/
 
+/-- Chebyshev 有界 ⇒ 累积和 BigO -/
 lemma cheby.bigO (h : cheby f) : cumsum (‖f ·‖) =O[atTop] ((↑) : ℕ → ℝ) := by
   have l1 : 0 ≤ cumsum (‖f ·‖) := cumsum_nonneg (fun _ => norm_nonneg _)
   obtain ⟨C, hC⟩ := h
@@ -751,10 +754,12 @@ lemma cheby.bigO (h : cheby f) : cumsum (‖f ·‖) =O[atTop] ((↑) : ℕ → 
   rw [Real.norm_eq_abs, abs_eq_self.mpr (l1 n)]
   simpa using hC n
 
+/-- Fourier 极限（辅助一）-/
 lemma limiting_fourier_lim1_aux (hcheby : cheby f) (hx : 0 < x) (C : ℝ) (hC : 0 ≤ C) :
     Summable fun n ↦ ‖f n‖ / ↑n * (C / (1 + (1 / (2 * π) * Real.log (↑n / x)) ^ 2)) := by
   sorry
 
+/-- Fourier 极限（引理一）-/
 theorem limiting_fourier_lim1 (hcheby : cheby f) (ψ : CS 2 ℂ) (hx : 0 < x) :
     Tendsto (fun σ' : ℝ ↦
         ∑' n, _root_.term f σ' n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x))) (𝓝[>] 1)
@@ -775,6 +780,7 @@ theorem limiting_fourier_lim1 (hcheby : cheby f) (ψ : CS 2 ℂ) (hx : 0 < x) :
     simp only [norm_mul, nterm_eq_norm_term]
     sorry
 
+/-- Fourier 极限（引理三）-/
 theorem limiting_fourier_lim3 (hG : ContinuousOn G {s | 1 ≤ s.re}) (ψ : CS 2 ℂ) (hx : 1 ≤ x) :
     Tendsto (fun σ' : ℝ ↦ ∫ t : ℝ, G (σ' + t * I) * ψ t * x ^ (t * I)) (𝓝[>] 1)
       (𝓝 (∫ t : ℝ, G (1 + t * I) * ψ t * x ^ (t * I))) := by
