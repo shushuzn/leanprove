@@ -7,7 +7,7 @@ Authors: (project contributors)
 import Mathlib.NumberTheory.LSeries.RiemannZeta
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
-import Leanprove.ZetaIVE
+import Leanprove.ZetaAnalyticContinuation
 
 open Complex Real
 open scoped Topology BigOperators ComplexConjugate

@@ -6,7 +6,7 @@
 
 | 文件 | sorry 数 | 状态 |
 |------|----------|------|
-| WienerProof.lean | 29 | ❌ 编译阻塞（预存错误，暂未统计） |
+| WienerIkehara.lean | 29 | ❌ 编译阻塞（预存错误，暂未统计） |
 | ZetaVI/Definitions.lean | 11 | 🔄 `criticalStrip_bounded/isCompact` 已证明 |
 | ZetaVI/Hardy.lean | 4 | 🔄 框架已建，API 兼容性问题
 

@@ -9,7 +9,7 @@ Wiener-Ikehara Tauberian Theorem and application to PNT.
 Ported from PrimeNumberTheoremAnd/Wiener.lean (Kontorovich et al.)
 -/
 import Leanprove.Sobolev
-import Leanprove.WienerProof
+import Leanprove.WienerIkehara
 import Mathlib.Analysis.Fourier.FourierTransform
 import Mathlib.NumberTheory.LSeries.Dirichlet
 import Mathlib.NumberTheory.LSeries.Nonvanishing
@@ -72,7 +72,7 @@ theorem vonMangoldt_cheby : chebyReal vonMangoldt := by
     Chebyshev.psi_le_const_mul_self (by positivity)
   exact hle.trans hpsi
 
-/-- **Wiener-Ikehara Tauberian Theorem** (proved via WienerProof.lean). -/
+/-- **Wiener-Ikehara Tauberian Theorem** (proved via WienerIkehara.lean). -/
 theorem WienerIkeharaTheorem
     (f : ℕ → ℝ) (hf_pos : ∀ n, 0 ≤ f n)
     (hf_sum : ∀ (σ : ℝ), 1 < σ → Summable (fun n : ℕ => f n / (n : ℝ) ^ σ))

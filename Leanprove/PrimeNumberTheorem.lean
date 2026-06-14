@@ -13,7 +13,7 @@ import Mathlib.Analysis.Analytic.Constructions
 import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent
 import Mathlib.Analysis.Asymptotics.Lemmas
-import Leanprove.ZetaIVE
+import Leanprove.ZetaAnalyticContinuation
 import Leanprove.Tauberian
 
 open Chebyshev Asymptotics

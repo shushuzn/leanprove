@@ -2,7 +2,7 @@
 
 > 前瞻性规划与战略路径。项目现状与完整定理清单见 [README.md](README.md)。
 > 
-> **格式规范已更新**：全部 22 个 .lean 文件已添加版权头和 docstring，风格完全遵循 STYLE.md。
+> **格式规范已更新**：全部文件已添加版权头和 docstring，按 mathlib 命名规范重命名。`PNTVA`→`PrimeNumberTheorem`, `WienerProof`→`WienerIkehara`, `ZetaIVB/IVD/IVE`→`ZetaUpperBound/EulerProduct/ZetaAnalyticContinuation`。
 
 ---
 

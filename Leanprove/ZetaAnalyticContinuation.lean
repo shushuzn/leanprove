@@ -8,7 +8,7 @@ Authors: (project contributors)
 import Mathlib.NumberTheory.LSeries.Nonvanishing
 import Mathlib.NumberTheory.LSeries.HurwitzZetaValues
 import Mathlib.NumberTheory.Harmonic.ZetaAsymp
-import Leanprove.ZetaIVD
+import Leanprove.EulerProduct
 
 open Complex Filter Nat
 open scoped Topology Real

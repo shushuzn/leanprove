@@ -8,7 +8,7 @@ Authors: (project contributors)
 import Mathlib.NumberTheory.EulerProduct.DirichletLSeries
 import Mathlib.NumberTheory.PrimeCounting
 import Mathlib.Analysis.SpecialFunctions.Pow.Complex
-import Leanprove.ZetaIVB
+import Leanprove.ZetaUpperBound
 
 open Complex Filter Nat
 open scoped Topology BigOperators

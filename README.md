@@ -232,13 +232,13 @@ leanprove/
 │   ├── PrimeReciprocals.lean         # 阶段 I  : 素数倒数和 (1 定理)
 │   ├── Dirichlet.lean                # 阶段 III: 等差数列素数 (13 定理)
 │   ├── VonMangoldt.lean              # 阶段 III-IV: VonMangoldt + Mertens (47 定理)
-│   ├── ZetaIVB.lean                  # 阶段 IV-B: ζ 上界 (5 引理, 0 sorry)
-│   ├── ZetaIVD.lean                  # 阶段 IV-D: Euler 乘积 (5 定理, 0 sorry)
-│   ├── ZetaIVE.lean                  # 阶段 IV-E: 解析延拓 (16 定理, 0 sorry)
-│   ├── PNTVA.lean                    # 阶段 V-A/B: PNT 等价形式 (13 定理, 0 sorry)
+│   ├── ZetaUpperBound.lean            # 阶段 IV-B: ζ 上界 (5 引理, 0 sorry)
+│   ├── EulerProduct.lean           # 阶段 IV-D: Euler 乘积 (5 定理, 0 sorry)
+│   ├── ZetaAnalyticContinuation.lean # 阶段 IV-E: 解析延拓 (16 定理, 0 sorry)
+│   ├── PrimeNumberTheorem.lean       # 阶段 V-A/B: PNT 等价形式 (13 定理, 0 sorry)
 │   ├── Sobolev.lean                  # Sobolev 空间: CS, W1, W21 (4 定理)
 │   ├── Tauberian.lean                # Wiener-Ikehara + PNT (13 定理, 0 sorry, 0 axiom)
-│   ├── WienerProof.lean              # Wiener-Ikehara 完整证明 (113 引理, 类型修复进行中)
+│   ├── WienerIkehara.lean            # Wiener-Ikehara 完整证明 (113 引理, 类型修复进行中)
 │   ├── ApiCheck.lean                 # Mathlib API 验证 (6 定理)
 │   ├── Tests.lean                    # 测试与验证
 │   ├── ZetaVI.lean                   # 阶段 VI 入口：聚合子模块
