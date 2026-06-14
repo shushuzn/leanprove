@@ -9,3 +9,6 @@ build_now.txt
 tmp_fix.py
 tmp/
 .mimocode/
+
+# Task decomposition files
+.tasks/
