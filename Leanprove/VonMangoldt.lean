@@ -26,29 +26,48 @@ notation "ψ" => Chebyshev.psi
 notation "θ" => Chebyshev.theta
 
 /-! === 第一部分: 基本性质 (8定理) === -/
+/-- Λ(1) = 0 -/
 theorem vonMangoldt_one : vonMangoldt 1 = 0 := vonMangoldt_apply_one
+/-- Von Mangoldt 函数非负 -/
 theorem vonMangoldt_nonneg' (n : ℕ) : 0 ≤ vonMangoldt n := vonMangoldt_nonneg
+/-- Λ(p) = log p（素数 p）-/
 theorem vonMangoldt_prime (p : ℕ) (hp : p.Prime) : vonMangoldt p = Real.log p := vonMangoldt_apply_prime hp
+/-- Λ(n^k) = Λ(n)（k ≠ 0）-/
 theorem vonMangoldt_pow' (n k : ℕ) (hk : k ≠ 0) : vonMangoldt (n ^ k) = vonMangoldt n := vonMangoldt_apply_pow hk
+/-- Λ(n) ≠ 0 ↔ n 是素数的幂 -/
 theorem vonMangoldt_nonzero_iff (n : ℕ) : vonMangoldt n ≠ 0 ↔ IsPrimePow n := vonMangoldt_ne_zero_iff
+/-- Λ(n) > 0 ↔ n 是素数的幂 -/
 theorem vonMangoldt_pos_iff' (n : ℕ) : 0 < vonMangoldt n ↔ IsPrimePow n := vonMangoldt_pos_iff
+/-- Λ(n) = 0 ↔ n 不是素数的幂 -/
 theorem vonMangoldt_zero_iff (n : ℕ) : vonMangoldt n = 0 ↔ ¬IsPrimePow n := vonMangoldt_eq_zero_iff
+/-- Λ(n) ≤ log n -/
 theorem vonMangoldt_le_log' (n : ℕ) : vonMangoldt n ≤ Real.log (n : ℝ) := ArithmeticFunction.vonMangoldt_le_log
 
 /-! === 第二部分: Dirichlet 卷积 (6定理) === -/
+/-- ∑_{d|n} Λ(d) = log n -/
 theorem vonMangoldt_sum_divisors (n : ℕ) : ∑ d ∈ n.divisors, vonMangoldt d = Real.log (n : ℝ) := vonMangoldt_sum
+/-- 卷积恒等式: Λ * ζ = log -/
 theorem vonMangoldt_mul_zeta_eq_log : vonMangoldt * ↑(ArithmeticFunction.zeta) = ArithmeticFunction.log := vonMangoldt_mul_zeta
+/-- 卷积恒等式: ζ * Λ = log -/
 theorem zeta_mul_vonMangoldt_eq_log : (ArithmeticFunction.zeta : ArithmeticFunction ℝ) * vonMangoldt = ArithmeticFunction.log := zeta_mul_vonMangoldt
+/-- 卷积恒等式: log * μ = Λ -/
 theorem log_mul_moebius_eq_vonMangoldt' : ArithmeticFunction.log * ↑(ArithmeticFunction.moebius) = vonMangoldt := log_mul_moebius_eq_vonMangoldt
+/-- 卷积恒等式: μ * log = Λ -/
 theorem moebius_mul_log_eq_vonMangoldt' : (ArithmeticFunction.moebius : ArithmeticFunction ℝ) * ArithmeticFunction.log = vonMangoldt := moebius_mul_log_eq_vonMangoldt
+/-- ∑_{d|n} μ(d)log(d) = -Λ(n) -/
 theorem sum_moebius_mul_log_eq_vonMangoldt' (n : ℕ) : (∑ d ∈ n.divisors, (ArithmeticFunction.moebius d : ℝ) * Real.log (d : ℝ)) = -vonMangoldt n := sum_moebius_mul_log_eq
 
 /-! === 第三部分: Chebyshev ψ 函数 (4定理) === -/
+/-- ψ(x) = ∑_{n≤x} Λ(n) -/
 theorem psi_eq_sum_vonMangoldt_Icc (x : ℝ) : ψ x = ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, vonMangoldt n := Chebyshev.psi_eq_sum_Icc x
+/-- ψ(n) 的 ∑ 表达式 -/
 theorem psi_nat_eq_sum (n : ℕ) : ψ (n : ℝ) = ∑ k ∈ Finset.Ioc 0 n, vonMangoldt k := by simp [Chebyshev.psi]
+/-- ψ(n) 的 Icc 求和形式 -/
 theorem psi_nat_eq_sum_Icc (n : ℕ) : ψ (n : ℝ) = ∑ k ∈ Finset.Icc 0 n, vonMangoldt k := by rw [Chebyshev.psi_eq_sum_Icc]; simp
+/-- Λ(0) = 0 -/
 theorem vonMangoldt_zero : vonMangoldt 0 = 0 := by
   rw [show vonMangoldt 0 = 0 from by norm_num [ArithmeticFunction.vonMangoldt]]
+/-- ∑_{k=1}^{n} Λ(k) = ψ(n) -/
 theorem sum_vonMangoldt_eq_psi (n : ℕ) (hn : 0 < n) : ∑ k ∈ Finset.Icc 1 n, vonMangoldt k = ψ (n : ℝ) := by
   rw [psi_nat_eq_sum_Icc]
   have : Finset.Icc 0 n = insert 0 (Finset.Icc 1 n) := by
@@ -56,12 +75,16 @@ theorem sum_vonMangoldt_eq_psi (n : ℕ) (hn : 0 < n) : ∑ k ∈ Finset.Icc 1 n
   rw [this, Finset.sum_insert (by simp), vonMangoldt_zero, zero_add]
 
 /-! === 第四部分: Chebyshev 界 (3定理) === -/
+/-- |ψ(x)| ≤ (log 4 + 4)·x（x ≥ 0）-/
 theorem psi_bounded (x : ℝ) (hx : 0 ≤ x) : |ψ x| ≤ (Real.log 4 + 4) * x := by
   rw [abs_of_nonneg (Chebyshev.psi_nonneg x)]; exact Chebyshev.psi_le_const_mul_self hx
+/-- ψ(x) - θ(x) ≤ 2√x·log x（x ≥ 1）-/
 theorem psi_sub_theta_le' (x : ℝ) (hx : 1 ≤ x) : ψ x - θ x ≤ 2 * Real.sqrt x * Real.log x := Chebyshev.psi_sub_theta_le hx
+/-- |ψ(x) - θ(x)| ≤ 2√x·log x（x ≥ 1）-/
 theorem abs_psi_sub_theta_le' (x : ℝ) (hx : 1 ≤ x) : |ψ x - θ x| ≤ 2 * Real.sqrt x * Real.log x := Chebyshev.abs_psi_sub_theta_le_sqrt_mul_log hx
 
 /-! === 第五部分: 分析引理 (6引理) === -/
+/-- log √p < √p 的引理 -/
 lemma log_lt_two_sqrt {p : ℝ} (hp : 1 ≤ p) : Real.log p < 2 * Real.sqrt p := by
   have hsqrt_pos : 0 < Real.sqrt p := Real.sqrt_pos.mpr (by linarith)
   have h_log_sqrt : Real.log (Real.sqrt p) ≤ Real.sqrt p - 1 := Real.log_le_sub_one_of_pos hsqrt_pos
