@@ -57,12 +57,14 @@ open scoped Nat.Prime
 
 
 -- π(x) 的下界 (简化形式)
+/-- π(x) 的 Chebyshev 下界（简化形式）-/
 theorem pi_lower_bound_simple (n : Nat) (_hn : 2 ≤ n) :
     (n * log 2 - log (n + 1)) / log n ≤ π n :=
   Chebyshev.pi_ge n
 
 
 -- π(x) 的上界 (简化形式)
+/-- π(x) 的 Chebyshev 上界（简化形式）-/
 theorem pi_upper_bound_simple (n : Nat) (hn : 2 ≤ n) :
     π n ≤ log 4 * n / log (Real.sqrt n) + Real.sqrt n := by
   have h1 : (1 : ℝ) < n := by exact_mod_cast hn
@@ -72,6 +74,7 @@ theorem pi_upper_bound_simple (n : Nat) (hn : 2 ≤ n) :
 
 -- π(x) → ∞ (由 Bertrand 假设可得)
 -- 这是最基本的渐近性质
+/-- π(x) → ∞（Bertrand 假设推论）-/
 theorem pi_tendsto_top :
     Filter.Tendsto π Filter.atTop Filter.atTop :=
   Nat.tendsto_primeCounting

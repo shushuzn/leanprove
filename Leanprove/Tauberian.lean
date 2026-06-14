@@ -31,6 +31,7 @@ set_option maxHeartbeats 400000
 /-- Chebyshev-type bound for real-valued `f` (no norms needed since `0 ≤ f`). -/
 def chebyWithReal (C : ℝ) (f : ℕ → ℝ) : Prop := ∀ n, cumsum f n ≤ C * n
 
+/-- Chebyshev 有界条件（实值版本）-/
 def chebyReal (f : ℕ → ℝ) : Prop := ∃ C, chebyWithReal C f
 
 /-- `ntermReal`: real-valued term of the Dirichlet series for `f : ℕ → ℝ`. -/

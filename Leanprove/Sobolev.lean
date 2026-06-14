@@ -97,6 +97,7 @@ end W1
 noncomputable def W21norm (f : W21) : ℝ :=
   (∫ x : ℝ, ‖f x‖) + (∫ x : ℝ, ‖iteratedDeriv 1 f x‖) + (∫ x : ℝ, ‖iteratedDeriv 2 f x‖)
 
+/-- W21 范数非负 -/
 lemma W21norm_nonneg (f : W21) : 0 ≤ W21norm f := by
   dsimp [W21norm]
   have h₁ : 0 ≤ ∫ (x : ℝ), ‖(f : ℝ → ℂ) x‖ :=
