@@ -426,25 +426,30 @@ lemma W21_integrable_fourier (ψ : W21) (hc : c ≠ 0) :
     exact h_bound u
   exact h_int.mono h_meas h_bound'
 
+/-- 限制区域上的 Fourier 可积性 -/
 lemma W21_integrable_fourier_restrict (ψ : W21) (hc : c ≠ 0) (s : Set ℝ) :
     IntegrableOn (fun u ↦ 𝓕 (ψ : ℝ → ℂ) (u / c)) s :=
   (W21_integrable_fourier ψ hc).restrict
 
 /-! #### Asymptotic estimates for the discrete analysis -/
 
+/-- 线性函数趋于无穷 -/
 lemma tendsto_mul_add_atTop {a : ℝ} (ha : 0 < a) (b : ℝ) :
     Tendsto (fun x => a * x + b) atTop atTop :=
   tendsto_atTop_add_const_right _ b (tendsto_id.const_mul_atTop ha)
 
+/-- 常数趋于无穷是小 O -/
 lemma isLittleO_const_of_tendsto_atTop {α : Type*} [Preorder α] (a : ℝ) {f : α → ℝ}
     (hf : Tendsto f atTop atTop) : (fun _ => a) =o[atTop] f := by
   simp [tendsto_norm_atTop_atTop.comp hf]
 
+/-- 线性函数是平方的小 O -/
 lemma isLittleO_mul_add_sq (a b : ℝ) : (fun x => a * x + b) =o[atTop] (fun x => x ^ 2) := by
   apply IsLittleO.add
   · apply IsLittleO.const_mul_left ; simpa using isLittleO_pow_pow_atTop_of_lt (𝕜 := ℝ) one_lt_two
   · apply isLittleO_const_of_tendsto_atTop _ <| tendsto_pow_atTop (by linarith)
 
+/-- 对数乘加是大 O -/
 lemma log_mul_add_isBigO_log {a : ℝ} (ha : 0 < a) (b : ℝ) :
     (fun x => Real.log (a * x + b)) =O[atTop] Real.log := by
   apply IsBigO.of_bound (2 : ℕ)
@@ -459,6 +464,7 @@ lemma log_mul_add_isBigO_log {a : ℝ} (ha : 0 < a) (b : ℝ) :
   simpa [abs_eq_self.mpr l2, abs_eq_self.mpr l3, Real.log_pow] using
     Real.log_le_log (by linarith) l1
 
+/-- 对数乘加大 O（反向版本）-/
 lemma isBigO_log_mul_add {a : ℝ} (ha : 0 < a) (b : ℝ) :
     Real.log =O[atTop] (fun x => Real.log (a * x + b)) := by
   refine IsBigO.of_bound 2 ?_
@@ -484,10 +490,12 @@ lemma isBigO_log_mul_add {a : ℝ} (ha : 0 < a) (b : ℝ) :
       Real.log_mul (by positivity) (by positivity), Real.log_inv]; ring
   linarith [neg_le_abs (Real.log a)]
 
+/-- 对数比的大 O -/
 lemma log_isbigo_log_div {d : ℝ} (hb : 0 < d) :
     (fun n ↦ Real.log n) =O[atTop] (fun n ↦ Real.log (n / d)) := by
   convert isBigO_log_mul_add (inv_pos.mpr hb) 0 using 1; simp only [add_zero]; field_simp
 
+/-- BigO 与小 O 相加保持 BigO -/
 lemma Asymptotics.IsBigO.add_isLittleO_right {f g : ℝ → ℝ} (h : g =o[atTop] f) :
     f =O[atTop] (f + g) := by
   rw [isLittleO_iff] at h ; specialize h (c := 2⁻¹) (by norm_num)
@@ -500,10 +508,12 @@ lemma Asymptotics.IsBigO.add_isLittleO_right {f g : ℝ → ℝ} (h : g =o[atTop
        _ ≤ |(|f x| - |g x|)| := le_abs_self _
        _ ≤ _ := by rw [← sub_neg_eq_add, ← abs_neg (g x)] ; exact abs_abs_sub_abs_le (f x) (-g x)
 
+/-- BigO 的平方保持 BigO -/
 lemma Asymptotics.IsBigO.sq {α : Type*} [Preorder α] {f g : α → ℝ} (h : f =O[atTop] g) :
     (fun n ↦ f n ^ 2) =O[atTop] (fun n => g n ^ 2) := by
   simpa [pow_two] using h.mul h
 
+/-- 对数平方的大 O -/
 lemma log_sq_isbigo_mul {a b : ℝ} (hb : 0 < b) :
     (fun x ↦ Real.log x ^ 2) =O[atTop] (fun x ↦ a + Real.log (x / b) ^ 2) := by
   apply (log_isbigo_log_div hb).sq.trans ; simp_rw [add_comm a]
@@ -511,6 +521,7 @@ lemma log_sq_isbigo_mul {a b : ℝ} (hb : 0 < b) :
   exact (tendsto_pow_atTop (by norm_num : (2 : ℕ) ≠ 0)).comp <|
     tendsto_log_atTop.comp <| tendsto_id.atTop_div_const hb
 
+/-- 对数差的上界 -/
 lemma log_add_one_sub_log_le {x : ℝ} (hx : 0 < x) : Real.log (x + 1) - Real.log x ≤ x⁻¹ := by
   rw [← Real.log_div (by linarith) (by linarith), show (x + 1) / x = 1 + x⁻¹ by field_simp]
   have h : 0 < 1 + x⁻¹ := by positivity
@@ -519,6 +530,7 @@ lemma log_add_one_sub_log_le {x : ℝ} (hx : 0 < x) : Real.log (x + 1) - Real.lo
     linarith
   exact h2
 
+/-- 对数差 nabla 的主要估计 -/
 lemma nabla_log_main : (fun x : ℝ => Real.log (x + 1) - Real.log x) =O[atTop] fun x ↦ 1 / x := by
   apply IsBigO.of_bound 1
   filter_upwards [eventually_gt_atTop 0] with x hx
@@ -530,6 +542,7 @@ lemma nabla_log_main : (fun x : ℝ => Real.log (x + 1) - Real.log x) =O[atTop] 
   rw [show (x : ℝ)⁻¹ = 1 / x from (one_div x).symm] at h2
   linarith
 
+/-- 对数差 nabla 的一般形式 -/
 lemma nabla_log {b : ℝ} (hb : 0 < b) :
     (fun x : ℝ => Real.log ((x + 1) / b) - Real.log (x / b)) =O[atTop] (fun x => 1 / x) := by
   have h : (fun x => Real.log ((x + 1) / b) - Real.log (x / b)) =ᶠ[atTop]
@@ -539,10 +552,12 @@ lemma nabla_log {b : ℝ} (hb : 0 < b) :
     ring
   exact h.isBigO.trans nabla_log_main
 
+/-- 对数加减的大 O -/
 lemma log_add_div_isBigO_log (a : ℝ) {b : ℝ} (hb : 0 < b) :
     (fun x ↦ Real.log ((x + a) / b)) =O[atTop] fun x ↦ Real.log x := by
   convert log_mul_add_isBigO_log (inv_pos.mpr hb) (a / b) using 3 ; ring
 
+/-- nnabla 乘以对数平方的渐近估计 -/
 lemma nnabla_mul_log_sq (a : ℝ) {b : ℝ} (hb : 0 < b) :
     (fun x : ℝ => x * (a + Real.log (x / b) ^ 2) - (x - 1) * (a + Real.log ((x - 1) / b) ^ 2)) =O[atTop] (fun x => Real.log x ^ 2) := by
   have h_expand : ∀ x, x * (a + Real.log (x / b) ^ 2) - (x - 1) * (a + Real.log ((x - 1) / b) ^ 2) =
