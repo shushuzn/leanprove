@@ -370,12 +370,14 @@ lemma continuous_FourierIntegral (ψ : CS 2 ℂ) : Continuous (𝓕 (ψ : ℝ �
     (innerSL ℝ).continuous₂
     (ψ.h1.continuous.integrable_of_hasCompactSupport ψ.h2)
 
+/-- 衰减估计辅助引理 -/
 lemma decay_bounds_aux {f : ℝ → ℂ} (hf : AEStronglyMeasurable f volume)
     (h : ∀ t, ‖f t‖ ≤ A * (1 + t ^ 2)⁻¹) : ∫ t, ‖f t‖ ≤ π * A := by
   have l1 : Integrable (fun x ↦ A * (1 + x ^ 2)⁻¹) := integrable_inv_one_add_sq.const_mul A
   simp_rw [← integral_univ_inv_one_add_sq, mul_comm, ← integral_const_mul]
   exact integral_mono (l1.mono' hf (Eventually.of_forall h)).norm l1 h
 
+/-- W21 衰减估计 -/
 lemma decay_bounds_W21 (f : W21) (hA : ∀ t, ‖f t‖ ≤ A / (1 + t ^ 2))
     (hA' : ∀ t, ‖deriv (deriv f) t‖ ≤ A / (1 + t ^ 2)) (u) :
     ‖𝓕 (f : ℝ → ℂ) u‖ ≤ (π + 1 / (4 * π)) * A / (1 + u ^ 2) := by
@@ -399,6 +401,7 @@ lemma decay_bounds_W21 (f : W21) (hA : ∀ t, ‖f t‖ ≤ A / (1 + t ^ 2))
   rw [show (π + 1 / (4 * π)) * A / (1 + u ^ 2) = (π + 1 / (4 * π)) * A * (1 + u ^ 2)⁻¹ from by ring]
   exact h_key.trans (mul_le_mul_of_nonneg_right h_w21 (by positivity))
 
+/-- W21 Fourier 可积性 -/
 lemma W21_integrable_fourier (ψ : W21) (hc : c ≠ 0) :
     Integrable fun u ↦ 𝓕 (ψ : ℝ → ℂ) (u / c) := by
   have h_bound : ∀ u, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ ψ.w21norm * (1 + (c⁻¹ * u) ^ 2)⁻¹ := by
