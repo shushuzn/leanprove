@@ -2,4 +2,10 @@
 /.lake
 *.olean
 *.lock
-/.lake
+build_*.log
+build_*.txt
+build_*.err
+build_now.txt
+tmp_fix.py
+tmp/
+.mimocode/
