@@ -991,16 +991,19 @@ noncomputable def toSchwartz (f : ℝ → ℂ) (h1 : ContDiff ℝ ∞ f)
       (h2.iteratedFDeriv _).norm.mul_left
     simpa using l1.bounded_above_of_compact_support l2
 
+/-- 紧支集函数支撑包含于 Ioi 0 -/
 lemma comp_exp_support0 {Ψ : ℝ → ℂ} (hplus : closure (Function.support Ψ) ⊆ Ioi 0) :
     Ψ =ᶠ[𝓝 0] 0 := by
   sorry
 
+/-- 紧支集函数紧支集性质 -/
 lemma comp_exp_support {Ψ : ℝ → ℂ} (hsupp : HasCompactSupport Ψ)
     (hplus : closure (Function.support Ψ) ⊆ Ioi 0) : HasCompactSupport (fun x : ℝ => Ψ (exp x)) := by
   sorry
 
 /-! #### Smooth Wiener-Ikehara estimates -/
 
+/-- Wiener-Ikehara 光滑辅助 -/
 lemma wiener_ikehara_smooth_aux (l0 : Continuous Ψ) (hsupp : HasCompactSupport Ψ)
     (hplus : closure (Function.support Ψ) ⊆ Ioi 0) (x : ℝ) (hx : 0 < x) :
     ∫ (u : ℝ) in Ioi (-Real.log x), ↑(rexp u) * Ψ (rexp u) = ∫ (y : ℝ) in Ioi (1 / x), Ψ y := by
@@ -1019,6 +1022,7 @@ lemma wiener_ikehara_smooth_aux (l0 : Continuous Ψ) (hsupp : HasCompactSupport 
   have := MeasureTheory.integral_deriv_smul_comp_Ioi l1 l2 l3 l4 l5 l6
   simpa [Real.exp_neg, Real.exp_log hx] using this
 
+/-- Wiener-Ikehara 光滑子引理 -/
 theorem wiener_ikehara_smooth_sub (h1 : Integrable Ψ)
     (hplus : closure (Function.support Ψ) ⊆ Ioi 0) :
     Tendsto (fun x ↦ (↑A * ∫ (y : ℝ) in Ioi x⁻¹, Ψ y) - ↑A * ∫ (y : ℝ) in Ioi 0, Ψ y)
