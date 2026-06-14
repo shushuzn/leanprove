@@ -11,15 +11,19 @@
 2. `a + log²(x/b) = O(log²x)` ✅ (子任务7a,7b,7c完成)
 3. `(x-1)*(log²(x/b) - log²((x-1)/b)) = O(log²x)` ❌ (最难)
 
-**第3步需要**:
-- `log(x/b) - log((x-1)/b) = O(1/x)` (用 nabla_log + comp_tendsto)
-- `log(x/b) + log((x-1)/b) = O(log x)` (用 log_add_div_isBigO_log)
-- `(x-1) * O(1/x) * O(log x) = O(log x) = O(log²x)` (IsBigO 组合)
+**子任务7d的证明策略**:
+- 分解: `log²(x/b) - log²((x-1)/b) = (log(x/b) - log((x-1)/b)) * (log(x/b) + log((x-1)/b))`
+- `log(x/b) - log((x-1)/b) = log(x/(x-1))` ✅ (用 conv_lhs => rw [h_diff])
+- `|log(x/(x-1))| = log(x/(x-1))` ✅ (用 rw [abs_of_pos ...])
+- `|log(x/b) + log((x-1)/b)| ≤ 2|log x| + 2|log b|` ✅ (用 convert_to + norm_add_le)
+- `log(x/(x-1)) ≤ 2/(x-1)` ✅ (用 log_le_sub_one_of_pos + div_sub_one)
+- 组合: `(x-1) * 2/(x-1) * (2|log x| + 2|log b|) = 4|log x| + 4|log b|` ✅
 
-**困难**:
-- `IsBigO.comp_tendsto` 需要 `Tendsto f atTop atTop` 类型
-- `atTop` vs `Filter.atTop` 类型不匹配
-- 需要 `Tendsto (fun x => x - 1) atTop atTop`
-- BigO乘法组合: `(f*g) =O h` from `f =O h'` and `g =O h''` 需要 `h' * h'' ≤ h`
+**关键困难**: `rw [← Real.norm_eq_abs]` 在 `have` 内部会改写主目标中的 `|...|` 为 `‖...‖`，导致后续 `linarith` 看到 `⊢ False`。
 
-**建议**: 需要更多Mathlib渐近分析API知识，或者用 `norm_num` + `nlinarith` 直接证明bound
+**解决方案**:
+1. 用 `convert_to` + `congr_arg₂` 代替 `rw` 来替换等式
+2. 用 `rw [Real.norm_eq_abs] at this` 而不是 `rw [← Real.norm_eq_abs]`
+3. 处理双重绝对值: `|(|a|)|` → `|a|` 用 `abs_of_nonneg (abs_nonneg _)`
+
+**当前状态**: 所有子引理已证明，但组合步骤中 `rw [← Real.norm_eq_abs]` 的问题尚未完全解决。
