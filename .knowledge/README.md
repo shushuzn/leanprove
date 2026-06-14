@@ -8,13 +8,13 @@
 
 | 文件 | 主题 | 行数 |
 |------|------|------|
-| `integral-api.md` | 积分相关 API（integral_mono, Integrable.*, AEStronglyMeasurable） | ~60 |
-| `fourier-api.md` | Fourier 变换 API（fourier_deriv, fourierIntegral_continuous） | ~30 |
-| `contdiff-api.md` | 可微性/连续性 API（ContDiff, HasCompactSupport, CS→W21） | ~40 |
-| `bigo-api.md` | BigO/渐近分析 API（IsBigO.*, 项目自定义引理, 组合模式） | ~180 |
-| `log-api.md` | 对数 API（Real.log 系列, log bound 模式, log BigO 引理） | ~100 |
-| `norm-cast-api.md` | 范数/cast API（norm_real, norm_mul, norm_add_le, cast 模式） | ~80 |
-| `division-api.md` | 除法 API（div_sub_one, one_lt_div, lt_div_iff₀'） | ~30 |
+| `integral-api.md` | 积分相关 API（integral_mono, Integrable.*, AEStronglyMeasurable） | ~93 |
+| `fourier-api.md` | Fourier 变换 API（fourier_deriv, fourierIntegral_continuous） | ~37 |
+| `contdiff-api.md` | 可微性/连续性 API（ContDiff, CS→W21, 三角不等式模式） | ~77 |
+| `bigo-api.md` | BigO/渐近分析 API（IsBigO.*, 项目自定义引理, 组合模式） | ~231 |
+| `log-api.md` | 对数 API（Real.log 系列, log bound 模式, log BigO 引理） | ~110 |
+| `norm-cast-api.md` | 范数/cast API（norm_real, norm_mul, norm_add_le, cast 模式） | ~68 |
+| `division-api.md` | 除法 API（div_sub_one, one_lt_div, lt_div_iff₀'） | ~41 |
 
 ### 模式与 Pitfalls
 

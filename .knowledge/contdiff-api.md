@@ -18,6 +18,7 @@
 |------|------|
 | `HasCompactSupport.deriv hf` | 紧支集函数的导数也是紧支集 |
 | `Continuous.integrable_of_hasCompactSupport hf h` | 紧支集连续函数可积 |
+| `ContDiff.integrable_of_hasCompactSupport hf h` | 紧支集 C^n 函数可积 |
 
 ## CS → W21 嵌入模式
 
@@ -34,4 +35,28 @@ let f : W21 := {
 -- CS 导数可积:
 -- 一阶: (ψ.h1.continuous_deriv (by norm_num)).integrable_of_hasCompactSupport ψ.h2.deriv
 -- 二阶: (ψ.h1.deriv'.continuous_deriv_one).integrable_of_hasCompactSupport ψ.h2.deriv.deriv
+```
+
+## 积分三角不等式模式
+
+**Import**: `Mathlib.MeasureTheory.Integral.Integral` / `Mathlib.Analysis.NormedSpace.Basic`
+**说明**: 积分版的三角不等式 `∫‖f - c*g‖ ≤ ∫‖f‖ + c*∫‖g‖` 需要三步：
+```lean
+-- 1. 点态 bound: ∀ v, ‖f v - c*g v‖ ≤ ‖f v‖ + c*‖g v‖
+-- 2. LHS 可积: Integrable (fun v => ‖f v - c*g v‖)
+-- 3. RHS 可积: Integrable (fun v => ‖f v‖ + c*‖g v‖)
+-- 4. integral_mono
+-- 5. 拆分 RHS: integral_add + integral_mul_const
+```
+
+## norm_add_le 用于实数绝对值
+
+**Import**: `Mathlib.Analysis.NormedSpace.Basic`
+**说明**: `norm_add_le` 给出 `‖a + b‖ ≤ ‖a‖ + ‖b‖`，需转成实数绝对值。
+```lean
+have h : |a + b| ≤ |a| + |b| := by
+  have h_raw := norm_add_le a b      -- ‖a + b‖ ≤ ‖a‖ + ‖b‖
+  rw [Real.norm_eq_abs, Real.norm_eq_abs, Real.norm_eq_abs] at h_raw
+  exact h_raw
+-- ⚠️ 不要用 rw [← Real.norm_eq_abs]（会影响主目标）
 ```
