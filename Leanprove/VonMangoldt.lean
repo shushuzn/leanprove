@@ -27,28 +27,44 @@ notation "θ" => Chebyshev.theta
 
 /-! === 第一部分: 基本性质 (8定理) === -/
 theorem vonMangoldt_one : vonMangoldt 1 = 0 := vonMangoldt_apply_one
+/-- VonMangoldt非负 -/
 theorem vonMangoldt_nonneg' (n : ℕ) : 0 ≤ vonMangoldt n := vonMangoldt_nonneg
+/-- VonMangoldt素数 -/
 theorem vonMangoldt_prime (p : ℕ) (hp : p.Prime) : vonMangoldt p = Real.log p := vonMangoldt_apply_prime hp
+/-- VonMangoldtpow -/
 theorem vonMangoldt_pow' (n k : ℕ) (hk : k ≠ 0) : vonMangoldt (n ^ k) = vonMangoldt n := vonMangoldt_apply_pow hk
+/-- VonMangoldt非零iff -/
 theorem vonMangoldt_nonzero_iff (n : ℕ) : vonMangoldt n ≠ 0 ↔ IsPrimePow n := vonMangoldt_ne_zero_iff
+/-- VonMangoldt正iff -/
 theorem vonMangoldt_pos_iff' (n : ℕ) : 0 < vonMangoldt n ↔ IsPrimePow n := vonMangoldt_pos_iff
+/-- VonMangoldt零iff -/
 theorem vonMangoldt_zero_iff (n : ℕ) : vonMangoldt n = 0 ↔ ¬IsPrimePow n := vonMangoldt_eq_zero_iff
+/-- VonMangoldt小于等于对数 -/
 theorem vonMangoldt_le_log' (n : ℕ) : vonMangoldt n ≤ Real.log (n : ℝ) := ArithmeticFunction.vonMangoldt_le_log
 
 /-! === 第二部分: Dirichlet 卷积 (6定理) === -/
 theorem vonMangoldt_sum_divisors (n : ℕ) : ∑ d ∈ n.divisors, vonMangoldt d = Real.log (n : ℝ) := vonMangoldt_sum
+/-- VonMangoldt积ζ等于对数 -/
 theorem vonMangoldt_mul_zeta_eq_log : vonMangoldt * ↑(ArithmeticFunction.zeta) = ArithmeticFunction.log := vonMangoldt_mul_zeta
+/-- Ζ积vonMangoldt等于对数 -/
 theorem zeta_mul_vonMangoldt_eq_log : (ArithmeticFunction.zeta : ArithmeticFunction ℝ) * vonMangoldt = ArithmeticFunction.log := zeta_mul_vonMangoldt
+/-- 对数积moebius等于vonMangoldt -/
 theorem log_mul_moebius_eq_vonMangoldt' : ArithmeticFunction.log * ↑(ArithmeticFunction.moebius) = vonMangoldt := log_mul_moebius_eq_vonMangoldt
+/-- Moebius积对数等于vonMangoldt -/
 theorem moebius_mul_log_eq_vonMangoldt' : (ArithmeticFunction.moebius : ArithmeticFunction ℝ) * ArithmeticFunction.log = vonMangoldt := moebius_mul_log_eq_vonMangoldt
+/-- 和moebius积对数等于vonMangoldt -/
 theorem sum_moebius_mul_log_eq_vonMangoldt' (n : ℕ) : (∑ d ∈ n.divisors, (ArithmeticFunction.moebius d : ℝ) * Real.log (d : ℝ)) = -vonMangoldt n := sum_moebius_mul_log_eq
 
 /-! === 第三部分: Chebyshev ψ 函数 (4定理) === -/
 theorem psi_eq_sum_vonMangoldt_Icc (x : ℝ) : ψ x = ∑ n ∈ Finset.Icc 0 ⌊x⌋₊, vonMangoldt n := Chebyshev.psi_eq_sum_Icc x
+/-- Ψnat等于和 -/
 theorem psi_nat_eq_sum (n : ℕ) : ψ (n : ℝ) = ∑ k ∈ Finset.Ioc 0 n, vonMangoldt k := by simp [Chebyshev.psi]
+/-- Ψnat等于和Icc -/
 theorem psi_nat_eq_sum_Icc (n : ℕ) : ψ (n : ℝ) = ∑ k ∈ Finset.Icc 0 n, vonMangoldt k := by rw [Chebyshev.psi_eq_sum_Icc]; simp
+/-- VonMangoldt零 -/
 theorem vonMangoldt_zero : vonMangoldt 0 = 0 := by
   rw [show vonMangoldt 0 = 0 from by norm_num [ArithmeticFunction.vonMangoldt]]
+/-- 和vonMangoldt等于ψ -/
 theorem sum_vonMangoldt_eq_psi (n : ℕ) (hn : 0 < n) : ∑ k ∈ Finset.Icc 1 n, vonMangoldt k = ψ (n : ℝ) := by
   rw [psi_nat_eq_sum_Icc]
   have : Finset.Icc 0 n = insert 0 (Finset.Icc 1 n) := by
@@ -58,7 +74,9 @@ theorem sum_vonMangoldt_eq_psi (n : ℕ) (hn : 0 < n) : ∑ k ∈ Finset.Icc 1 n
 /-! === 第四部分: Chebyshev 界 (3定理) === -/
 theorem psi_bounded (x : ℝ) (hx : 0 ≤ x) : |ψ x| ≤ (Real.log 4 + 4) * x := by
   rw [abs_of_nonneg (Chebyshev.psi_nonneg x)]; exact Chebyshev.psi_le_const_mul_self hx
+/-- Ψ差θ小于等于 -/
 theorem psi_sub_theta_le' (x : ℝ) (hx : 1 ≤ x) : ψ x - θ x ≤ 2 * Real.sqrt x * Real.log x := Chebyshev.psi_sub_theta_le hx
+/-- 绝对值ψ差θ小于等于 -/
 theorem abs_psi_sub_theta_le' (x : ℝ) (hx : 1 ≤ x) : |ψ x - θ x| ≤ 2 * Real.sqrt x * Real.log x := Chebyshev.abs_psi_sub_theta_le_sqrt_mul_log hx
 
 /-! === 第五部分: 分析引理 (6引理) === -/
@@ -70,12 +88,14 @@ lemma log_lt_two_sqrt {p : ℝ} (hp : 1 ≤ p) : Real.log p < 2 * Real.sqrt p :=
     _ ≤ 2 * (Real.sqrt p - 1) := by linarith [h_log_sqrt]
     _ < 2 * Real.sqrt p := by linarith [hsqrt_pos]
 
+/-- 平方根除法平方等于rpow -/
 lemma sqrt_div_sq_eq_rpow (p : ℕ) (hp : 0 < p) : Real.sqrt (p : ℝ) / ((p : ℝ) ^ (2 : ℝ)) = (p : ℝ) ^ (-3/2 : ℝ) := by
   have hp_pos : (p : ℝ) > 0 := by exact_mod_cast hp
   calc Real.sqrt (p : ℝ) / ((p : ℝ) ^ (2 : ℝ)) = ((p : ℝ) ^ (1/2 : ℝ)) / ((p : ℝ) ^ (2 : ℝ)) := by rw [Real.sqrt_eq_rpow]
     _ = (p : ℝ) ^ ((1/2 : ℝ) - (2 : ℝ)) := by rw [Real.rpow_sub hp_pos]
     _ = (p : ℝ) ^ (-3/2 : ℝ) := by rw [show (1/2 : ℝ) - (2 : ℝ) = (-3/2 : ℝ) from by ring]
 
+/-- 对数除法平方界小于等于 -/
 lemma log_div_sq_bound_le (p : ℕ) (hp : 2 ≤ p) : Real.log (p : ℝ) / ((p : ℝ) ^ 2) ≤ 2 * ((p : ℝ) ^ (-3/2 : ℝ)) := by
   have hp' : 1 ≤ (p : ℝ) := by exact_mod_cast (show 1 ≤ p from by omega)
   have h_log : Real.log (p : ℝ) < 2 * Real.sqrt (p : ℝ) := log_lt_two_sqrt hp'
@@ -90,6 +110,7 @@ lemma log_div_sq_bound_le (p : ℕ) (hp : 2 ≤ p) : Real.log (p : ℝ) / ((p : 
       _ = 2 * ((p : ℝ) ^ (-3/2 : ℝ)) := by rw [sqrt_div_sq_eq_rpow p (by omega : 0 < p)]
   rw [h2] at h1; linarith
 
+/-- 范围和小于等于tsum的非负 -/
 lemma range_sum_le_tsum_of_nonneg (f : ℕ → ℝ) (h_nonneg : ∀ n, 0 ≤ f n) (h_summable : Summable f) (N : ℕ) :
     ∑ i ∈ Finset.range N, f i ≤ ∑' i, f i := by
   set s := fun n : ℕ => ∑ i ∈ Finset.range n, f i; set a := ∑' i, f i
@@ -115,6 +136,7 @@ lemma range_sum_le_tsum_of_nonneg (f : ℕ → ℝ) (h_nonneg : ∀ n, 0 ≤ f n
   have h_abs_eq : |s n - a| = s n - a := abs_of_nonneg (sub_nonneg.mpr h_sn_ge_a)
   rw [h_abs_eq] at hn_dist; have h_sN_le_sn : s N ≤ s n := h_mono N n hn_ge; nlinarith
 
+/-- Pow除法pow界 -/
 lemma pow_div_pow_bound (p : ℕ) (hp : 2 ≤ p) (k : ℕ) (hk : 2 ≤ k) : (1 : ℝ) / ((p : ℝ) ^ k) ≤ ((1 : ℝ) / 2) ^ (k - 2) * (1 / ((p : ℝ) ^ 2)) := by
   have hp_pos : (p : ℝ) > 0 := by exact_mod_cast (show 0 < p from by omega)
   calc
@@ -141,6 +163,7 @@ lemma geom_sum_bound (N : ℕ) : ∑ j ∈ range (N + 1), ((1 : ℝ) / 2) ^ j �
         have : 0 ≤ ((1 : ℝ) / 2) ^ (N + 1) := by positivity
         linarith
 
+/-- GeomtailIcc界 -/
 lemma geom_tail_Icc_bound (p M : ℕ) (hp : 2 ≤ p) (hM : 2 ≤ M) :
     ∑ k ∈ Finset.Icc 2 M, (1 : ℝ) / ((p : ℝ) ^ k) ≤ 2 / ((p : ℝ) ^ 2) := by
   have hp_pos : (p : ℝ) > 0 := by exact_mod_cast (show 0 < p from by omega)
@@ -175,12 +198,14 @@ lemma geom_tail_Icc_bound (p M : ℕ) (hp : 2 ≤ p) (hM : 2 ≤ M) :
 
 
 -- 辅助引理: Λ(n)/n ≥ 0
+/-- Vm非负 -/
 lemma vm_nonneg (n : ℕ) : 0 ≤ (vonMangoldt n : ℝ) / (n : ℝ) := by
   apply div_nonneg
   · exact_mod_cast ArithmeticFunction.vonMangoldt_nonneg
   · exact_mod_cast (show 0 ≤ n from by omega)
 
 -- 辅助引理: Λ(n)/n ≤ 1（n ≥ 2）
+/-- Vm小于等于一 -/
 lemma vm_le_one {n : ℕ} (hn : 2 ≤ n) : (vonMangoldt n : ℝ) / (n : ℝ) ≤ 1 := by
   have hn_pos : (0 : ℝ) < (n : ℝ) := by exact_mod_cast (show 0 < n from by omega)
   have h_vm := (ArithmeticFunction.vonMangoldt_le_log : (vonMangoldt n : ℝ) ≤ Real.log (n : ℝ))
@@ -201,6 +226,7 @@ def Hpp (mj : ℕ × ℕ) : ℝ :=
 @[simp] lemma Hpp_apply (m j : ℕ) : Hpp (m, j) =
     if Nat.Prime m then Real.log (m : ℝ) / (m : ℝ) ^ (j + 2) else 0 := rfl
 
+/-- Hpp非负 -/
 lemma Hpp_nonneg (mj : ℕ × ℕ) : 0 ≤ Hpp mj := by
   obtain ⟨m, j⟩ := mj
   simp [Hpp_apply]
@@ -210,6 +236,7 @@ lemma Hpp_nonneg (mj : ℕ × ℕ) : 0 ≤ Hpp mj := by
     · positivity
   · exact le_rfl
 
+/-- Hppinner可和 -/
 lemma Hpp_inner_summable (m : ℕ) : Summable (fun j : ℕ => Hpp (m, j)) := by
   simp [Hpp_apply]
   split_ifs with hp
@@ -246,6 +273,7 @@ lemma Hpp_inner_summable (m : ℕ) : Summable (fun j : ℕ => Hpp (m, j)) := by
     exact ⟨_, h_const⟩
   · exact summable_zero
 
+/-- Hppouter可和 -/
 lemma Hpp_outer_summable : Summable (fun m : ℕ => ∑' j : ℕ, Hpp (m, j)) := by
   -- For prime m: inner tsum = (log m)/m² * m/(m-1) = (log m)/(m*(m-1))
   -- For non-prime m: inner tsum = 0
@@ -363,6 +391,7 @@ lemma Hpp_outer_summable : Summable (fun m : ℕ => ∑' j : ℕ, Hpp (m, j)) :=
   -- Final comparison
   exact Summable.of_nonneg_of_le h_inner_nonneg h_bound h_summable_bound
 
+/-- Hpp可和 -/
 lemma Hpp_summable : Summable Hpp := by
   -- summable_prod_of_nonneg: Summable f ↔ (∀ x, Summable (fun y ↦ f(x,y))) ∧ Summable (fun x ↦ ∑' y, f(x,y))
   have h_nonneg : ∀ mj, 0 ≤ Hpp mj := Hpp_nonneg
@@ -370,6 +399,7 @@ lemma Hpp_summable : Summable Hpp := by
   have h_outer : Summable (fun m => ∑' j, Hpp (m, j)) := Hpp_outer_summable
   exact (summable_prod_of_nonneg h_nonneg).mpr ⟨h_inner, h_outer⟩
 
+/-- PrimePowercontribution有界 -/
 theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → |∑ n ∈ Finset.Icc 2 ⌊x⌋₊ with ¬Nat.Prime n, (vonMangoldt n : ℝ) / (n : ℝ)| ≤ C := by
   -- All terms nonneg, so |sum| = sum
   have h_abs : ∀ (x : ℝ), 2 ≤ x →
@@ -767,6 +797,7 @@ lemma conv_identity (N : ℕ) : ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) 
     _ = ∑ n ∈ Finset.Ioc 0 N, (Real.log (n : ℝ)) := by
       simp [ArithmeticFunction.vonMangoldt_mul_zeta]
 
+/-- Decomp和 -/
 lemma decomp_sum (N : ℕ) : (N : ℝ) * ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) =
     ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N / n : ℕ) : ℝ) +
     ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ)) := by
@@ -790,6 +821,7 @@ lemma decomp_sum (N : ℕ) : (N : ℝ) * ∑ n ∈ Finset.Ioc 0 N, (vonMangoldt 
       rw [Finset.sum_add_distrib]
 
 -- 误差项有界: |N/n - ⌊N/n⌋| < 1
+/-- Frac界 -/
 lemma frac_bound (N n : ℕ) (hn : n ≠ 0) : |(N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ)| < 1 := by
   have hpos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
   have hN_mod_eq : (N : ℝ) - ((N / n : ℕ) : ℝ) * (n : ℝ) = ((N % n : ℕ) : ℝ) := by
@@ -815,6 +847,7 @@ lemma frac_bound (N n : ℕ) (hn : n ≠ 0) : |(N : ℝ) / (n : ℝ) - ((N / n :
   exact h_ratio_lt_one
 
 -- ∑ Λ(n)*(N/n - ⌊N/n⌋) ≤ ψ(N)
+/-- Error界 -/
 lemma error_bound (N : ℕ) : |∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) * ((N : ℝ) / (n : ℝ) - ((N / n : ℕ) : ℝ))| ≤ ψ (N : ℝ) := by
   have h_nonneg_vM : ∀ n, 0 ≤ (vonMangoldt n : ℝ) := by
     intro n; exact mod_cast (vonMangoldt_nonneg (n := n))
@@ -856,6 +889,7 @@ lemma error_bound (N : ℕ) : |∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) *
     _ = ψ (N : ℝ) := by rw [psi_nat_eq_sum]
 
 -- ∑ Λ(n)/n - log N 有界
+/-- Vm除法和差对数界 -/
 lemma vm_div_sum_sub_log_bound (N : ℕ) (hN : 2 ≤ N) :
     |∑ n ∈ Finset.Ioc 0 N, (vonMangoldt n : ℝ) / (n : ℝ) - Real.log (N : ℝ)| ≤ Real.log 4 + 7 := by
   have hN_pos : (N : ℝ) > 0 := by exact_mod_cast (show 0 < N from by omega)
@@ -1102,6 +1136,7 @@ theorem mertens_first_theorem_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x →
   rw [h_Ioc_fix] at h_final
   exact h_final
 
+/-- Mertensfirst定理 -/
 theorem mertens_first_theorem : (fun x : ℝ => ∑ p ∈ (Finset.Ioc 1 ⌊x⌋₊).filter Nat.Prime, (Real.log p : ℝ) / (p : ℝ) - Real.log x) =O[atTop] (fun _ : ℝ => (1 : ℝ)) := by
   rcases mertens_first_theorem_bounded with ⟨C, hC⟩
   refine Asymptotics.isBigO_iff.mpr ⟨C, ?_⟩

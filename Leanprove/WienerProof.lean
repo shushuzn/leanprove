@@ -31,14 +31,19 @@ variable {f : ℕ → ℂ} {A a b c d u x y t σ' : ℝ} {ψ Ψ : ℝ → ℂ} {
 
 /-! #### Basic discrete analysis definitions -/
 
+/-- 累积和算子: cumsum u n = Σ_{i<n} u(i) -/
 def cumsum [AddCommMonoid E] (u : ℕ → E) (n : ℕ) : E := ∑ i ∈ Finset.range n, u i
 
+/-- 后向差分算子: ∇u(n) = u(n+1) - u(n) -/
 def nabla [Sub E] (u : ℕ → E) (n : ℕ) : E := u (n + 1) - u n
 
+/-- 前向差分算子: ∇̄u(n) = u(n) - u(n+1) -/
 def nnabla [Sub E] (u : ℕ → E) (n : ℕ) : E := u n - u (n + 1)
 
+/-- 平移 -/
 def shift (u : ℕ → E) (n : ℕ) : E := u (n + 1)
 
+/-- Cumsum非负 -/
 lemma cumsum_nonneg {u : ℕ → ℝ} (hu : ∀ n, 0 ≤ u n) : ∀ n, 0 ≤ cumsum u n :=
   fun _n => Finset.sum_nonneg (fun i _ => hu i)
 
@@ -46,6 +51,7 @@ lemma cumsum_nonneg {u : ℕ → ℝ} (hu : ∀ n, 0 ≤ u n) : ∀ n, 0 ≤ cum
     For `f : ℕ → ℂ` and `σ' : ℝ`, we have `nterm f σ' n = ‖f n‖ / n ^ σ'`. -/
 noncomputable def nterm (f : ℕ → ℂ) (σ' : ℝ) (n : ℕ) : ℝ := if n = 0 then 0 else ‖f n‖ / n ^ σ'
 
+/-- Nterm等于normterm -/
 lemma nterm_eq_norm_term (f : ℕ → ℂ) (σ' : ℝ) (n : ℕ) : nterm f σ' n = ‖term f σ' n‖ := by
   by_cases h : n = 0 <;> simp [nterm, term, h]
 
@@ -53,8 +59,10 @@ lemma nterm_eq_norm_term (f : ℕ → ℂ) (σ' : ℝ) (n : ℕ) : nterm f σ' n
 noncomputable def term (f : ℕ → ℂ) (s : ℂ) (n : ℕ) : ℂ := if n = 0 then 0 else f n / n ^ s
 
 /-- Chebyshev-type bound for complex `f` (using norms). -/
+/-- 带常数的 Chebyshev 有界条件: cumsum ‖f‖_n ≤ C·n -/
 def chebyWith (C : ℝ) (f : ℕ → ℂ) : Prop := ∀ n, cumsum (‖f ·‖) n ≤ C * n
 
+/-- Chebyshev 有界条件: 存在常数 C 满足 chebyWith C f -/
 def cheby (f : ℕ → ℂ) : Prop := ∃ C, chebyWith C f
 
 /-! #### Discrete analysis lemmas (ported from Wiener.lean) -/
@@ -63,9 +71,11 @@ lemma cumsum_succ [AddCommMonoid E] {u : ℕ → E} (n : ℕ) :
     cumsum u (n + 1) = cumsum u n + u n := by
   simp [cumsum, Finset.sum_range_succ]
 
+/-- 负cumsum -/
 lemma neg_cumsum [AddCommGroup E] {u : ℕ → E} : -(cumsum u) = cumsum (-u) :=
   funext (fun n => by simp [cumsum])
 
+/-- 负nabla -/
 lemma neg_nabla [Ring E] {u : ℕ → E} : -(nabla u) = nnabla u := by
   ext n ; simp [nabla, nnabla]
 
@@ -76,14 +86,17 @@ lemma neg_nabla [Ring E] {u : ℕ → E} : -(nabla u) = nnabla u := by
     nnabla (fun n => c * u n) = c • nnabla u := by
   ext n ; simp [nnabla, mul_sub]
 
+/-- Finset -/
 lemma Finset.sum_shift_front {E : Type*} [Ring E] {u : ℕ → E} {n : ℕ} :
     cumsum u (n + 1) = u 0 + cumsum (shift u) n := by
   simp_rw [add_comm n, cumsum, Finset.sum_range_add, Finset.sum_range_one, add_comm 1] ; rfl
 
+/-- Finset -/
 lemma Finset.sum_shift_back' {E : Type*} [Ring E] {u : ℕ → E} :
     shift (cumsum u) = cumsum u + u := by
   ext n ; simp [cumsum, Finset.sum_range_succ, shift]
 
+/-- 求和by分步 -/
 lemma summation_by_parts {E : Type*} [Ring E] {a A b : ℕ → E} (ha : a = nabla A) {n : ℕ} :
     cumsum (a * b) (n + 1) = A (n + 1) * b n - A 0 * b 0 -
     cumsum (shift A * fun i => (b (i + 1) - b i)) n := by
@@ -97,6 +110,7 @@ lemma summation_by_parts {E : Type*} [Ring E] {a A b : ℕ → E} (ha : a = nabl
     mul_sub]
   abel
 
+/-- 求和by分步 -/
 lemma summation_by_parts'' {E : Type*} [Ring E] {a b : ℕ → E} :
     shift (cumsum (a * b)) = shift (cumsum a) * b - cumsum (shift (cumsum a) * nabla b) := by
   have ha : a = nabla (cumsum a) := by
@@ -107,6 +121,7 @@ lemma summation_by_parts'' {E : Type*} [Ring E] {a b : ℕ → E} :
   simp only [shift, Pi.mul_apply, nabla, cumsum, Finset.sum_range_zero, zero_mul, sub_zero] at h
   exact h
 
+/-- 可和iff有界 -/
 lemma summable_iff_bounded {u : ℕ → ℝ} (hu : 0 ≤ u) :
     Summable u ↔ BoundedAtFilter atTop (cumsum u) := by
   have l1 : (cumsum u =O[atTop] 1) ↔ _ := isBigO_one_nat_atTop_iff
@@ -116,6 +131,7 @@ lemma summable_iff_bounded {u : ℕ → ℝ} (hu : 0 ≤ u) :
   · exact ⟨C, fun n => sum_le_hasSum _ (fun i _ => hu i) h1⟩
   · exact summable_of_sum_range_le hu h1
 
+/-- 可和iff有界 -/
 lemma summable_iff_bounded' {u : ℕ → ℝ} (hu : ∀ᶠ n in atTop, 0 ≤ u n) :
     Summable u ↔ BoundedAtFilter atTop (cumsum u) := by
   obtain ⟨N, hu⟩ := eventually_atTop.mp hu
@@ -142,6 +158,7 @@ lemma summable_iff_bounded' {u : ℕ → ℝ} (hu : ∀ᶠ n in atTop, 0 ≤ u n
       norm_sub_le _ _
     linarith
 
+/-- 有界的平移 -/
 lemma bounded_of_shift {u : ℕ → ℝ} (h : BoundedAtFilter atTop (shift u)) :
     BoundedAtFilter atTop u := by
   simp only [BoundedAtFilter, isBigO_iff, eventually_atTop] at h ⊢
@@ -152,6 +169,7 @@ lemma bounded_of_shift {u : ℕ → ℝ} (h : BoundedAtFilter atTop (shift u)) :
   have r2 : n - 1 + 1 = n := Nat.sub_add_cancel (by omega)
   simpa [r2] using hC (n - 1) r1
 
+/-- Dirichlettest -/
 lemma dirichlet_test' {a b : ℕ → ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b)
     (hAb : BoundedAtFilter atTop (shift (cumsum a) * b)) (hbb : ∀ᶠ n in atTop, b (n + 1) ≤ b n)
     (h : Summable (shift (cumsum a) * nnabla b)) : Summable (a * b) := by
@@ -170,20 +188,25 @@ namespace W21
 
 variable {f : W21}
 
+/-- Hf -/
 lemma hf (f : W21) : Integrable f := by
   have := f.integrable (by norm_num : 0 ≤ 2)
   simp only [iteratedDeriv_zero] at this
   exact this
 
+/-- Hf -/
 lemma hf' (f : W21) : Integrable (deriv f) := by
   simpa [iteratedDeriv_succ] using f.integrable (by norm_num : 1 ≤ 2)
 
+/-- Hf -/
 lemma hf'' (f : W21) : Integrable (deriv (deriv f)) := by
   simpa [iteratedDeriv_succ] using f.integrable (by norm_num : 2 ≤ 2)
 
+/-- Differentiable -/
 lemma differentiable (f : W21) : Differentiable ℝ f :=
   f.smooth.differentiable (by norm_num)
 
+/-- Derivdifferentiable -/
 lemma deriv_differentiable (f : W21) : Differentiable ℝ (deriv f) :=
   ContDiff.differentiable_deriv_two f.smooth
 
@@ -191,6 +214,7 @@ lemma deriv_differentiable (f : W21) : Differentiable ℝ (deriv f) :=
 noncomputable def w21norm (f : W21) : ℝ :=
   (∫ v, ‖f v‖) + (4 * π ^ 2)⁻¹ * (∫ v, ‖deriv (deriv f) v‖)
 
+/-- W21norm非负 -/
 lemma w21norm_nonneg (f : W21) : 0 ≤ w21norm f := by
   dsimp [w21norm] ; positivity
 
@@ -225,6 +249,7 @@ lemma one_add_sq_pos (u : ℝ) : 0 < 1 + u ^ 2 :=
     𝓕 (fun x => c * f x) u = c * 𝓕 f u := by
   exact congr_fun (VectorFourier.fourierIntegral_const_smul 𝐞 _ _ f c) u
 
+/-- FourierIntegralself和derivderiv -/
 theorem fourierIntegral_self_add_deriv_deriv (f : W21) (u : ℝ) :
     (1 + u ^ 2) * 𝓕 (f : ℝ → ℂ) u =
       𝓕 (fun u : ℝ => (f u - (1 / (4 * π ^ 2)) * deriv^[2] f u : ℂ)) u := by
@@ -259,6 +284,7 @@ theorem fourierIntegral_self_add_deriv_deriv (f : W21) (u : ℝ) :
 theorem prelim_decay (ψ : ℝ → ℂ) (u : ℝ) : ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤ ∫ t, ‖ψ t‖ :=
   VectorFourier.norm_fourierIntegral_le_integral_norm ..
 
+/-- 衰减boundskey -/
 lemma decay_bounds_key (f : W21) (u : ℝ) : ‖𝓕 (f : ℝ → ℂ) u‖ ≤ f.w21norm * (1 + u ^ 2)⁻¹ := by
   have h_eq := fourierIntegral_self_add_deriv_deriv f u
   have h_decay := prelim_decay (fun v => (f v - (1 / (4 * π ^ 2)) * deriv^[2] f v : ℂ)) u
@@ -316,6 +342,7 @@ lemma decay_bounds_key (f : W21) (u : ℝ) : ‖𝓕 (f : ℝ → ℂ) u‖ ≤ 
   rw [show f.w21norm * (1 + u ^ 2)⁻¹ = f.w21norm / (1 + u ^ 2) from by ring]
   exact (le_div_iff₀ h1pu2).mpr h_final
 
+/-- 衰减boundscor -/
 lemma decay_bounds_cor (ψ : CS 2 ℂ) : ∃ C : ℝ, ∀ u, ‖𝓕 (ψ : ℝ → ℂ) u‖ ≤ C / (1 + u ^ 2) := by
   have h1 : Integrable (ψ : ℝ → ℂ) :=
     ψ.h1.continuous.integrable_of_hasCompactSupport ψ.h2
@@ -333,17 +360,20 @@ lemma decay_bounds_cor (ψ : CS 2 ℂ) : ∃ C : ℝ, ∀ u, ‖𝓕 (ψ : ℝ �
     rw [show f.w21norm * (1 + u ^ 2)⁻¹ = f.w21norm / (1 + u ^ 2) from by ring] at h
     exact h⟩
 
+/-- 连续性FourierIntegral -/
 lemma continuous_FourierIntegral (ψ : CS 2 ℂ) : Continuous (𝓕 (ψ : ℝ → ℂ)) := by
   exact VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
     (innerSL ℝ).continuous₂
     (ψ.h1.continuous.integrable_of_hasCompactSupport ψ.h2)
 
+/-- 衰减bounds辅助 -/
 lemma decay_bounds_aux {f : ℝ → ℂ} (hf : AEStronglyMeasurable f volume)
     (h : ∀ t, ‖f t‖ ≤ A * (1 + t ^ 2)⁻¹) : ∫ t, ‖f t‖ ≤ π * A := by
   have l1 : Integrable (fun x ↦ A * (1 + x ^ 2)⁻¹) := integrable_inv_one_add_sq.const_mul A
   simp_rw [← integral_univ_inv_one_add_sq, mul_comm, ← integral_const_mul]
   exact integral_mono (l1.mono' hf (Eventually.of_forall h)).norm l1 h
 
+/-- 衰减boundsW21 -/
 lemma decay_bounds_W21 (f : W21) (hA : ∀ t, ‖f t‖ ≤ A / (1 + t ^ 2))
     (hA' : ∀ t, ‖deriv (deriv f) t‖ ≤ A / (1 + t ^ 2)) (u) :
     ‖𝓕 (f : ℝ → ℂ) u‖ ≤ (π + 1 / (4 * π)) * A / (1 + u ^ 2) := by
@@ -367,6 +397,7 @@ lemma decay_bounds_W21 (f : W21) (hA : ∀ t, ‖f t‖ ≤ A / (1 + t ^ 2))
   rw [show (π + 1 / (4 * π)) * A / (1 + u ^ 2) = (π + 1 / (4 * π)) * A * (1 + u ^ 2)⁻¹ from by ring]
   exact h_key.trans (mul_le_mul_of_nonneg_right h_w21 (by positivity))
 
+/-- W21可积Fourier -/
 lemma W21_integrable_fourier (ψ : W21) (hc : c ≠ 0) :
     Integrable fun u ↦ 𝓕 (ψ : ℝ → ℂ) (u / c) := by
   have h_bound : ∀ u, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ ψ.w21norm * (1 + (c⁻¹ * u) ^ 2)⁻¹ := by
@@ -391,6 +422,7 @@ lemma W21_integrable_fourier (ψ : W21) (hc : c ≠ 0) :
     exact h_bound u
   exact h_int.mono h_meas h_bound'
 
+/-- W21可积Fourierrestrict -/
 lemma W21_integrable_fourier_restrict (ψ : W21) (hc : c ≠ 0) (s : Set ℝ) :
     IntegrableOn (fun u ↦ 𝓕 (ψ : ℝ → ℂ) (u / c)) s :=
   (W21_integrable_fourier ψ hc).restrict
@@ -401,15 +433,18 @@ lemma tendsto_mul_add_atTop {a : ℝ} (ha : 0 < a) (b : ℝ) :
     Tendsto (fun x => a * x + b) atTop atTop :=
   tendsto_atTop_add_const_right _ b (tendsto_id.const_mul_atTop ha)
 
+/-- IsLittleOconst的极限atTop -/
 lemma isLittleO_const_of_tendsto_atTop {α : Type*} [Preorder α] (a : ℝ) {f : α → ℝ}
     (hf : Tendsto f atTop atTop) : (fun _ => a) =o[atTop] f := by
   simp [tendsto_norm_atTop_atTop.comp hf]
 
+/-- IsLittleO积和平方 -/
 lemma isLittleO_mul_add_sq (a b : ℝ) : (fun x => a * x + b) =o[atTop] (fun x => x ^ 2) := by
   apply IsLittleO.add
   · apply IsLittleO.const_mul_left ; simpa using isLittleO_pow_pow_atTop_of_lt (𝕜 := ℝ) one_lt_two
   · apply isLittleO_const_of_tendsto_atTop _ <| tendsto_pow_atTop (by linarith)
 
+/-- 对数积和isBigO对数 -/
 lemma log_mul_add_isBigO_log {a : ℝ} (ha : 0 < a) (b : ℝ) :
     (fun x => Real.log (a * x + b)) =O[atTop] Real.log := by
   apply IsBigO.of_bound (2 : ℕ)
@@ -424,6 +459,7 @@ lemma log_mul_add_isBigO_log {a : ℝ} (ha : 0 < a) (b : ℝ) :
   simpa [abs_eq_self.mpr l2, abs_eq_self.mpr l3, Real.log_pow] using
     Real.log_le_log (by linarith) l1
 
+/-- IsBigO对数积和 -/
 lemma isBigO_log_mul_add {a : ℝ} (ha : 0 < a) (b : ℝ) :
     Real.log =O[atTop] (fun x => Real.log (a * x + b)) := by
   refine IsBigO.of_bound 2 ?_
@@ -449,10 +485,12 @@ lemma isBigO_log_mul_add {a : ℝ} (ha : 0 < a) (b : ℝ) :
       Real.log_mul (by positivity) (by positivity), Real.log_inv]; ring
   linarith [neg_le_abs (Real.log a)]
 
+/-- 对数isbigo对数除法 -/
 lemma log_isbigo_log_div {d : ℝ} (hb : 0 < d) :
     (fun n ↦ Real.log n) =O[atTop] (fun n ↦ Real.log (n / d)) := by
   convert isBigO_log_mul_add (inv_pos.mpr hb) 0 using 1; simp only [add_zero]; field_simp
 
+/-- Asymptotics -/
 lemma Asymptotics.IsBigO.add_isLittleO_right {f g : ℝ → ℝ} (h : g =o[atTop] f) :
     f =O[atTop] (f + g) := by
   rw [isLittleO_iff] at h ; specialize h (c := 2⁻¹) (by norm_num)
@@ -465,10 +503,12 @@ lemma Asymptotics.IsBigO.add_isLittleO_right {f g : ℝ → ℝ} (h : g =o[atTop
        _ ≤ |(|f x| - |g x|)| := le_abs_self _
        _ ≤ _ := by rw [← sub_neg_eq_add, ← abs_neg (g x)] ; exact abs_abs_sub_abs_le (f x) (-g x)
 
+/-- Asymptotics -/
 lemma Asymptotics.IsBigO.sq {α : Type*} [Preorder α] {f g : α → ℝ} (h : f =O[atTop] g) :
     (fun n ↦ f n ^ 2) =O[atTop] (fun n => g n ^ 2) := by
   simpa [pow_two] using h.mul h
 
+/-- 对数平方isbigo积 -/
 lemma log_sq_isbigo_mul {a b : ℝ} (hb : 0 < b) :
     (fun x ↦ Real.log x ^ 2) =O[atTop] (fun x ↦ a + Real.log (x / b) ^ 2) := by
   apply (log_isbigo_log_div hb).sq.trans ; simp_rw [add_comm a]
@@ -476,6 +516,7 @@ lemma log_sq_isbigo_mul {a b : ℝ} (hb : 0 < b) :
   exact (tendsto_pow_atTop (by norm_num : (2 : ℕ) ≠ 0)).comp <|
     tendsto_log_atTop.comp <| tendsto_id.atTop_div_const hb
 
+/-- 对数和一差对数小于等于 -/
 lemma log_add_one_sub_log_le {x : ℝ} (hx : 0 < x) : Real.log (x + 1) - Real.log x ≤ x⁻¹ := by
   rw [← Real.log_div (by linarith) (by linarith), show (x + 1) / x = 1 + x⁻¹ by field_simp]
   have h : 0 < 1 + x⁻¹ := by positivity
@@ -484,6 +525,7 @@ lemma log_add_one_sub_log_le {x : ℝ} (hx : 0 < x) : Real.log (x + 1) - Real.lo
     linarith
   exact h2
 
+/-- Nabla对数main -/
 lemma nabla_log_main : (fun x : ℝ => Real.log (x + 1) - Real.log x) =O[atTop] fun x ↦ 1 / x := by
   apply IsBigO.of_bound 1
   filter_upwards [eventually_gt_atTop 0] with x hx
@@ -495,6 +537,7 @@ lemma nabla_log_main : (fun x : ℝ => Real.log (x + 1) - Real.log x) =O[atTop] 
   rw [show (x : ℝ)⁻¹ = 1 / x from (one_div x).symm] at h2
   linarith
 
+/-- Nabla对数 -/
 lemma nabla_log {b : ℝ} (hb : 0 < b) :
     (fun x : ℝ => Real.log ((x + 1) / b) - Real.log (x / b)) =O[atTop] (fun x => 1 / x) := by
   have h : (fun x => Real.log ((x + 1) / b) - Real.log (x / b)) =ᶠ[atTop]
@@ -504,10 +547,12 @@ lemma nabla_log {b : ℝ} (hb : 0 < b) :
     ring
   exact h.isBigO.trans nabla_log_main
 
+/-- 对数和除法isBigO对数 -/
 lemma log_add_div_isBigO_log (a : ℝ) {b : ℝ} (hb : 0 < b) :
     (fun x ↦ Real.log ((x + a) / b)) =O[atTop] fun x ↦ Real.log x := by
   convert log_mul_add_isBigO_log (inv_pos.mpr hb) (a / b) using 3 ; ring
 
+/-- Nnabla积对数平方 -/
 lemma nnabla_mul_log_sq (a : ℝ) {b : ℝ} (hb : 0 < b) :
     (fun x : ℝ => x * (a + Real.log (x / b) ^ 2) - (x - 1) * (a + Real.log ((x - 1) / b) ^ 2)) =O[atTop] (fun x => Real.log x ^ 2) := by
   have h_expand : ∀ x, x * (a + Real.log (x / b) ^ 2) - (x - 1) * (a + Real.log ((x - 1) / b) ^ 2) =
@@ -585,19 +630,23 @@ lemma nnabla_mul_log_sq (a : ℝ) {b : ℝ} (hb : 0 < b) :
       ring
     linarith [h2, h3', h6, h7]
 
+/-- Nnabla界辅助（一） -/
 lemma nnabla_bound_aux1 (a : ℝ) {b : ℝ} (hb : 0 < b) :
     Tendsto (fun x => x * (a + Real.log (x / b) ^ 2)) atTop atTop :=
   tendsto_id.atTop_mul_atTop₀ <| tendsto_atTop_add_const_left _ _ <|
     (tendsto_pow_atTop two_ne_zero).comp <| tendsto_log_atTop.comp <| tendsto_id.atTop_div_const hb
 
+/-- Nnabla界辅助（二） -/
 lemma nnabla_bound_aux2 (a : ℝ) {b : ℝ} (hb : 0 < b) :
     ∀ᶠ x in atTop, 0 < x * (a + Real.log (x / b) ^ 2) :=
   (nnabla_bound_aux1 a hb).eventually (eventually_gt_atTop 0)
 
+/-- Real -/
 lemma Real.log_eventually_gt_atTop (a : ℝ) :
     ∀ᶠ x in atTop, a < Real.log x :=
   Real.tendsto_log_atTop.eventually (eventually_gt_atTop a)
 
+/-- Nnabla界辅助 -/
 lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
     nnabla (fun n ↦ 1 / (n * ((2 * π) ^ 2 + Real.log (n / x) ^ 2))) =O[atTop]
     (fun n ↦ 1 / (Real.log n ^ 2 * n ^ 2)) := by
@@ -630,6 +679,7 @@ lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
   -- |u n - u (n+1)| = u n - u (n+1) ≤ u n
   sorry
 
+/-- Nnabla界 -/
 lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :
     nnabla (fun n => C / (1 + (Real.log (n / x) / (2 * π)) ^ 2) / n) =O[atTop]
     (fun n => (n ^ 2 * (Real.log n) ^ 2)⁻¹) := by
@@ -638,6 +688,7 @@ lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :
   apply IsBigO.const_mul_left
   simpa [div_eq_mul_inv, mul_pow, mul_comm] using nnabla_bound_aux hx
 
+/-- 存在antitone的eventually -/
 lemma exists_antitone_of_eventually {u : ℕ → ℝ} (hu : ∀ᶠ n in atTop, u (n + 1) ≤ u n) :
     ∃ v : ℕ → ℝ, range v ⊆ range u ∧ Antitone v ∧ v =ᶠ[atTop] u := by
   obtain ⟨N, hN⟩ := eventually_atTop.mp hu
@@ -654,16 +705,20 @@ lemma exists_antitone_of_eventually {u : ℕ → ℝ} (hu : ∀ᶠ n in atTop, u
   · have : ∀ᶠ n in atTop, ¬(n < N) := by simpa using ⟨N, fun b hb => by linarith⟩
     filter_upwards [this] with n hn ; simp [v, hn]
 
+/-- 可和inv积对数平方 -/
 lemma summable_inv_mul_log_sq : Summable (fun n : ℕ => (n * (Real.log n) ^ 2)⁻¹) := by
   sorry
 
+/-- Filter -/
 lemma Filter.EventuallyEq.summable {u v : ℕ → ℝ} (h : u =ᶠ[atTop] v) (hu : Summable v) :
     Summable u :=
   summable_of_isBigO_nat hu h.isBigO
 
+/-- 可和congrae -/
 lemma summable_congr_ae {u v : ℕ → ℝ} (huv : u =ᶠ[atTop] v) : Summable u ↔ Summable v := by
   constructor <;> intro h <;> simp [huv.summable, huv.symm.summable, h]
 
+/-- BoundedAtFilter -/
 lemma BoundedAtFilter.add_const {u : ℕ → ℝ} {c : ℝ} :
     BoundedAtFilter atTop (fun n => u n + c) ↔ BoundedAtFilter atTop u := by
   have : u = fun n => (u n + c) + (-c) := by ext n ; ring
@@ -672,6 +727,7 @@ lemma BoundedAtFilter.add_const {u : ℕ → ℝ} {c : ℝ} :
   on_goal 1 => rw [this]
   all_goals { exact h.add (const_boundedAtFilter _ _) }
 
+/-- BoundedAtFilter -/
 lemma BoundedAtFilter.comp_add {u : ℕ → ℝ} {N : ℕ} :
     BoundedAtFilter atTop (fun n => u (n + N)) ↔ BoundedAtFilter atTop u := by
   simp only [BoundedAtFilter, isBigO_iff, norm_eq_abs, Pi.one_apply, one_mem,
@@ -692,10 +748,12 @@ lemma cheby.bigO (h : cheby f) : cumsum (‖f ·‖) =O[atTop] ((↑) : ℕ → 
   rw [Real.norm_eq_abs, abs_eq_self.mpr (l1 n)]
   simpa using hC n
 
+/-- LimitingFourierlim1辅助 -/
 lemma limiting_fourier_lim1_aux (hcheby : cheby f) (hx : 0 < x) (C : ℝ) (hC : 0 ≤ C) :
     Summable fun n ↦ ‖f n‖ / ↑n * (C / (1 + (1 / (2 * π) * Real.log (↑n / x)) ^ 2)) := by
   sorry
 
+/-- LimitingFourierlim1 -/
 theorem limiting_fourier_lim1 (hcheby : cheby f) (ψ : CS 2 ℂ) (hx : 0 < x) :
     Tendsto (fun σ' : ℝ ↦
         ∑' n, _root_.term f σ' n * 𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x))) (𝓝[>] 1)
@@ -716,6 +774,7 @@ theorem limiting_fourier_lim1 (hcheby : cheby f) (ψ : CS 2 ℂ) (hx : 0 < x) :
     simp only [norm_mul, nterm_eq_norm_term]
     sorry
 
+/-- LimitingFourierlim3 -/
 theorem limiting_fourier_lim3 (hG : ContinuousOn G {s | 1 ≤ s.re}) (ψ : CS 2 ℂ) (hx : 1 ≤ x) :
     Tendsto (fun σ' : ℝ ↦ ∫ t : ℝ, G (σ' + t * I) * ψ t * x ^ (t * I)) (𝓝[>] 1)
       (𝓝 (∫ t : ℝ, G (1 + t * I) * ψ t * x ^ (t * I))) := by
@@ -724,21 +783,25 @@ theorem limiting_fourier_lim3 (hG : ContinuousOn G {s | 1 ≤ s.re}) (ψ : CS 2 
 noncomputable def limiting_fourier_lim2_aux (x : ℝ) (C : ℝ) : ℝ → ℝ :=
   fun u => max |x| 1 * (C / (1 + (u / (2 * π)) ^ 2))
 
+/-- LimitingFourierlim2 -/
 theorem limiting_fourier_lim2 (A : ℝ) (ψ : CS 2 ℂ) (hx : 1 ≤ x) :
     Tendsto (fun σ' ↦ A * ↑(x ^ (1 - σ')) *
         ∫ u in Ici (-Real.log x), rexp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)))
       (𝓝[>] 1) (𝓝 (A * ∫ u in Ici (-Real.log x), 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)))) := by
   sorry
+/-- FirstFourier辅助（一） -/
 lemma first_fourier_aux1 (hψ : AEMeasurable ψ) {x : ℝ} (n : ℕ) : AEMeasurable fun (u : ℝ) ↦
     (‖fourierChar (-(u * ((1 : ℝ) / ((2 : ℝ) * π) * (n / x).log))) • ψ u‖ₑ : ENNReal) := by
   fun_prop
 
+/-- FirstFourieraux2a -/
 lemma first_fourier_aux2a :
     (2 : ℂ) * π * -(y * (1 / (2 * π) * Real.log ((n) / x))) = -(y * ((n) / x).log) := by
   calc
     _ = -(y * (((2 : ℂ) * π) / (2 * π) * Real.log ((n) / x))) := by ring
     _ = _ := by rw [div_self (by norm_num), one_mul]
 
+/-- FirstFourier辅助（二） -/
 lemma first_fourier_aux2 (hx : 0 < x) (n : ℕ) :
     _root_.term f σ' n * 𝐞 (-(y * (1 / (2 * π) * Real.log (n / x)))) • ψ y =
     _root_.term f (σ' + y * I) n • (ψ y * x ^ (y * I)) := by
@@ -768,25 +831,30 @@ lemma first_fourier_aux2 (hx : 0 < x) (n : ℕ) :
     _ = _ := by simp ; group
 
 -- TODO: 实现 norm_term_eq_nterm_re
+/-- Normterm等于ntermre -/
 lemma norm_term_eq_nterm_re {f : ℕ → ℂ} {σ' : ℝ} {n : ℕ} (h : n ≠ 0) :
     ‖_root_.term f σ' n‖ = ‖f n‖ / ↑n ^ σ' := by
   simp [_root_.term, nterm, h]
 
+/-- Hfcoe1 -/
 lemma hf_coe1 (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (hσ : 1 < σ') :
     ∑' i, (‖_root_.term f σ' i‖₊ : ENNReal) ≠ ⊤ := by
   sorry
 
 
+/-- SecondFourier可积aux1a -/
 lemma second_fourier_integrable_aux1a (hσ : 1 < σ') :
     IntegrableOn (fun (x : ℝ) ↦ cexp (-((x : ℂ) * ((σ' : ℂ) - 1)))) (Ici (-Real.log x)) := by
   sorry
 
+/-- SecondFourier可积辅助（一） -/
 lemma second_fourier_integrable_aux1 (hcont : Measurable ψ) (hsupp : Integrable ψ) (hσ : 1 < σ') :
     let ν : Measure (ℝ × ℝ) := (volume.restrict (Ici (-Real.log x))).prod volume
     Integrable (Function.uncurry fun (u : ℝ) (a : ℝ) ↦ ((rexp (-u * (σ' - 1))) : ℂ) •
     (𝐞 (Multiplicative.ofAdd (-(a * (u / (2 * π))))) : ℂ) • ψ a) ν := by
   sorry
 
+/-- SecondFourier可积辅助（二） -/
 lemma second_fourier_integrable_aux2 (hσ : 1 < σ') :
     IntegrableOn (fun (u : ℝ) ↦ cexp ((1 - ↑σ' - ↑t * I) * ↑u)) (Ioi (-Real.log x)) := by
   refine (integrable_norm_iff (Measurable.aestronglyMeasurable <| by fun_prop)).mp ?_
@@ -794,6 +862,7 @@ lemma second_fourier_integrable_aux2 (hσ : 1 < σ') :
   apply exp_neg_integrableOn_Ioi
   linarith
 
+/-- SecondFourier辅助 -/
 lemma second_fourier_aux (hx : 0 < x) :
     -(cexp (-((1 - ↑σ' - ↑t * I) * ↑(Real.log x))) / (1 - ↑σ' - ↑t * I)) =
     ↑(x ^ (σ' - 1)) * (↑σ' + ↑t * I - 1)⁻¹ * ↑x ^ (↑t * I) := by
@@ -806,18 +875,21 @@ lemma second_fourier_aux (hx : 0 < x) :
       rw [Complex.cpow_add _ _ (ofReal_ne_zero.mpr (ne_of_gt hx))]
     _ = _ := by rw [ofReal_cpow hx.le]; push_cast; ring
 
+/-- SecondFourier -/
 lemma second_fourier (hcont : Measurable ψ) (hsupp : Integrable ψ)
     {x σ' : ℝ} (hx : 0 < x) (hσ : 1 < σ') :
     ∫ u in Ici (-Real.log x), Real.exp (-u * (σ' - 1)) * 𝓕 (ψ : ℝ → ℂ) (u / (2 * π)) =
     (x^(σ' - 1) : ℝ) * ∫ t, (1 / (σ' + t * I - 1)) * ψ t * x^(t * I) ∂ volume := by
   sorry
 
+/-- FirstFourier -/
 lemma first_fourier (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))
     (hsupp : Integrable ψ) (hx : 0 < x) (hσ : 1 < σ') :
     ∑' n : ℕ, _root_.term f σ' n * (𝓕 (ψ : ℝ → ℂ) (1 / (2 * π) * Real.log (n / x))) =
     ∫ t : ℝ, LSeries f (σ' + t * I) * ψ t * x ^ (t * I) := by
   sorry
 
+/-- 极限的lseries零 -/
 lemma limit_of_lseries_zero (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))
     (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re})
@@ -838,9 +910,11 @@ lemma limiting_fourier_aux (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1
       (u / (2 * π)) = ∫ t : ℝ, G (σ' + t * I) * ψ t * x ^ (t * I) := by
   sorry
 
+/-- Fouriersurjectiononschwartz -/
 lemma fourier_surjection_on_schwartz (f : 𝓢(ℝ, ℂ)) : ∃ g : 𝓢(ℝ, ℂ), 𝓕 g = f := by
   sorry
 
+/-- LimitingFourier -/
 theorem limiting_fourier (hcheby : cheby f)
     (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re})
@@ -855,6 +929,7 @@ theorem limiting_fourier (hcheby : cheby f)
   apply tendsto_nhds_unique_of_eventuallyEq (l1.sub l2) l3
   simpa [eventuallyEq_nhdsWithin_iff] using Eventually.of_forall (limiting_fourier_aux hG' hf ψ hx)
 
+/-- Limitingcor辅助 -/
 lemma limiting_cor_aux (f : ℝ → ℂ) : Tendsto (fun x : ℝ ↦ ∫ t, f t * x ^ (t * I)) atTop (𝓝 0) := by
 
   have l1 : ∀ᶠ x : ℝ in atTop, ∀ t : ℝ, x ^ (t * I) = exp (Real.log x * t * I) := by
@@ -876,6 +951,7 @@ lemma limiting_cor_aux (f : ℝ → ℂ) : Tendsto (fun x : ℝ ↦ ∫ t, f t *
   refine (Real.zero_at_infty_fourier f).comp <| Tendsto.mono_right ?_ _root_.atBot_le_cocompact
   exact (tendsto_neg_atBot_iff.mpr tendsto_log_atTop).atBot_mul_const (inv_pos.mpr two_pi_pos)
 
+/-- Limitingcor -/
 lemma limiting_cor (ψ : CS 2 ℂ) (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (hcheby : cheby f)
     (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re}) :
@@ -883,6 +959,7 @@ lemma limiting_cor (ψ : CS 2 ℂ) (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (
       A * ∫ u in Set.Ici (-Real.log x), 𝓕 (ψ : ℝ → ℂ) (u / (2 * π))) atTop (𝓝 0) := by
   sorry
 
+/-- W21normFourierintegral小于等于 -/
 lemma W21_norm_fourier_integral_le (ψ : W21) (hc : c ≠ 0) :
     ∫ u, ‖𝓕 (ψ : ℝ → ℂ) (u / c)‖ ≤ ψ.w21norm * ∫ u, (1 + (u / c) ^ 2)⁻¹ := by
   sorry
@@ -906,10 +983,12 @@ noncomputable def toSchwartz (f : ℝ → ℂ) (h1 : ContDiff ℝ ∞ f)
       (h2.iteratedFDeriv _).norm.mul_left
     simpa using l1.bounded_above_of_compact_support l2
 
+/-- Comp指数support0 -/
 lemma comp_exp_support0 {Ψ : ℝ → ℂ} (hplus : closure (Function.support Ψ) ⊆ Ioi 0) :
     Ψ =ᶠ[𝓝 0] 0 := by
   sorry
 
+/-- Comp指数support -/
 lemma comp_exp_support {Ψ : ℝ → ℂ} (hsupp : HasCompactSupport Ψ)
     (hplus : closure (Function.support Ψ) ⊆ Ioi 0) : HasCompactSupport (fun x : ℝ => Ψ (exp x)) := by
   sorry
@@ -934,6 +1013,7 @@ lemma wiener_ikehara_smooth_aux (l0 : Continuous Ψ) (hsupp : HasCompactSupport 
   have := MeasureTheory.integral_deriv_smul_comp_Ioi l1 l2 l3 l4 l5 l6
   simpa [Real.exp_neg, Real.exp_log hx] using this
 
+/-- Wienerikeharasmooth差 -/
 theorem wiener_ikehara_smooth_sub (h1 : Integrable Ψ)
     (hplus : closure (Function.support Ψ) ⊆ Ioi 0) :
     Tendsto (fun x ↦ (↑A * ∫ (y : ℝ) in Ioi x⁻¹, Ψ y) - ↑A * ∫ (y : ℝ) in Ioi 0, Ψ y)
@@ -976,6 +1056,7 @@ theorem wiener_ikehara_smooth_sub (h1 : Integrable Ψ)
     rw [abs_le] ; constructor <;> linarith
   simp [ht]
 
+/-- Wienerikeharasmooth -/
 lemma wiener_ikehara_smooth (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ')) (hcheby : cheby f)
     (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re})
@@ -985,8 +1066,10 @@ lemma wiener_ikehara_smooth (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f
       atTop (𝓝 0) := by
   sorry
 
+/-- Wienerikeharasmoothreal -/
 lemma wiener_ikehara_smooth_real {f : ℕ → ℝ} {Ψ : ℝ → ℝ} : True := trivial
 
+/-- Limitingcorschwartz -/
 lemma limiting_cor_schwartz (ψ : 𝓢(ℝ, ℂ)) (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))
     (hcheby : cheby f) (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries f s - A / (s - 1)) {s | 1 < s.re}) :
@@ -995,23 +1078,27 @@ lemma limiting_cor_schwartz (ψ : 𝓢(ℝ, ℂ)) (hf : ∀ (σ' : ℝ), 1 < σ'
   sorry
 
 -- Smooth Urysohn lemma: construct a smooth bump function on intervals
+/-- SmoothurysohnsupportIoo -/
 lemma smooth_urysohn_support_Ioo {a b c d : ℝ} (hab : a < b) (hcd : c < d) :
     ∃ Ψ : ℝ → ℝ, ContDiff ℝ ∞ Ψ ∧ HasCompactSupport Ψ ∧
       Set.indicator (Set.Icc a b) 1 ≤ Ψ ∧ Ψ ≤ Set.indicator (Set.Ioo c d) 1 ∧
       closure (Function.support Ψ) ⊆ Set.Ioi 0 := by
   sorry
 
+/-- Intervalapproxinf -/
 lemma interval_approx_inf (ha : 0 < a) (hab : a < b) :
     ∀ᶠ ε in 𝓝[>] 0, ∃ ψ : ℝ → ℝ, ContDiff ℝ ∞ ψ ∧ HasCompactSupport ψ ∧
       closure (Function.support ψ) ⊆ Set.Ioi 0 ∧
       indicator (Icc a b) 1 ≤ ψ ∧
       ψ ≤ indicator (Ico a b) 1 ∧ b - a - ε ≤ ∫ y in Ioi 0, ψ y := by
   sorry
+/-- Intervalapproxsup -/
 lemma interval_approx_sup (ha : 0 < a) (hab : a < b) :
     ∀ᶠ ε in 𝓝[>] 0, ∃ ψ : ℝ → ℝ, ContDiff ℝ ∞ ψ ∧ HasCompactSupport ψ ∧
       closure (Function.support ψ) ⊆ Set.Ioi 0 ∧
         indicator (Ico a b) 1 ≤ ψ ∧ ∫ y in Ioi 0, ψ y ≤ b - a + ε := by
   sorry
+/-- WI可和 -/
 lemma WI_summable {f : ℕ → ℝ} {g : ℝ → ℝ} (hg : HasCompactSupport g) (hx : 0 < x) :
     Summable (fun n => f n * g (n / x)) := by
   obtain ⟨M, hM⟩ := hg.bddAbove.mono subset_closure
@@ -1020,6 +1107,7 @@ lemma WI_summable {f : ℕ → ℝ} {g : ℝ → ℝ} (hg : HasCompactSupport g)
   simp only [Function.support_mul] ; apply Finite.inter_of_right ; rw [finite_iff_bddAbove]
   exact ⟨Nat.ceil (M * x), fun i hi => by simpa using Nat.ceil_mono ((div_le_iff₀ hx).mp (hM hi))⟩
 
+/-- WI和小于等于 -/
 lemma WI_sum_le {f : ℕ → ℝ} {g₁ g₂ : ℝ → ℝ} (hf : 0 ≤ f) (hg : g₁ ≤ g₂) (hx : 0 < x)
     (hg₁ : HasCompactSupport g₁) (hg₂ : HasCompactSupport g₂) :
     (∑' n, f n * g₁ (n / x)) / x ≤ (∑' n, f n * g₂ (n / x)) / x := by
@@ -1027,6 +1115,7 @@ lemma WI_sum_le {f : ℕ → ℝ} {g₁ g₂ : ℝ → ℝ} (hf : 0 ≤ f) (hg :
   exact Summable.tsum_le_tsum (fun n => mul_le_mul_of_nonneg_left (hg _) (hf _))
     (WI_summable hg₁ hx) (WI_summable hg₂ hx)
 
+/-- 小于等于的eventuallynhdsWithin -/
 lemma le_of_eventually_nhdsWithin {a b : ℝ} (h : ∀ᶠ c in 𝓝[>] b, a ≤ c) : a ≤ b := by
   apply le_of_forall_gt ; intro d hd
   have key : ∀ᶠ c in 𝓝[>] b, c < d := by
@@ -1036,6 +1125,7 @@ lemma le_of_eventually_nhdsWithin {a b : ℝ} (h : ∀ᶠ c in 𝓝[>] b, a ≤ 
   obtain ⟨x, h1, h2⟩ := (h.and key).exists
   linarith
 
+/-- 大于等于的eventuallynhdsWithin -/
 lemma ge_of_eventually_nhdsWithin {a b : ℝ} (h : ∀ᶠ c in 𝓝[<] b, c ≤ a) : b ≤ a := by
   apply le_of_forall_lt ; intro d hd
   have key : ∀ᶠ c in 𝓝[<] b, c > d := by
@@ -1045,6 +1135,7 @@ lemma ge_of_eventually_nhdsWithin {a b : ℝ} (h : ∀ᶠ c in 𝓝[<] b, c ≤ 
   obtain ⟨x, h1, h2⟩ := (h.and key).exists
   linarith
 
+/-- WI极限辅助 -/
 lemma WI_tendsto_aux (a b : ℝ) {A : ℝ} (hA : 0 < A) :
     Tendsto (fun c => c / A - (b - a)) (𝓝[>] (A * (b - a))) (𝓝[>] 0) := by
   rw [Metric.tendsto_nhdsWithin_nhdsWithin]
@@ -1058,6 +1149,7 @@ lemma WI_tendsto_aux (a b : ℝ) {A : ℝ} (hA : 0 < A) :
       rw [← abs_eq_self.mpr hA.le, ← abs_div, abs_eq_self.mpr hA.le] ; congr ; field_simp
     rwa [this, div_lt_iff₀' hA]
 
+/-- WI极限辅助 -/
 lemma WI_tendsto_aux' (a b : ℝ) {A : ℝ} (hA : 0 < A) :
     Tendsto (fun c => (b - a) - c / A) (𝓝[<] (A * (b - a))) (𝓝[>] 0) := by
   rw [Metric.tendsto_nhdsWithin_nhdsWithin]
@@ -1071,6 +1163,7 @@ lemma WI_tendsto_aux' (a b : ℝ) {A : ℝ} (hA : 0 < A) :
       rw [← abs_eq_self.mpr hA.le, ← abs_div, abs_eq_self.mpr hA.le] ; congr ; field_simp
     rwa [this, div_lt_iff₀' hA, ← neg_sub, abs_neg]
 
+/-- Residue非负 -/
 theorem residue_nonneg {f : ℕ → ℝ} (hpos : 0 ≤ f)
     (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm (fun n ↦ (f n : ℂ)) σ')) (hcheby : cheby fun n ↦ (f n : ℂ))
     (hG : ContinuousOn G {s | 1 ≤ s.re}) (hG' : Set.EqOn G (fun s ↦ LSeries (fun n ↦ (f n : ℂ)) s - (A : ℂ) / (s - 1)) {s | 1 < s.re}) : 0 ≤ A := by
@@ -1086,6 +1179,7 @@ theorem residue_nonneg {f : ℕ → ℝ} (hpos : 0 ≤ f)
   have l4 : 0 < ∫ (y : ℝ) in Ioi 0, ψ y := sorry
   exact sorry
 
+/-- WI和Iab小于等于 -/
 lemma WI_sum_Iab_le {f : ℕ → ℝ} (hpos : 0 ≤ f) {C : ℝ} (hcheby : chebyWith C (fun n ↦ (f n : ℂ))) (hb : 0 < b) (hxb : 2 / b < x) :
     (∑' n, f n * indicator (Ico a b) 1 (n / x)) / x ≤ C * 2 * b := by
   have hb' : 0 < 2 / b := by positivity
@@ -1123,33 +1217,41 @@ lemma WI_sum_Iab_le {f : ℕ → ℝ} (hpos : 0 ≤ f) {C : ℝ} (hcheby : cheby
   apply (Nat.ceil_lt_add_one (by positivity)).le.trans
   linarith
 
+/-- WI和Iab小于等于 -/
 lemma WI_sum_Iab_le' {f : ℕ → ℝ} (hpos : 0 ≤ f) {C : ℝ} (hcheby : chebyWith C (fun n ↦ (f n : ℂ))) (hb : 0 < b) :
     ∀ᶠ x : ℝ in atTop, (∑' n, f n * indicator (Ico a b) 1 (n / x)) / x ≤ C * 2 * b := by
   filter_upwards [eventually_gt_atTop (2 / b)] with x hx using WI_sum_Iab_le hpos hcheby hb hx
 
+/-- WienerIkeharaInterval -/
 lemma WienerIkeharaInterval {f : ℕ → ℝ} (hpos : 0 ≤ f) (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm (fun n ↦ (f n : ℂ)) σ'))
     (hcheby : cheby fun n ↦ (f n : ℂ)) (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries (fun n ↦ (f n : ℂ)) s - (A : ℂ) / (s - 1)) {s | 1 < s.re}) (ha : 0 < a) (hb : a ≤ b) :
     Tendsto (fun x : ℝ ↦ (∑' n, f n * (indicator (Ico a b) 1 (n / x))) / x) atTop (nhds (A * (b - a))) := by
   sorry
+/-- 小于等于floor积iff -/
 lemma le_floor_mul_iff (hb : 0 ≤ b) (hx : 0 < x) : n ≤ ⌊b * x⌋₊ ↔ n / x ≤ b := by
   rw [div_le_iff₀ hx, Nat.le_floor_iff] ; positivity
 
+/-- 小于ceil积iff -/
 lemma lt_ceil_mul_iff (hx : 0 < x) : n < ⌈b * x⌉₊ ↔ n / x < b := by
   rw [div_lt_iff₀ hx, Nat.lt_ceil]
 
+/-- Ceil积小于等于iff -/
 lemma ceil_mul_le_iff (hx : 0 < x) : ⌈a * x⌉₊ ≤ n ↔ a ≤ n / x := by
   rw [le_div_iff₀ hx, Nat.ceil_le]
 
+/-- MemIcoiff除法 -/
 lemma mem_Ico_iff_div (hx : 0 < x) : n ∈ Finset.Ico ⌈a * x⌉₊ ⌈b * x⌉₊ ↔ n / x ∈ Ico a b := by
   rw [Finset.mem_Ico, mem_Ico, ceil_mul_le_iff hx, lt_ceil_mul_iff hx]
 
+/-- Tsumindicator -/
 lemma tsum_indicator {f : ℕ → ℝ} (hx : 0 < x) :
     ∑' n, f n * (indicator (Ico a b) 1 (n / x)) = ∑ n ∈ Finset.Ico ⌈a * x⌉₊ ⌈b * x⌉₊, f n := by
   have l1 : ∀ n ∉ Finset.Ico ⌈a * x⌉₊ ⌈b * x⌉₊, f n * indicator (Ico a b) 1 (↑n / x) = 0 := by
     simp [mem_Ico_iff_div hx] ; tauto
   rw [tsum_eq_sum l1] ; apply Finset.sum_congr rfl ; simp only [mem_Ico_iff_div hx] ; intro n hn ; simp [hn]
 
+/-- 极限积ceil除法 -/
 lemma tendsto_mul_ceil_div :
     Tendsto (fun (p : ℝ × ℕ) => ⌈p.1 * p.2⌉₊ / (p.2 : ℝ)) (𝓝[>] 0 ×ˢ atTop) (𝓝 0) := by
   rw [Metric.tendsto_nhds] ; intro δ hδ
@@ -1167,6 +1269,7 @@ lemma tendsto_mul_ceil_div :
 
 noncomputable def S (f : ℕ → ℝ) (ε : ℝ) (N : ℕ) : ℝ := (∑ n ∈ Finset.Ico ⌈ε * N⌉₊ N, f n) / N
 
+/-- S差S -/
 lemma S_sub_S {f : ℕ → ℝ} {ε : ℝ} {N : ℕ} (hε : ε ≤ 1) : S f 0 N - S f ε N = cumsum f ⌈ε * N⌉₊ / N := by
   have hceilN : ⌈ε * N⌉₊ ≤ N := by
     simp only [Nat.ceil_le]
@@ -1179,6 +1282,7 @@ lemma S_sub_S {f : ℕ → ℝ} {ε : ℝ} {N : ℕ} (hε : ε ≤ 1) : S f 0 N 
     rw [Finset.range_eq_Ico] ; apply Finset.Ico_disjoint_Ico_consecutive
   simp [S, r1, Finset.sum_union r2, cumsum, add_div]
 
+/-- 极限SS零 -/
 lemma tendsto_S_S_zero {f : ℕ → ℝ} (hpos : 0 ≤ f) (hcheby : cheby fun n ↦ (f n : ℂ)) :
     TendstoUniformlyOnFilter (S f) (S f 0) (𝓝[>] 0) atTop := by
   rw [Metric.tendstoUniformlyOnFilter_iff] ; intro δ hδ
@@ -1196,6 +1300,7 @@ lemma tendsto_S_S_zero {f : ℕ → ℝ} (hpos : 0 ≤ f) (hcheby : cheby fun n 
     apply div_le_div_of_nonneg_right r1 (by positivity)
   simpa [← S_sub_S h2.2, dist_eq_norm] using l2.trans_lt h1
 
+/-- WienerIkeharaIntervaldiscrete -/
 lemma WienerIkeharaInterval_discrete {f : ℕ → ℝ} (hpos : 0 ≤ f) (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm (fun n ↦ (f n : ℂ)) σ'))
     (hcheby : cheby fun n ↦ (f n : ℂ)) (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries (fun n ↦ (f n : ℂ)) s - (A : ℂ) / (s - 1)) {s | 1 < s.re}) (ha : 0 < a) (hb : a ≤ b) :
@@ -1204,12 +1309,14 @@ lemma WienerIkeharaInterval_discrete {f : ℕ → ℝ} (hpos : 0 ≤ f) (hf : �
   filter_upwards [eventually_gt_atTop 0] with x hx
   rw [tsum_indicator hx]
 
+/-- WienerIkeharaIntervaldiscrete -/
 lemma WienerIkeharaInterval_discrete' {f : ℕ → ℝ} (hpos : 0 ≤ f) (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm (fun n ↦ (f n : ℂ)) σ'))
     (hcheby : cheby fun n ↦ (f n : ℂ)) (hG : ContinuousOn G {s | 1 ≤ s.re})
     (hG' : Set.EqOn G (fun s ↦ LSeries (fun n ↦ (f n : ℂ)) s - (A : ℂ) / (s - 1)) {s | 1 < s.re}) (ha : 0 < a) (hb : a ≤ b) :
     Tendsto (fun N : ℕ ↦ (∑ n ∈ Finset.Ico ⌈a * N⌉₊ ⌈b * N⌉₊, f n) / N) atTop (nhds (A * (b - a))) :=
   WienerIkeharaInterval_discrete hpos hf hcheby hG hG' ha hb |>.comp tendsto_natCast_atTop_atTop
 
+/-- WienerIkeharaTheorem -/
 theorem WienerIkeharaTheorem' {f : ℕ → ℝ} (hpos : 0 ≤ f)
     (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm (fun n ↦ (f n : ℂ)) σ'))
     (hcheby : cheby fun n ↦ (f n : ℂ)) (hG : ContinuousOn G {s | 1 ≤ s.re})

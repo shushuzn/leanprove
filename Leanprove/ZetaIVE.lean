@@ -63,6 +63,7 @@ theorem completed_zeta_functional_equation (s : ℂ) :
 
 /-- ζ 函数方程: ζ(1-s) = 2(2π)^{-s} Γ(s) cos(πs/2) ζ(s)
     (s 不为负整数, s ≠ 1) -/
+/-- Ζfunctionalequation -/
 theorem zeta_functional_equation {s : ℂ} (hs : ∀ n : ℕ, s ≠ -n) (hs' : s ≠ 1) :
     riemannZeta (1 - s) = 2 * (2 * π) ^ (-s) * Gamma s * cos (π * s / 2) * riemannZeta s :=
   riemannZeta_one_sub hs hs'
