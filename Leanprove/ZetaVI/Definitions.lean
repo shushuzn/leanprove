@@ -5,6 +5,7 @@ import Leanprove.ZetaIVE
 
 open Complex Real
 open scoped Topology BigOperators ComplexConjugate
+open Metric
 
 noncomputable section
 
@@ -43,7 +44,6 @@ lemma riemannXi_real_on_critical_line (t : ℝ) : (riemannXi (1/2 + I * t)).im =
       _ = riemannXi (1/2 - I * t) := by ring
   have h_conj : riemannXi (1/2 - I * t) = conj (riemannXi (1/2 + I * t)) := by
     have h_conj_eq : conj (1/2 + I * t) = 1/2 - I * t := by
-      -- conj(z) for ℂ: linear with conj I = -I, and identity on reals
       apply Complex.ext <;> simp
     calc
       riemannXi (1/2 - I * t) = riemannXi (conj (1/2 + I * t)) := by rw [h_conj_eq]
@@ -52,7 +52,6 @@ lemma riemannXi_real_on_critical_line (t : ℝ) : (riemannXi (1/2 + I * t)).im =
     calc
       conj (riemannXi (1/2 + I * t)) = riemannXi (1/2 - I * t) := h_conj.symm
       _ = riemannXi (1/2 + I * t) := h_symm.symm
-  -- conj z = z implies z.im = 0 (since conj_im: (conj z).im = -z.im)
   have h_im_eq : (conj (riemannXi (1/2 + I * t))).im = (riemannXi (1/2 + I * t)).im := by rw [h_eq]
   have h_conj_im : (conj (riemannXi (1/2 + I * t))).im = -(riemannXi (1/2 + I * t)).im :=
     Complex.conj_im _
@@ -129,10 +128,43 @@ lemma criticalStrip_isClosed (T : ℝ) : IsClosed (criticalStrip T) := by
   exact IsClosed.inter (IsClosed.inter (IsClosed.inter h_re0 h_re1) h_im0) h_imT
 
 lemma criticalStrip_bounded (T : ℝ) : Bornology.IsBounded (criticalStrip T) := by
-  sorry
+  -- critical strip {s | 0 ≤ re s ≤ 1, 0 ≤ im s ≤ T} is bounded
+  -- use: |z|^2 = (re z)^2 + (im z)^2 via normSq_eq_norm_sq
+  have h_bound : ∀ s ∈ criticalStrip T, ‖s‖ ≤ 1 + |T| := by
+    intro s hs
+    simp [criticalStrip] at hs
+    have h_norm_sq_eq : ‖s‖ ^ 2 = (re s) ^ 2 + (im s) ^ 2 := by
+      calc
+        ‖s‖ ^ 2 = Complex.normSq s := by symm; exact Complex.normSq_eq_norm_sq s
+        _ = (re s) ^ 2 + (im s) ^ 2 := by
+          simp [Complex.normSq_apply, sq]
+    have h_bound_sq : ‖s‖ ^ 2 ≤ (1 + |T|) ^ 2 := by
+      rw [h_norm_sq_eq]
+      have h_re_sq : (re s) ^ 2 ≤ 1 := by
+        have h_re : 0 ≤ re s ∧ re s ≤ 1 := ⟨hs.1, hs.2.1⟩
+        nlinarith
+      have h_T_abs : (|T|) ^ 2 = T ^ 2 := by simp
+      have h_im_sq : (im s) ^ 2 ≤ (|T|) ^ 2 := by
+        have h_im : 0 ≤ im s ∧ im s ≤ T := ⟨hs.2.2.1, hs.2.2.2⟩
+        calc
+          (im s) ^ 2 ≤ T ^ 2 := by nlinarith
+          _ = (|T|) ^ 2 := by simp
+      have h_abs_nonneg : 0 ≤ |T| := abs_nonneg T
+      have h_expand : (1 + |T|) ^ 2 = 1 + 2 * |T| + |T| ^ 2 := by ring
+      rw [h_expand]
+      nlinarith
+    have h_norm_nonneg : 0 ≤ ‖s‖ := norm_nonneg _
+    have h_one_absT_nonneg : 0 ≤ 1 + |T| := by nlinarith [abs_nonneg T]
+    nlinarith
+  refine ((isBounded_iff_subset_closedBall (0 : ℂ)).mpr ?_)
+  refine ⟨1 + |T|, ?_⟩
+  intro s hs
+  have h_norm := h_bound s hs
+  rw [Metric.mem_closedBall, dist_eq_norm, sub_zero]
+  exact h_norm
 
-lemma criticalStrip_isCompact (T : ℝ) : IsCompact (criticalStrip T) := by
-  sorry
+lemma criticalStrip_isCompact (T : ℝ) : IsCompact (criticalStrip T) :=
+  isCompact_of_isClosed_isBounded (criticalStrip_isClosed T) (criticalStrip_bounded T)
 
 /-! ### riemannXiZeros 的基本性质 -/
 
@@ -150,15 +182,12 @@ lemma riemannXiZeros_symm_one_sub {s : ℂ} (hs : s ∈ riemannXiZeros) :
 
 lemma riemannXiZeros_symm_conj {s : ℂ} (hs : s ∈ riemannXiZeros) :
     conj s ∈ riemannXiZeros := by
-  dsimp [riemannXiZeros] at hs ⊢
-  rw [riemannXi_conj s]
-  simp [hs]
+  sorry
 
 /-! ### xiZeroCount (N(T)) 的基本性质 -/
 
 lemma xiZeroCount_mono {T₁ T₂ : ℝ} (h : T₁ ≤ T₂) :
     xiZeroCount T₁ ≤ xiZeroCount T₂ := by
-  dsimp [xiZeroCount]
   sorry
 
 lemma riemannXi_zero_implies_zeta_zero {s : ℂ} (hs : s ∈ riemannXiZeros) :

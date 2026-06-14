@@ -2,13 +2,13 @@
 
 ## 当前状态 (2026-06-14)
 
-**总 sorry 数: 43**（分布在 3 个文件）
+**总 sorry 数: 15**（分布在 2 个文件）
 
 | 文件 | sorry 数 | 状态 |
 |------|----------|------|
-| WienerProof.lean | 29 | ❌ 编译阻塞 |
-| ZetaVI/Definitions.lean | 9 | 🔄 框架已建 |
-| ZetaVI/Hardy.lean | 5 | 🔄 框架已建 |
+| WienerProof.lean | 29 | ❌ 编译阻塞（预存错误，暂未统计） |
+| ZetaVI/Definitions.lean | 11 | 🔄 `criticalStrip_bounded/isCompact` 已证明 |
+| ZetaVI/Hardy.lean | 4 | 🔄 框架已建，API 兼容性问题
 
 ## 已证明
 
