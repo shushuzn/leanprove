@@ -635,19 +635,23 @@ lemma nnabla_mul_log_sq (a : ℝ) {b : ℝ} (hb : 0 < b) :
       ring
     linarith [h2, h3', h6, h7]
 
+/-- nnabla 界（辅助一）-/
 lemma nnabla_bound_aux1 (a : ℝ) {b : ℝ} (hb : 0 < b) :
     Tendsto (fun x => x * (a + Real.log (x / b) ^ 2)) atTop atTop :=
   tendsto_id.atTop_mul_atTop₀ <| tendsto_atTop_add_const_left _ _ <|
     (tendsto_pow_atTop two_ne_zero).comp <| tendsto_log_atTop.comp <| tendsto_id.atTop_div_const hb
 
+/-- nnabla 界（辅助二）-/
 lemma nnabla_bound_aux2 (a : ℝ) {b : ℝ} (hb : 0 < b) :
     ∀ᶠ x in atTop, 0 < x * (a + Real.log (x / b) ^ 2) :=
   (nnabla_bound_aux1 a hb).eventually (eventually_gt_atTop 0)
 
+/-- log 最终大于任意实常数 -/
 lemma Real.log_eventually_gt_atTop (a : ℝ) :
     ∀ᶠ x in atTop, a < Real.log x :=
   Real.tendsto_log_atTop.eventually (eventually_gt_atTop a)
 
+/-- nnabla 界（核心引理）-/
 lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
     nnabla (fun n ↦ 1 / (n * ((2 * π) ^ 2 + Real.log (n / x) ^ 2))) =O[atTop]
     (fun n ↦ 1 / (Real.log n ^ 2 * n ^ 2)) := by
@@ -680,6 +684,7 @@ lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
   -- |u n - u (n+1)| = u n - u (n+1) ≤ u n
   sorry
 
+/-- nnabla 有界性 -/
 lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :
     nnabla (fun n => C / (1 + (Real.log (n / x) / (2 * π)) ^ 2) / n) =O[atTop]
     (fun n => (n ^ 2 * (Real.log n) ^ 2)⁻¹) := by
@@ -688,6 +693,7 @@ lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :
   apply IsBigO.const_mul_left
   simpa [div_eq_mul_inv, mul_pow, mul_comm] using nnabla_bound_aux hx
 
+/-- 最终递减序列存在递减子列 -/
 lemma exists_antitone_of_eventually {u : ℕ → ℝ} (hu : ∀ᶠ n in atTop, u (n + 1) ≤ u n) :
     ∃ v : ℕ → ℝ, range v ⊆ range u ∧ Antitone v ∧ v =ᶠ[atTop] u := by
   obtain ⟨N, hN⟩ := eventually_atTop.mp hu
@@ -704,13 +710,16 @@ lemma exists_antitone_of_eventually {u : ℕ → ℝ} (hu : ∀ᶠ n in atTop, u
   · have : ∀ᶠ n in atTop, ¬(n < N) := by simpa using ⟨N, fun b hb => by linarith⟩
     filter_upwards [this] with n hn ; simp [v, hn]
 
+/-- 1/(n(log n)²) 可和 -/
 lemma summable_inv_mul_log_sq : Summable (fun n : ℕ => (n * (Real.log n) ^ 2)⁻¹) := by
   sorry
 
+/-- 最终相等序列保持可和性 -/
 lemma Filter.EventuallyEq.summable {u v : ℕ → ℝ} (h : u =ᶠ[atTop] v) (hu : Summable v) :
     Summable u :=
   summable_of_isBigO_nat hu h.isBigO
 
+/-- 最终相等序列可和性等价 -/
 lemma summable_congr_ae {u v : ℕ → ℝ} (huv : u =ᶠ[atTop] v) : Summable u ↔ Summable v := by
   constructor <;> intro h <;> simp [huv.summable, huv.symm.summable, h]
 
