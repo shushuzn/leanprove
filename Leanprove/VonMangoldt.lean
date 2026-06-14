@@ -218,23 +218,23 @@ lemma vm_le_one {n : ℕ} (hn : 2 ≤ n) : (vonMangoldt n : ℝ) / (n : ℝ) ≤
 noncomputable section
 
 /-- 双重求和比较函数: H(m,j) = (log m) / m^(j+2) 若 m 是素数, 否则 0 -/
-def Hpp (mj : ℕ × ℕ) : ℝ :=
+def hpp (mj : ℕ × ℕ) : ℝ :=
   if Nat.Prime mj.1 then Real.log (mj.1 : ℝ) / (mj.1 : ℝ) ^ (mj.2 + 2) else 0
 
-@[simp] lemma Hpp_apply (m j : ℕ) : Hpp (m, j) =
+@[simp] lemma hpp_apply (m j : ℕ) : hpp (m, j) =
     if Nat.Prime m then Real.log (m : ℝ) / (m : ℝ) ^ (j + 2) else 0 := rfl
 
-lemma Hpp_nonneg (mj : ℕ × ℕ) : 0 ≤ Hpp mj := by
+lemma hpp_nonneg (mj : ℕ × ℕ) : 0 ≤ hpp mj := by
   obtain ⟨m, j⟩ := mj
-  simp [Hpp_apply]
+  simp [hpp_apply]
   split_ifs with hp
   · apply div_nonneg
     · exact Real.log_nonneg (by exact_mod_cast hp.one_lt.le)
     · positivity
   · exact le_rfl
 
-lemma Hpp_inner_summable (m : ℕ) : Summable (fun j : ℕ => Hpp (m, j)) := by
-  simp [Hpp_apply]
+lemma hpp_inner_summable (m : ℕ) : Summable (fun j : ℕ => hpp (m, j)) := by
+  simp [hpp_apply]
   split_ifs with hp
   · -- m is prime: ∑_j (log m) / m^(j+2) = (log m)/m² · ∑_j (1/m)^j
     have hm_pos : (0 : ℝ) < (m : ℝ) := by exact_mod_cast hp.pos
@@ -269,14 +269,14 @@ lemma Hpp_inner_summable (m : ℕ) : Summable (fun j : ℕ => Hpp (m, j)) := by
     exact ⟨_, h_const⟩
   · exact summable_zero
 
-lemma Hpp_outer_summable : Summable (fun m : ℕ => ∑' j : ℕ, Hpp (m, j)) := by
+lemma hpp_outer_summable : Summable (fun m : ℕ => ∑' j : ℕ, hpp (m, j)) := by
   -- For prime m: inner tsum = (log m)/m² * m/(m-1) = (log m)/(m*(m-1))
   -- For non-prime m: inner tsum = 0
   -- Bound by 4 * m^{-3/2} and use summable_nat_rpow
-  have h_inner_tsum : ∀ m, ∑' j : ℕ, Hpp (m, j) =
+  have h_inner_tsum : ∀ m, ∑' j : ℕ, hpp (m, j) =
       if Nat.Prime m then (Real.log (m : ℝ) / (m : ℝ) ^ 2) * ((m : ℝ) / ((m : ℝ) - 1)) else 0 := by
     intro m
-    simp [Hpp_apply]
+    simp [hpp_apply]
     split_ifs with hp
     · -- m is prime: compute tsum of geometric series
       have hm_pos : (0 : ℝ) < (m : ℝ) := by exact_mod_cast hp.pos
@@ -310,7 +310,7 @@ lemma Hpp_outer_summable : Summable (fun m : ℕ => ∑' j : ℕ, Hpp (m, j)) :=
     · simp
   -- Now show summability of (fun m => inner_tsum m)
   -- inner_tsum m ≤ 4 * m^{-3/2} for prime m (0 otherwise)
-  have h_bound : ∀ m : ℕ, ∑' j : ℕ, Hpp (m, j) ≤
+  have h_bound : ∀ m : ℕ, ∑' j : ℕ, hpp (m, j) ≤
       if m = 0 ∨ m = 1 then 0 else 4 * ((m : ℝ) ^ (-3/2 : ℝ)) := by
     intro m
     by_cases hp : Nat.Prime m
@@ -370,7 +370,7 @@ lemma Hpp_outer_summable : Summable (fun m : ℕ => ∑' j : ℕ, Hpp (m, j)) :=
       · simp [h01]; positivity
       · simp [h01]
   -- Nonnegativity of inner tsum
-  have h_inner_nonneg : ∀ m, 0 ≤ ∑' j : ℕ, Hpp (m, j) := by
+  have h_inner_nonneg : ∀ m, 0 ≤ ∑' j : ℕ, hpp (m, j) := by
     intro m
     rw [h_inner_tsum]
     split_ifs with hp
@@ -386,11 +386,11 @@ lemma Hpp_outer_summable : Summable (fun m : ℕ => ∑' j : ℕ, Hpp (m, j)) :=
   -- Final comparison
   exact Summable.of_nonneg_of_le h_inner_nonneg h_bound h_summable_bound
 
-lemma Hpp_summable : Summable Hpp := by
+lemma hpp_summable : Summable hpp := by
   -- summable_prod_of_nonneg: Summable f ↔ (∀ x, Summable (fun y ↦ f(x,y))) ∧ Summable (fun x ↦ ∑' y, f(x,y))
-  have h_nonneg : ∀ mj, 0 ≤ Hpp mj := Hpp_nonneg
-  have h_inner : ∀ m, Summable (fun j => Hpp (m, j)) := Hpp_inner_summable
-  have h_outer : Summable (fun m => ∑' j, Hpp (m, j)) := Hpp_outer_summable
+  have h_nonneg : ∀ mj, 0 ≤ hpp mj := hpp_nonneg
+  have h_inner : ∀ m, Summable (fun j => hpp (m, j)) := hpp_inner_summable
+  have h_outer : Summable (fun m => ∑' j, hpp (m, j)) := hpp_outer_summable
   exact (summable_prod_of_nonneg h_nonneg).mpr ⟨h_inner, h_outer⟩
 
 theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → |∑ n ∈ Finset.Icc 2 ⌊x⌋₊ with ¬Nat.Prime n, (vonMangoldt n : ℝ) / (n : ℝ)| ≤ C := by
@@ -403,7 +403,7 @@ theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → 
     apply Finset.sum_nonneg
     intro n hn
     exact vm_nonneg n
-  use ∑' mj : ℕ × ℕ, Hpp mj
+  use ∑' mj : ℕ × ℕ, hpp mj
   intro x hx
   rw [h_abs x hx]
   -- Step 1: filter Λ(n)/n is same as filter Λ(n)/n with IsPrimePow added
@@ -427,18 +427,18 @@ theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → 
   rw [h_sum_eq]
   -- Step 2: Each n in S with IsPrimePow is p^k with k≥2 (not prime)
   -- Map n → (n.minFac, n.factorization n.minFac - 2) injectively
-  -- Λ(n)/n = (log p)/p^k = Hpp(p, k-2)
-  -- Bound: ∑_{n} Λ(n)/n ≤ ∑'_{mj} Hpp(mj)
+  -- Λ(n)/n = (log p)/p^k = hpp(p, k-2)
+  -- Bound: ∑_{n} Λ(n)/n ≤ ∑'_{mj} hpp(mj)
   -- Use: finite sum ≤ tsum for nonneg summable function
   have h_finite_le_tsum :
       ∑ n ∈ Spp, (vonMangoldt n : ℝ) / (n : ℝ)
-      ≤ ∑' mj : ℕ × ℕ, Hpp mj := by
+      ≤ ∑' mj : ℕ × ℕ, hpp mj := by
     -- Define the injection image as a finset in ℕ × ℕ
     let img := Spp.image
       (fun n => (n.minFac, n.factorization n.minFac - 2))
-    -- Show pointwise: Λ(n)/n ≤ Hpp(n.minFac, n.factorization n.minFac - 2)
+    -- Show pointwise: Λ(n)/n ≤ hpp(n.minFac, n.factorization n.minFac - 2)
     have h_pointwise : ∑ n ∈ Spp, (vonMangoldt n : ℝ) / (n : ℝ)
-        ≤ ∑' mj : ℕ × ℕ, Hpp mj := by
+        ≤ ∑' mj : ℕ × ℕ, hpp mj := by
       let f : ℕ → ℕ × ℕ := fun n => (n.minFac, n.factorization n.minFac - 2)
       -- Show f is injective on Spp (as InjOn)
       have hf_inj_on : Set.InjOn f (Spp : Set ℕ) := by
@@ -517,10 +517,10 @@ theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → 
                 n₂.minFac ^ n₂.factorization n₂.minFac := h1.trans h2
             rwa [IsPrimePow.minFac_pow_factorization_eq hpp₂] at this
       have h_pointwise_eq : ∑ n ∈ Spp, (vonMangoldt n : ℝ) / (n : ℝ) =
-          ∑ n ∈ Spp, Hpp (f n) := by
+          ∑ n ∈ Spp, hpp (f n) := by
         apply Finset.sum_congr rfl
         intro n hn
-        -- (vonMangoldt n)/n = Hpp(f(n)) for n ∈ Spp
+        -- (vonMangoldt n)/n = hpp(f(n)) for n ∈ Spp
         have hpp : IsPrimePow n := (Finset.mem_filter.mp hn).2
         have hS : n ∈ S := (Finset.mem_filter.mp hn).1
         have hNotPrime : ¬Nat.Prime n := by
@@ -564,29 +564,29 @@ theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → 
         have h_n_rpow : (n : ℝ) = (n.minFac : ℝ) ^ (n.factorization n.minFac) := by
           norm_cast
           exact (IsPrimePow.minFac_pow_factorization_eq hpp).symm
-        -- Hpp(f(n)) computation
-        have h_hpp : Hpp (f n) =
+        -- hpp(f(n)) computation
+        have h_hpp : hpp (f n) =
             Real.log (n.minFac : ℝ) / (n.minFac : ℝ) ^ (n.factorization n.minFac) := by
-          simp only [f, Hpp_apply]
+          simp only [f, hpp_apply]
           rw [if_pos p_prime]
           have hk : n.factorization n.minFac - 2 + 2 = n.factorization n.minFac :=
             Nat.sub_add_cancel k_ge_2
           rw [congr_arg (fun k : ℕ => Real.log (n.minFac : ℝ) / (n.minFac : ℝ) ^ k) hk]
         rw [h_vm, h_n_rpow, h_hpp]
       rw [h_pointwise_eq]
-      -- ∑ n ∈ Spp, Hpp (f n) = ∑ mj ∈ img, Hpp mj (by sum_bij + injectivity)
-      have h_img_eq : ∑ n ∈ Spp, Hpp (f n) = ∑ mj ∈ img, Hpp mj := by
+      -- ∑ n ∈ Spp, hpp (f n) = ∑ mj ∈ img, hpp mj (by sum_bij + injectivity)
+      have h_img_eq : ∑ n ∈ Spp, hpp (f n) = ∑ mj ∈ img, hpp mj := by
         apply Finset.sum_bij (fun n _ => f n)
         · intro n hn; simp [img]; exact ⟨n, hn, rfl⟩
         · intro n₁ hn₁ n₂ hn₂ heq; exact hf_inj_on hn₁ hn₂ heq
         · intro mj hmj; simp [img] at hmj; rcases hmj with ⟨n, hn, rfl⟩; exact ⟨n, hn, rfl⟩
         · intro n hn; rfl
-      -- ∑ mj ∈ img, Hpp mj ≤ ∑' mj, Hpp mj (finite sum ≤ tsum for nonneg summable)
-      have h_img_le : ∑ mj ∈ img, Hpp mj ≤ ∑' mj : ℕ × ℕ, Hpp mj :=
-        Hpp_summable.sum_le_tsum img (fun mj _ => Hpp_nonneg mj)
+      -- ∑ mj ∈ img, hpp mj ≤ ∑' mj, hpp mj (finite sum ≤ tsum for nonneg summable)
+      have h_img_le : ∑ mj ∈ img, hpp mj ≤ ∑' mj : ℕ × ℕ, hpp mj :=
+        hpp_summable.sum_le_tsum img (fun mj _ => hpp_nonneg mj)
       -- Chain: = ∑ mj ∈ img ≤ ∑'
-      calc ∑ n ∈ Spp, Hpp (f n) = ∑ mj ∈ img, Hpp mj := h_img_eq
-        _ ≤ ∑' mj : ℕ × ℕ, Hpp mj := h_img_le
+      calc ∑ n ∈ Spp, hpp (f n) = ∑ mj ∈ img, hpp mj := h_img_eq
+        _ ≤ ∑' mj : ℕ × ℕ, hpp mj := h_img_le
     exact h_pointwise
   exact h_finite_le_tsum
 
