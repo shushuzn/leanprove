@@ -740,7 +740,6 @@ lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
   -- Goal: u_n - u_{n+1} ≤ 1/(log²n * n²)
   -- u_n - u_{n+1} = num/denom where num ≤ (2π)² and denom ≥ n²*(2π)⁴
   sorry
-
 /-- nnabla 有界性 -/
 lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :
     nnabla (fun n => C / (1 + (Real.log (n / x) / (2 * π)) ^ 2) / n) =O[atTop]
