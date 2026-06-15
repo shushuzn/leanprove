@@ -656,8 +656,8 @@ lemma Real.log_eventually_gt_atTop (a : ℝ) :
 lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
     nnabla (fun n ↦ 1 / (n * ((2 * π) ^ 2 + Real.log (n / x) ^ 2))) =O[atTop]
     (fun n ↦ 1 / (Real.log n ^ 2 * n ^ 2)) := by
-  -- 策略: 用 IsBigO.of_bound 1
-  apply IsBigO.of_bound 1
+  -- 策略: 用 IsBigO.of_bound 100 (更宽松的常数)
+  apply IsBigO.of_bound 100
   filter_upwards [eventually_gt_atTop 3] with n hn
   simp only [nnabla, norm_eq_abs, one_mul]
   -- 用 exact_mod_cast 处理类型转换
@@ -737,8 +737,9 @@ lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
   -- Simplify RHS: |1/(log²n * n²)| = 1/(log²n * n²) since log n > 0
   have h_log_pos : 0 < Real.log n := Real.log_pos (by exact_mod_cast (show 1 < n from by linarith))
   rw [abs_of_pos (by positivity : 0 < 1 / (Real.log n ^ 2 * n ^ 2))]
-  -- Goal: u_n - u_{n+1} ≤ 1/(log²n * n²)
-  -- u_n - u_{n+1} = num/denom where num ≤ (2π)² and denom ≥ n²*(2π)⁴
+  -- Goal: u_n - u_{n+1} ≤ 100/(log²n * n²)
+  field_simp
+  ring_nf
   sorry
 /-- nnabla 有界性 -/
 lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :
