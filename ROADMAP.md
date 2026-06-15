@@ -151,4 +151,4 @@ RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价
 
 ---
 
-*路线图最后更新: 2026-06-15 — 阶段 I-V 0 sorry + 0 axiom，阶段 VI 进行中 (nnabla_bound_aux h_bound/h_ident 已修复，rw[h_abs_eq] 需重构)。*
+*路线图最后更新: 2026-06-15 — 阶段 I-V 0 sorry + 0 axiom，阶段 VI 进行中 (nnabla_bound_aux rw[h_abs_eq] 已修复，剩余 bound 证明)。*

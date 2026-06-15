@@ -156,3 +156,14 @@ have h : 0 ≤ Real.log (1 + 1 / (n : ℝ)) := Real.log_nonneg h_one_le
 **失败的方法**: `rw`, `exact_mod_cast`, `convert`, `norm_cast`, `push_cast`, `show ... from by`
 
 **建议**: 避免在 `filter_upwards` 上下文中使用 `set`。改用 `let` 并手动展开，或直接使用展开形式。
+
+## exact_mod_cast 桥接 set/let 的 cast 差异
+
+**突破**: 当 `let a := fun n => expr` 定义的 `a n` 与目标中的展开形式存在 cast 差异时，用 `exact_mod_cast` 创建桥接假设：
+```lean
+let a : ℕ → ℝ := fun n => (2 * π) ^ 2 + Real.log (↑n / x) ^ 2
+have h_abs_eq : |1 / (↑n * a n) - 1 / (↑(n+1) * a (n+1))| = ... := abs_of_nonneg h_diff_nonneg
+-- 桥接: 目标有展开形式，h_abs_eq 有 a n
+have h_rw : |1 / (↑n * expanded) - 1 / (↑(n+1) * expanded)| = ... := by exact_mod_cast h_abs_eq
+rw [h_rw]  -- 现在可以 rw 了！
+```

@@ -663,15 +663,11 @@ lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
   -- 用 exact_mod_cast 处理类型转换
   have h_n : 0 < (n : ℝ) := by exact_mod_cast (show 0 < n from by linarith)
   have h_n1 : 0 < ((n : ℝ) + 1) := by linarith
-  -- 定义 a n
-  set a : ℕ → ℝ := fun n => (2 * π) ^ 2 + Real.log (↑n / x) ^ 2
+  -- 定义 a n (用 let 而非 set，避免替换问题)
+  let a : ℕ → ℝ := fun n => (2 * π) ^ 2 + Real.log (↑n / x) ^ 2
   -- 证明 a n > 0
-  have ha : 0 < a n := by
-    simp only [a]
-    positivity
-  have ha1 : 0 < a (n + 1) := by
-    simp only [a]
-    positivity
+  have ha : 0 < a n := by positivity
+  have ha1 : 0 < a (n + 1) := by positivity
   -- 证明 u n > 0
   have hu : 0 < 1 / ((n : ℝ) * a n) := by
     apply div_pos (by norm_num)
@@ -730,7 +726,20 @@ lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
     nlinarith
   -- |u n - u (n+1)| = u n - u (n+1) (since u_n ≥ u_{n+1} > 0), and bound it
   have h_diff_nonneg : 0 ≤ 1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1)) := by linarith
-  sorry -- rw [h_abs_eq]: set a 不替换目标, ↑(n+1) vs ↑n+1 cast 不匹配
+  have h_abs_eq : |1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1))| =
+      1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1)) := abs_of_nonneg h_diff_nonneg
+  -- Use calc to bridge the cast gap
+  have h_rw : |1 / ((n : ℝ) * ((2 * π) ^ 2 + Real.log (↑n / x) ^ 2)) -
+      1 / (↑(n + 1) * ((2 * π) ^ 2 + Real.log (↑(n + 1) / x) ^ 2))| =
+      1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1)) := by
+    exact_mod_cast h_abs_eq
+  rw [h_rw]
+  -- Simplify RHS: |1/(log²n * n²)| = 1/(log²n * n²) since log n > 0
+  have h_log_pos : 0 < Real.log n := Real.log_pos (by exact_mod_cast (show 1 < n from by linarith))
+  rw [abs_of_pos (by positivity : 0 < 1 / (Real.log n ^ 2 * n ^ 2))]
+  -- Goal: u_n - u_{n+1} ≤ 1/(log²n * n²)
+  -- u_n - u_{n+1} = num/denom where num ≤ (2π)² and denom ≥ n²*(2π)⁴
+  sorry
 
 /-- nnabla 有界性 -/
 lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :

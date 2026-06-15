@@ -238,7 +238,7 @@ leanprove/
 │   ├── PrimeNumberTheorem.lean       # 阶段 V-A/B: PNT 等价形式 (13 定理, 0 sorry)
 │   ├── Sobolev.lean                  # Sobolev 空间: CS, W1, W21 (4 定理)
 │   ├── Tauberian.lean                # Wiener-Ikehara + PNT (13 定理, 0 sorry, 0 axiom)
-│   ├── WienerIkehara.lean            # Wiener-Ikehara 完整证明 (113 引理, nnabla_bound_aux h_bound/h_ident 已修复)
+│   ├── WienerIkehara.lean            # Wiener-Ikehara 完整证明 (113 引理, nnabla_bound_aux rw[h_abs_eq] 已修复)
 │   ├── ApiCheck.lean                 # Mathlib API 验证 (6 定理)
 │   ├── Tests.lean                    # 测试与验证
 │   ├── CriticalLine.lean              # 阶段 VI 入口：聚合子模块
