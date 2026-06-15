@@ -730,7 +730,7 @@ lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
     nlinarith
   -- |u n - u (n+1)| = u n - u (n+1) (since u_n ≥ u_{n+1} > 0), and bound it
   have h_diff_nonneg : 0 ≤ 1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1)) := by linarith
-  sorry -- rw [h_abs_eq] issue: set a didn't substitute in goal
+  sorry -- rw [h_abs_eq]: set a 不替换目标, ↑(n+1) vs ↑n+1 cast 不匹配
 
 /-- nnabla 有界性 -/
 lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :
