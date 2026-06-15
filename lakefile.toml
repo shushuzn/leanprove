@@ -1,6 +1,7 @@
 name = "leanprove"
 version = "0.1.0"
 defaultTargets = ["Leanprove"]
+jobs = 1
 
 [[lean_lib]]
 name = "Leanprove"

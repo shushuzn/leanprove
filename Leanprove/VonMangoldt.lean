@@ -521,7 +521,7 @@ theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → 
         apply Finset.sum_congr rfl
         intro n hn
         -- (vonMangoldt n)/n = hpp(f(n)) for n ∈ Spp
-        have hpp : IsPrimePow n := (Finset.mem_filter.mp hn).2
+        have hpp_n : IsPrimePow n := (Finset.mem_filter.mp hn).2
         have hS : n ∈ S := (Finset.mem_filter.mp hn).1
         have hNotPrime : ¬Nat.Prime n := by
           simpa [S] using (Finset.mem_filter.mp hS).2
@@ -539,13 +539,13 @@ theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → 
             by_contra h
             have : n.factorization n.minFac = 0 := by omega
             have : n = n.minFac ^ 0 := congrArg (fun k => n.minFac ^ k) this ▸
-              (IsPrimePow.minFac_pow_factorization_eq hpp).symm
+              (IsPrimePow.minFac_pow_factorization_eq hpp_n).symm
             have : n = 1 := by simpa using this
             omega
           have hk1 : n.factorization n.minFac = 1 := by omega
           have hn_val : n = n.minFac ^ 1 :=
             congrArg (fun k => n.minFac ^ k) hk1 ▸
-              (IsPrimePow.minFac_pow_factorization_eq hpp).symm
+              (IsPrimePow.minFac_pow_factorization_eq hpp_n).symm
           have hp : Nat.Prime n.minFac := Nat.minFac_prime n_ne_1
           have : n.minFac = n := by rw [← pow_one n.minFac, ← hn_val]
           have : Nat.Prime n := this ▸ hp
@@ -555,7 +555,7 @@ theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → 
         have h_vm : (vonMangoldt n : ℝ) = Real.log (n.minFac : ℝ) := by
           show (vonMangoldt n : ℝ) = Real.log (n.minFac : ℝ)
           have hn_val : n = n.minFac ^ n.factorization n.minFac :=
-            (IsPrimePow.minFac_pow_factorization_eq hpp).symm
+            (IsPrimePow.minFac_pow_factorization_eq hpp_n).symm
           rw [show vonMangoldt n = vonMangoldt (n.minFac ^ n.factorization n.minFac)
               from congrArg vonMangoldt hn_val]
           rw [vonMangoldt_apply_pow hk_ne]
@@ -563,7 +563,7 @@ theorem primePower_contribution_bounded : ∃ C : ℝ, ∀ x : ℝ, 2 ≤ x → 
         -- n = minFac^k as reals
         have h_n_rpow : (n : ℝ) = (n.minFac : ℝ) ^ (n.factorization n.minFac) := by
           norm_cast
-          exact (IsPrimePow.minFac_pow_factorization_eq hpp).symm
+          exact (IsPrimePow.minFac_pow_factorization_eq hpp_n).symm
         -- hpp(f(n)) computation
         have h_hpp : hpp (f n) =
             Real.log (n.minFac : ℝ) / (n.minFac : ℝ) ^ (n.factorization n.minFac) := by
