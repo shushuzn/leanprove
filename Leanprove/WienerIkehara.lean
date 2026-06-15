@@ -18,6 +18,7 @@ import Mathlib.NumberTheory.LSeries.Dirichlet
 import Mathlib.Analysis.Calculus.Deriv.Slope
 import Mathlib.Tactic.GCongr
 import Mathlib.Analysis.Complex.ExponentialBounds
+import Mathlib.Analysis.Real.Pi.Bounds
 import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 import Leanprove.Sobolev
 
@@ -680,9 +681,59 @@ lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
     exact mul_pos h_n1 ha1
   -- 证明 u 递减
   have h_decr : 1 / (((n : ℝ) + 1) * a (n + 1)) ≤ 1 / ((n : ℝ) * a n) := by
-    sorry
-  -- |u n - u (n+1)| = u n - u (n+1) ≤ u n
-  sorry
+    have hpos1 : 0 < (n : ℝ) * a n := mul_pos h_n ha
+    have hpos2 : 0 < ((n : ℝ) + 1) * a (n + 1) := mul_pos h_n1 ha1
+    apply (one_div_le_one_div hpos2 hpos1).mpr
+    -- 逐项展开 n*a_n 与 (n+1)*a_{n+1} 的差
+    have h_ident : ((n : ℝ) + 1) * a (n + 1) - (n : ℝ) * a n =
+      (2 * π) ^ 2 -
+      ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2 +
+      (Real.log ((n : ℝ) / x) + ((n : ℝ) + 1) * Real.log (1 + 1 / (n : ℝ))) ^ 2 := by
+      have h_log_eq : Real.log (((n : ℕ) + 1 : ℝ) / x) =
+          Real.log ((n : ℝ) / x) + Real.log (1 + 1 / (n : ℝ)) := by
+        have h_eq : ((n : ℝ) + 1) / x = (n : ℝ) / x * (1 + 1 / (n : ℝ)) := by
+          field_simp [h_n.ne']
+        rw [h_eq, Real.log_mul (by positivity : (n : ℝ) / x ≠ 0) (by positivity : 1 + 1 / (n : ℝ) ≠ 0)]
+      simp only [a]
+      push_cast at h_log_eq ⊢
+      rw [h_log_eq]
+      ring_nf
+    have h_sq_nonneg : 0 ≤ (Real.log ((n : ℝ) / x) + ((n : ℝ) + 1) * Real.log (1 + 1 / (n : ℝ))) ^ 2 := by
+      positivity
+    have h_bound : ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2 < (2 * π) ^ 2 := by
+      have h_inv_pos : 0 < 1 / (n : ℝ) := by positivity
+      have h_pos : 0 < 1 + 1 / (n : ℝ) := by positivity
+      have h_le := Real.log_le_sub_one_of_pos h_pos
+      have h_simp : (1 : ℝ) + 1 / (n : ℝ) - 1 = 1 / (n : ℝ) := by linarith
+      have h_log_le : Real.log (1 + 1 / (n : ℝ)) ≤ 1 / (n : ℝ) := by linarith [h_le, h_simp]
+      have h_one_le : (1 : ℝ) ≤ 1 + 1 / (n : ℝ) := by linarith [h_inv_pos]
+      have h_log_ge_0 : 0 ≤ Real.log (1 + 1 / (n : ℝ)) := Real.log_nonneg h_one_le
+      have h_sq : Real.log (1 + 1 / (n : ℝ)) ^ 2 ≤ (1 / (n : ℝ)) ^ 2 := by
+        rw [sq, sq]; exact mul_le_mul h_log_le h_log_le h_log_ge_0 h_inv_pos.le
+      have h_mul : ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2 ≤
+          ((n : ℝ) + 1) * (n : ℝ) * (1 / (n : ℝ)) ^ 2 := by
+        apply mul_le_mul_of_nonneg_left h_sq; positivity
+      have h_red : ((n : ℝ) + 1) * (n : ℝ) * (1 / (n : ℝ)) ^ 2 = ((n : ℝ) + 1) / (n : ℝ) := by
+        field_simp
+      have h_form : ((n : ℝ) + 1) / (n : ℝ) = 1 + 1 / (n : ℝ) := by
+        rw [add_div]; rw [div_self h_n.ne']
+      have h_inv_le : 1 / (n : ℝ) ≤ 1 / (4 : ℝ) := by
+        rw [div_le_div_iff₀ h_n (by norm_num : (0 : ℝ) < 4)]
+        norm_num; exact_mod_cast (show 4 ≤ n from by linarith)
+      have h_bnd : 1 + 1 / (n : ℝ) ≤ 5 / (4 : ℝ) := by linarith [h_inv_le]
+      have h3 : (3 : ℝ) < π := Real.pi_gt_three
+      calc ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2
+          ≤ ((n : ℝ) + 1) / (n : ℝ) := by rw [h_red] at h_mul; exact h_mul
+        _ = 1 + 1 / (n : ℝ) := h_form
+        _ ≤ 5 / (4 : ℝ) := h_bnd
+        _ < (2 * π) ^ 2 := by nlinarith
+    nlinarith
+  -- |u n - u (n+1)| = u n - u (n+1) (since u_n ≥ u_{n+1} > 0), and bound it
+  have h_diff_nonneg : 0 ≤ 1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1)) := by linarith
+  have h_abs_eq : |1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1))| =
+      1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1)) :=
+    abs_of_nonneg h_diff_nonneg
+  sorry -- set a didn't substitute in goal; ↑(n+1) vs ↑n+1 cast mismatch
 
 /-- nnabla 有界性 -/
 lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :

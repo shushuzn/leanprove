@@ -96,3 +96,63 @@ rw [mul_inv_cancel_left₀ (by linarith : x - 1 ≠ 0)]
 Real.exp_one_lt_three : exp 1 < 3
 ```
 **说明**: 用于 `eventually_gt_atTop 3` 的 bound（因为 `e < 3`）。
+
+## linarith 无法处理除法表达式（1/n 视为不透明变量）
+
+**Pitfall**: `linarith` 将 `1/n` 视为不透明变量，无法从 `0 < n` 推导 `0 < 1/n`，或从 `4 ≤ n` 推导 `1/n ≤ 1/4`。
+
+**解决方案**:
+```lean
+-- 显式提供 0 < 1/n
+have h_inv_pos : 0 < 1 / (n : ℝ) := by positivity
+
+-- 显式提供 1+1/n-1 = 1/n
+have h_simp : (1 : ℝ) + 1 / (n : ℝ) - 1 = 1 / (n : ℝ) := by linarith
+
+-- 1/n ≤ 1/4 需要用 div_le_div_iff₀
+have h_inv_le : 1 / (n : ℝ) ≤ 1 / (4 : ℝ) := by
+  rw [div_le_div_iff₀ h_n (by norm_num : (0 : ℝ) < 4)]
+  norm_num; exact_mod_cast h_n4
+
+-- π > 3 需要 import Mathlib.Analysis.Real.Pi.Bounds
+have h3 : (3 : ℝ) < π := Real.pi_gt_three
+```
+
+**Import**: 需要 `import Mathlib.Analysis.Real.Pi.Bounds` 获取 `Real.pi_gt_three`。
+
+## push_cast + rw + ring_nf 替代 nlinarith
+
+**Pitfall**: `nlinarith` 无法处理涉及 `log(1+1/n)` 展开的代数恒等式，即使 `h_log_eq` 在上下文中。
+
+**解决方案**: 用 `push_cast` 统一 cast，然后 `rw` 代入，最后 `ring_nf` 关闭。
+```lean
+-- ❌ 失败: nlinarith 无法处理 log 展开
+nlinarith [h_log_eq, sq_nonneg ...]
+
+-- ✅ 成功: push_cast + rw + ring_nf
+simp only [a]
+push_cast at h_log_eq ⊢
+rw [h_log_eq]
+ring_nf
+```
+
+## Real.log_nonneg 需要 1 ≤ x
+
+```lean
+-- ❌ 错误: positivity 无法证明 log(1+1/n) ≥ 0
+have h : 0 ≤ Real.log (1 + 1 / (n : ℝ)) := by positivity  -- 失败
+
+-- ✅ 正确: 显式证明 1 ≤ 1+1/n，然后用 Real.log_nonneg
+have h_one_le : (1 : ℝ) ≤ 1 + 1 / (n : ℝ) := by linarith [h_inv_pos]
+have h : 0 ≤ Real.log (1 + 1 / (n : ℝ)) := Real.log_nonneg h_one_le
+```
+
+## set a 未在目标中替换（rw 失败）
+
+**Pitfall**: `set a : ℕ → ℝ := fun n => expr` 在 `filter_upwards` 上下文中可能不替换目标中的 `expr` 为 `a n`，导致 `rw [h]` 失败（pattern 不匹配）。
+
+**详细**: `a (n+1)` 展开为 `(2π)² + log(↑(n+1)/x)²`（cast of add），而目标有 `(2π)² + log((↑n+1)/x)²`（add of cast）。两者定义相等但语法不同，`rw` 无法匹配。
+
+**失败的方法**: `rw`, `exact_mod_cast`, `convert`, `norm_cast`, `push_cast`, `show ... from by`
+
+**建议**: 避免在 `filter_upwards` 上下文中使用 `set`。改用 `let` 并手动展开，或直接使用展开形式。

@@ -119,3 +119,34 @@ When user sets a direction, execute it. Do not re-open decisions. Only report bl
 - Last-Seen: 2026-06-12
 
 ---
+
+## [LRN-20260615-001] linarith_div_opaque_variable_pitfall
+
+**Logged**: 2026-06-15T03:00:00+08:00
+**Priority**: critical
+**Status**: pending
+**Area**: proof
+
+### Summary
+`linarith` treats `1/n` as an opaque variable. It cannot derive `0 < 1/n` from `0 < n`, or `1/n ≤ 1/4` from `4 ≤ n`. This causes systematic failures when proving inequalities involving division.
+
+### Details
+When `h_n : 0 < (n : ℝ)` is in context and the goal is `0 < 1/n`, `linarith` fails because it treats `1/n` as an opaque variable, not as `1 * n⁻¹`. Similarly, `1/n ≤ 1/4` cannot be derived from `4 ≤ n`.
+
+**Workaround**:
+1. Always provide `h_inv_pos : 0 < 1/n` explicitly via `positivity`
+2. For `1/n ≤ 1/4`, use `div_le_div_iff₀ h_n (by norm_num)` then `norm_num; exact_mod_cast h_n4`
+3. For `1+1/n-1 = 1/n`, provide `h_simp` explicitly via `linarith`
+4. For `π > 3`, use `Real.pi_gt_three` (import `Mathlib.Analysis.Real.Pi.Bounds`)
+5. `Real.log_nonneg` requires `1 ≤ x`, not `0 < x`
+
+### Metadata
+- Source: error
+- Related Files: Leanprove/WienerIkehara.lean
+- Tags: linarith, division, opaque_variable, pitfall
+- Pattern-Key: proof.linarith_div_pitfall
+- Recurrence-Count: many
+- First-Seen: 2026-06-15
+- Last-Seen: 2026-06-15
+
+---
