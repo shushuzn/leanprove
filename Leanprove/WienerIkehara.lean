@@ -656,8 +656,9 @@ lemma Real.log_eventually_gt_atTop (a : ℝ) :
 lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
     nnabla (fun n ↦ 1 / (n * ((2 * π) ^ 2 + Real.log (n / x) ^ 2))) =O[atTop]
     (fun n ↦ 1 / (Real.log n ^ 2 * n ^ 2)) := by
-  -- 策略: 用 IsBigO.of_bound 100 (更宽松的常数)
-  apply IsBigO.of_bound 100
+  -- 策略: 用 IsBigO.of_bound (依赖 x 的常数，对所有 n > 3 成立)
+  -- M = (log²x + (2π)²)² + 1，覆盖 x 任意正、n 任意大的情形
+  apply IsBigO.of_bound ((Real.log x ^ 2 + (2 * π) ^ 2) ^ 2 + 1)
   filter_upwards [eventually_gt_atTop 3] with n hn
   simp only [nnabla, norm_eq_abs, one_mul]
   -- 用 exact_mod_cast 处理类型转换
@@ -737,10 +738,48 @@ lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
   -- Simplify RHS: |1/(log²n * n²)| = 1/(log²n * n²) since log n > 0
   have h_log_pos : 0 < Real.log n := Real.log_pos (by exact_mod_cast (show 1 < n from by linarith))
   rw [abs_of_pos (by positivity : 0 < 1 / (Real.log n ^ 2 * n ^ 2))]
-  -- Goal: u_n - u_{n+1} ≤ 100/(log²n * n²)
-  field_simp
-  ring_nf
-  sorry
+  -- Goal: u_n - u_{n+1} ≤ M/(log²n * n²) 其中 M = (log²x + (2π)²)² + 1
+
+  -- Step A: 公分母（不 ring_nf，让 a n 保持）
+  have h_diff_eq : (1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1))) =
+      ((n + 1) * a (n + 1) - n * a n) / (n * (n + 1) * a n * a (n + 1)) := by
+    rw [div_sub_div_same]; ring
+  rw [h_diff_eq]
+
+  -- Step B: 分子用 h_ident + h_bound 上界
+  have h_num_le : (n + 1 : ℝ) * a (n + 1) - n * a n ≤
+      (2 * π : ℝ) ^ 2 + Real.log (↑(n + 1) / x) ^ 2 := by
+    rw [h_ident]
+    linarith [h_bound, h_sq_nonneg]
+
+  -- Step C: 分母下界 - n(n+1)·a(n)·a(n+1) ≥ n²·a(n)²
+  have h_den_ge : (n : ℝ) * (n + 1) * a n * a (n + 1) ≥ (n : ℝ) ^ 2 * a n ^ 2 := by
+    have h_a_inc : a (n + 1) ≥ a n := by
+      simp only [a]
+      have h_log_eq : Real.log (↑(n + 1 : ℕ) / x) =
+          Real.log ((n : ℝ) / x) + Real.log (1 + (n : ℝ)⁻¹) := by
+        have h_eq : ((n : ℝ) + 1) / x = (n : ℝ) / x * (1 + (n : ℝ)⁻¹) := by field_simp [h_n.ne']
+        rw [h_eq, Real.log_mul (by positivity) (by positivity)]
+      rw [h_log_eq]
+      nlinarith [sq_nonneg (Real.log ((n : ℝ) / x)),
+                 sq_nonneg ((n + 1 : ℝ) * Real.log (1 + (n : ℝ)⁻¹)),
+                 Real.log_nonneg (by linarith : (1 : ℝ) ≤ 1 + (n : ℝ)⁻¹),
+                 Real.log_nonneg (by linarith : (1 : ℝ) ≤ (n : ℝ) / x)]
+    nlinarith [h_a_inc, h_n, ha, ha1, sq_nonneg (a n - a (n + 1)),
+               sq_nonneg ((n + 1 : ℝ) - (n : ℝ))]
+
+  -- Step D: 收尾
+  -- 目标等价 (乘正数): (n+1)·a(n+1) - n·a(n) · log²n · n² ≤ M · n · (n+1) · a(n) · a(n+1)
+  have h_pos_den : 0 < (n : ℝ) * (n + 1) * a n * a (n + 1) := by positivity
+  have h_pos_rhs : 0 < Real.log n ^ 2 * (n : ℝ) ^ 2 := by positivity
+  rw [div_le_div_iff₀ h_pos_den h_pos_rhs]
+  nlinarith [h_num_le, h_den_ge, ha, ha1, h_n, h_n1,
+             Real.log_pos (by exact_mod_cast : (1 : ℝ) < n),
+             Real.log_nonneg (by linarith : (1 : ℝ) ≤ n),
+             sq_nonneg (Real.log ((n : ℝ) / x)),
+             sq_nonneg (Real.log (↑(n + 1) / x)),
+             sq_nonneg (Real.log n),
+             Real.pi_gt_three]
 /-- nnabla 有界性 -/
 lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :
     nnabla (fun n => C / (1 + (Real.log (n / x) / (2 * π)) ^ 2) / n) =O[atTop]

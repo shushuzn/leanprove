@@ -17,13 +17,14 @@ noncomputable section
 
 /-! # completedZeta 与 riemannXi 函数 -/
 
-/-- completed Riemann zeta: Λ(s) = π^{-s/2} Γ(s/2) ζ(s) -/
+/-- completed Riemann zeta: Λ(s) = π^{-s/2} Γ(s/2) ζ(s)
+    定义为 Mathlib 的 completedRiemannZeta，确保函数方程等性质可直接使用 -/
 def completedZeta (s : ℂ) : ℂ :=
-  (π : ℂ) ^ (-s / 2) * Gamma (s / 2) * riemannZeta s
+  completedRiemannZeta s
 
 /-- 函数方程 Λ(1-s) = Λ(s) -/
-lemma completedZeta_one_sub (s : ℂ) : completedZeta (1 - s) = completedZeta s := by
-  sorry
+lemma completedZeta_one_sub (s : ℂ) : completedZeta (1 - s) = completedZeta s :=
+  completedRiemannZeta_one_sub s
 
 /-- Riemann ξ 函数: ξ(s) = s(s-1)Λ(s) -/
 def riemannXi (s : ℂ) : ℂ :=
@@ -69,8 +70,8 @@ lemma riemannXi_real_on_critical_line (t : ℝ) : (riemannXi (1/2 + I * t)).im =
 /-! ## Γ 函数反射公式与增长估计 -/
 
 /-- Γ(z)Γ(1-z) = π / sin(πz) -/
-lemma gamma_reflection (z : ℂ) : Gamma z * Gamma (1 - z) = π / sin (π * z) := by
-  sorry
+lemma gamma_reflection (z : ℂ) : Gamma z * Gamma (1 - z) = π / sin (π * z) :=
+  Complex.Gamma_mul_Gamma_one_sub z
 
 /-- Γ(it) 的模平方公式：|Γ(it)|² = π / (|t| · |sinh(πt)|) -/
 lemma gamma_it_sq_norm (t : ℝ) (ht : t ≠ 0) : ‖Gamma (I * (t : ℂ))‖ ^ 2 = π / |t| / |Real.sinh (π * t)| := by
@@ -82,7 +83,10 @@ lemma zeta_at_two_val : riemannZeta 2 = π ^ 2 / 6 :=
 
 /-- ζ(-1) = -1/12 -/
 lemma zeta_at_neg_one_val : riemannZeta (-1) = -1 / 12 := by
-  sorry
+  have h := zeta_at_neg_nat 1
+  norm_num at h
+  convert h using 1
+  norm_num
 
 /-! ## 增长估计 -/
 
@@ -153,7 +157,7 @@ lemma criticalStrip_bounded (T : ℝ) : Bornology.IsBounded (criticalStrip T) :=
         calc
           (im s) ^ 2 ≤ T ^ 2 := by nlinarith
           _ = (|T|) ^ 2 := by simp
-      nlinarith
+      nlinarith [abs_nonneg T]
     have h_norm_nonneg : 0 ≤ ‖s‖ := norm_nonneg _
     have h_one_absT_nonneg : 0 ≤ 1 + |T| := by nlinarith [abs_nonneg T]
     nlinarith
@@ -192,7 +196,7 @@ lemma riemannXiZeros_symm_conj {s : ℂ} (hs : s ∈ riemannXiZeros) : conj s �
 
 /-- N(T) 关于 T 单调 -/
 lemma xiZeroCount_mono {T₁ T₂ : ℝ} (h : T₁ ≤ T₂) : xiZeroCount T₁ ≤ xiZeroCount T₂ := by
-  sorry
+  simp [xiZeroCount]
 
 /-- ξ(ρ) = 0 ⇒ ρ ≠ 0, ρ ≠ 1, ζ(ρ) = 0 -/
 lemma riemannXi_zero_implies_zeta_zero {s : ℂ} (hs : s ∈ riemannXiZeros) : s ≠ 0 ∧ s ≠ 1 ∧ riemannZeta s = 0 := by
