@@ -75,7 +75,48 @@ lemma gamma_reflection (z : ℂ) : Gamma z * Gamma (1 - z) = π / sin (π * z) :
 
 /-- Γ(it) 的模平方公式：|Γ(it)|² = π / (|t| · |sinh(πt)|) -/
 lemma gamma_it_sq_norm (t : ℝ) (ht : t ≠ 0) : ‖Gamma (I * (t : ℂ))‖ ^ 2 = π / abs t / abs (Real.sinh (π * t)) := by
-  sorry
+  have h_ne : I * (t : ℂ) ≠ 0 := mul_ne_zero I_ne_zero (ofReal_ne_zero.mpr ht)
+  have h_ne' : -I * (t : ℂ) ≠ 0 := mul_ne_zero (neg_ne_zero.mpr I_ne_zero) (ofReal_ne_zero.mpr ht)
+  have h_conj : conj (Gamma (I * ↑t)) = Gamma (-I * ↑t) := by
+    rw [← Complex.Gamma_conj]; simp [mul_comm I]
+  have h_sq_c : (↑(‖Gamma (I * ↑t)‖ ^ 2) : ℂ) = Gamma (I * ↑t) * Gamma (-I * ↑t) := by
+    conv_lhs => rw [ofReal_pow]; rw [← Complex.mul_conj', h_conj]
+  have h_rec : Gamma (1 - I * ↑t) = -I * ↑t * Gamma (-I * ↑t) := by
+    have h := Complex.Gamma_add_one (-I * ↑t) h_ne'
+    rw [show -I * ↑t + 1 = 1 - I * ↑t by ring] at h; exact h
+  have h_sin : sin ((↑π : ℂ) * (I * ↑t)) = ↑(Real.sinh (π * t)) * I := by
+    rw [show (↑π : ℂ) * (I * ↑t) = (↑(π * t) : ℂ) * I by push_cast; ring]
+    rw [Complex.sin_mul_I, ofReal_sinh]
+  have h_denom_ne : (↑(Real.sinh (π * t)) * ↑t : ℂ) ≠ 0 :=
+    mul_ne_zero (ofReal_ne_zero.mpr (Real.sinh_ne_zero.mpr (mul_ne_zero Real.pi_ne_zero ht)))
+      (ofReal_ne_zero.mpr ht)
+  have h_mul : Gamma (I * ↑t) * Gamma (-I * ↑t) * (↑(Real.sinh (π * t)) * ↑t) = (↑π : ℂ) := by
+    have h_refl := Complex.Gamma_mul_Gamma_one_sub (I * ↑t)
+    rw [mul_comm (Gamma (I * ↑t)), mul_assoc (Gamma (-I * ↑t))]
+    rw [show Gamma (-I * ↑t) * (Gamma (I * ↑t) * (↑(Real.sinh (π * t)) * ↑t)) =
+      Gamma (I * ↑t) * ((-I * ↑t) * Gamma (-I * ↑t)) * (↑(Real.sinh (π * t)) * I) by
+        rw [mul_comm (Gamma (-I * ↑t))]; ring_nf; simp only [I_sq]; ring_nf]
+    rw [← mul_assoc, ← h_rec, h_refl, h_sin]
+    have h_sinh_ne : (↑(Real.sinh (π * t)) : ℂ) ≠ 0 :=
+      ofReal_ne_zero.mpr (Real.sinh_ne_zero.mpr (mul_ne_zero Real.pi_ne_zero ht))
+    field_simp [h_sinh_ne]
+  have h_prod : Gamma (I * ↑t) * Gamma (-I * ↑t) = ↑π / (↑(Real.sinh (π * t)) * ↑t) :=
+    eq_div_of_mul_eq h_denom_ne h_mul
+  have h_coe : (↑(π / (Real.sinh (π * t) * t)) : ℂ) = ↑π / (↑(Real.sinh (π * t)) * ↑t) := by
+    rw [show (↑(Real.sinh (π * t)) * ↑t : ℂ) = ↑(Real.sinh (π * t) * t) by rw [← ofReal_mul]]
+    rw [ofReal_div]
+  have h_sq_r : ‖Gamma (I * ↑t)‖ ^ 2 = π / (Real.sinh (π * t) * t) := by
+    have h : (↑(‖Gamma (I * ↑t)‖ ^ 2) : ℂ) = ↑(π / (Real.sinh (π * t) * t)) := by
+      rw [h_sq_c, h_prod, h_coe]
+    rwa [Complex.ofReal_inj] at h
+  have h_sign : Real.sinh (π * t) * t = abs (Real.sinh (π * t)) * abs t := by
+    rcases lt_or_gt_of_ne ht with h_neg | h_pos
+    · rw [abs_of_nonpos (Real.sinh_neg_iff.mpr (mul_neg_of_pos_of_neg Real.pi_pos h_neg)).le,
+          abs_of_nonpos h_neg.le]; ring
+    · rw [abs_of_nonneg (Real.sinh_pos_iff.mpr (mul_pos Real.pi_pos h_pos)).le,
+          abs_of_nonneg h_pos.le]
+  rw [h_sq_r, h_sign, mul_comm (abs (Real.sinh _)), div_div]
+
 
 /-- ζ(2) = π²/6 -/
 lemma zeta_at_two_val : riemannZeta 2 = π ^ 2 / 6 :=
