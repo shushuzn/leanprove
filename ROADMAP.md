@@ -152,3 +152,4 @@ RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价
 ---
 
 *路线图最后更新: 2026-06-18 — 阶段 I-V 0 sorry + 0 axiom，阶段 VI 进行中 (Definitions 8 sorry, Hardy 2 sorry, xi_on_critical_line_continuous 已证明, infinite_zeros_of_infinite_sign_changes 已证明, xi_at_half 已证明)。*
+

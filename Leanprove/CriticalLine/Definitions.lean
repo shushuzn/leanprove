@@ -74,7 +74,7 @@ lemma gamma_reflection (z : ℂ) : Gamma z * Gamma (1 - z) = π / sin (π * z) :
   Complex.Gamma_mul_Gamma_one_sub z
 
 /-- Γ(it) 的模平方公式：|Γ(it)|² = π / (|t| · |sinh(πt)|) -/
-lemma gamma_it_sq_norm (t : ℝ) (ht : t ≠ 0) : ‖Gamma (I * (t : ℂ))‖ ^ 2 = π / |t| / |Real.sinh (π * t)| := by
+lemma gamma_it_sq_norm (t : ℝ) (ht : t ≠ 0) : ‖Gamma (I * (t : ℂ))‖ ^ 2 = π / abs t / abs (Real.sinh (π * t)) := by
   sorry
 
 /-- ζ(2) = π²/6 -/
