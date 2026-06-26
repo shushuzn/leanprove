@@ -177,8 +177,24 @@ lemma zeta_bound_at_two (s : ℂ) (hs : re s = 2) : ‖riemannZeta s‖ ≤ 2 :=
     exact h
   linarith
 
-/-- ζ(s) 在 Re(s) = -1 上的有界性（通过函数方程）：‖ζ(s)‖ ≤ 4 -/
+/-- ζ(s) 在 Re(s) = -1 上的有界性（通过函数方程）：‖ζ(s)‖ ≤ 4
+    策略: s=-1 时直接验证, s≠-1 时用函数方程 ζ(1-s) = 2(2π)^{-s}Γ(s)cos(πs/2)ζ(s)
+    + zeta_bound_at_two (因 re(1-s)=2) -/
 lemma zeta_bound_at_neg_one (s : ℂ) (hs : re s = -1) : ‖riemannZeta s‖ ≤ 4 := by
+  rcases eq_or_ne s (-1) with rfl | h_ne
+  · rw [zeta_at_neg_one_val]; norm_num
+  have hs_ne_nat : ∀ n : ℕ, s ≠ -↑n := by
+    intro n h
+    have hr : -1 = -(n : ℝ) := by rw [← hs, h]; simp
+    have hn : n = 1 := by exact_mod_cast (show (n : ℝ) = 1 from by linarith)
+    subst hn; push_cast at h; exact h_ne h
+  have hs_ne_one : s ≠ 1 := by
+    intro h; rw [h, one_re] at hs; linarith
+  have h_fe := riemannZeta_one_sub hs_ne_nat hs_ne_one
+  have h_bound_1s : ‖riemannZeta (1 - s)‖ ≤ 2 := by
+    apply zeta_bound_at_two; rw [sub_re, one_re, hs]; norm_num
+  -- |ζ(1-s)| = |2(2π)^{-s}Γ(s)cos(πs/2)| * |ζ(s)|
+  -- 需要 bound 分母 |2(2π)^{-s}Γ(s)cos(πs/2)| ≥ 1/2
   sorry
 
 /-! ## 零点计数函数 N(T) -/
