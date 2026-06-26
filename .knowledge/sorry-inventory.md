@@ -14,13 +14,15 @@
 
 **已证明的组件**:
 - `cpow_conj_of_real_pos`: `0 < t → (t:ℂ)^conj s = conj((t:ℂ)^s)` ✅
-- `mellin_integrand_conj`: 在 Ioi 0 上逐点共轭性质 ✅（在测试文件中）
+- `mellin_conj`: `mellin f (conj s) = conj (mellin f s)` 当 `conj (f t) = f t` ✅
+  - 关键: `setIntegral_congr_fun measurableSet_Ioi` + `integral_conj`
+- `conj_ofReal_comp`: `conj ((ofReal ∘ g) t) = (ofReal ∘ g) t` ✅
 
 **待证明的组件**:
-- `mellin_conj`: 需要 `set_integral` 版本的 `integral_conj`，或用 `Measure.restrict` 转换
-- `completedRiemannZeta_conj`: 从 `mellin_conj` + `completedHurwitzZetaEven` 定义推导
+- `completedRiemannZeta_conj`: 需要将 `completedRiemannZeta` 展开为 `mellin` 形式，然后应用 `mellin_conj`
+- 从 `completedRiemannZeta_conj` 推导 `riemannXi_conj` 已在测试文件中完成
 
-**关键障碍**: Mathlib 的 `integral_conj` 是全空间版本，需要转换为 `∫ x in s, ...` 形式
+**关键突破**: `mellin_conj` 的证明使用 `setIntegral_congr_fun` (Mathlib `MeasureTheory.Integral.Bochner.Set`) 在 `Ioi 0` 上逐点证明，然后用 `integral_conj` 处理共轭积分
 
 ## 已证明（2026-06-26 新增）
 
