@@ -81,12 +81,12 @@ private lemma completedRiemannZeta_conj (s : ℂ) :
   -- f_modif 实值性: evenKernel 0 返回实值, indicator 保持实值
   have h_real : ∀ t : ℝ, conj ((hurwitzEvenFEPair 0).f_modif t) =
       (hurwitzEvenFEPair 0).f_modif t := by
-    -- 实值性: evenKernel 0 返回实值, indicator 保持实值
-    -- 在测试文件中已验证, 这里用 sorry 桥接
-    sorry
+    intro t; simp only [WeakFEPair.f_modif, hurwitzEvenFEPair]
+    simp [map_add, map_sub, conj_ofReal, Set.indicator]
+    split_ifs <;> simp [conj_ofReal, map_sub]
   rw [mellin_conj _ h_real]
-  -- conj 穿过常数 (f₀=1, g₀=1, ε=1, k=1/2 都是实数)
-  -- 这是纯计算目标
+  -- conj 穿过修正项 (f₀=1, g₀=1, ε=1, k=1/2 都是实数)
+  -- 机械计算: 需要 conj_ofReal + unfold hurwitzEvenFEPair
   sorry
 
 /-- ξ 与复共轭交换: ξ(s̅) = ξ(s)̅ -/
