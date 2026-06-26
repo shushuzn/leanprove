@@ -6,9 +6,21 @@
 
 | 文件 | sorry 数 | 状态 |
 |------|----------|------|
-| Leanprove/CriticalLine/Definitions.lean | 3 | 🔄 riemannXi_conj 证明路径已清晰 |
+| Leanprove/CriticalLine/Definitions.lean | 3 | 🔄 riemannXi_conj 证明路径已清晰，mellin_conj 需深入 measure theory |
 | Leanprove/CriticalLine/Hardy.lean | 2 | 🔄 待证明 |
 | Leanprove/WienerIkehara.lean | 28 | 🔄 构建错误待修复 |
+
+### riemannXi_conj 证明进展
+
+**已证明的组件**:
+- `cpow_conj_of_real_pos`: `0 < t → (t:ℂ)^conj s = conj((t:ℂ)^s)` ✅
+- `mellin_integrand_conj`: 在 Ioi 0 上逐点共轭性质 ✅（在测试文件中）
+
+**待证明的组件**:
+- `mellin_conj`: 需要 `set_integral` 版本的 `integral_conj`，或用 `Measure.restrict` 转换
+- `completedRiemannZeta_conj`: 从 `mellin_conj` + `completedHurwitzZetaEven` 定义推导
+
+**关键障碍**: Mathlib 的 `integral_conj` 是全空间版本，需要转换为 `∫ x in s, ...` 形式
 
 ## 已证明（2026-06-26 新增）
 
