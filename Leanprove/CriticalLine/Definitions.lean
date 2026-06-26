@@ -85,9 +85,15 @@ private lemma completedRiemannZeta_conj (s : ℂ) :
     simp [map_add, map_sub, conj_ofReal, Set.indicator]
     split_ifs <;> simp [conj_ofReal, map_sub]
   rw [mellin_conj _ h_real]
-  -- conj 穿过修正项 (f₀=1, g₀=1, ε=1, k=1/2 都是实数)
-  -- 机械计算: 需要 conj_ofReal + unfold hurwitzEvenFEPair
-  sorry
+  -- conj 穿过修正项: f₀, g₀, ε, k 都是实数
+  have hf₀ : conj (hurwitzEvenFEPair 0).f₀ = (hurwitzEvenFEPair 0).f₀ := by
+    unfold hurwitzEvenFEPair; simp
+  have hg₀ : conj (hurwitzEvenFEPair 0).g₀ = (hurwitzEvenFEPair 0).g₀ := by exact map_one conj
+  have hε : conj (hurwitzEvenFEPair 0).ε = (hurwitzEvenFEPair 0).ε := by exact map_one conj
+  have hk : conj (↑(hurwitzEvenFEPair 0).k : ℂ) = ↑(hurwitzEvenFEPair 0).k := by
+    unfold hurwitzEvenFEPair; exact conj_ofReal _
+  simp only [map_sub, map_div₀, map_smul, map_mul, smul_eq_mul, hf₀, hg₀, hε, hk, conj_two,
+    show conj (1 : ℂ) = 1 from map_one conj]
 
 /-- ξ 与复共轭交换: ξ(s̅) = ξ(s)̅ -/
 lemma riemannXi_conj (s : ℂ) : riemannXi (conj s) = conj (riemannXi s) := by
