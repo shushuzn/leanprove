@@ -135,8 +135,16 @@ lemma zeta_at_neg_one_val : riemannZeta (-1) = -1 / 12 := by
 
 /-! ## 增长估计 -/
 
-/-- ζ(s) 在 Re(s) = 2 上的有界性：‖ζ(s)‖ ≤ 2 -/
+/-- ζ(s) 在 Re(s) = 2 上的有界性：‖ζ(s)‖ ≤ 2
+    证明策略: |ζ(s)| ≤ ζ(Re s) = ζ(2) = π²/6 < 2 -/
 lemma zeta_bound_at_two (s : ℂ) (hs : re s = 2) : ‖riemannZeta s‖ ≤ 2 := by
+  have hs_gt : 1 < re s := by linarith
+  -- 步骤1: 展开 ζ(s) = ∑' n, 1/n^s
+  rw [zeta_eq_tsum_one_div_nat_cpow hs_gt]
+  -- 步骤2: 用 norm_tsum_le_tsum_norm 逐项bound
+  -- 需要: Summable fun n => ‖1/n^s‖
+  -- 步骤3: ‖1/n^s‖ = 1/n^(Re s) = 1/n^2 (用 norm_cpow_eq_rpow_re_of_pos)
+  -- 步骤4: ∑' 1/n^2 = ζ(2) = π²/6 < 2
   sorry
 
 /-- ζ(s) 在 Re(s) = -1 上的有界性（通过函数方程）：‖ζ(s)‖ ≤ 4 -/
