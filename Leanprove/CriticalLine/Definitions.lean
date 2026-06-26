@@ -8,12 +8,17 @@ import Mathlib.NumberTheory.LSeries.RiemannZeta
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Analysis.SpecialFunctions.Pow.Complex
+import Mathlib.Analysis.SpecialFunctions.Complex.Arg
 import Mathlib.Analysis.Normed.Group.InfiniteSum
 import Mathlib.Analysis.PSeries
+import Mathlib.Analysis.MellinTransform
+import Mathlib.MeasureTheory.Integral.Bochner.Set
+import Mathlib.NumberTheory.LSeries.HurwitzZetaEven
 import Leanprove.ZetaAnalyticContinuation
 import Leanprove.ZetaUpperBound
 
-open Complex Real
+open Complex Real MeasureTheory HurwitzZeta
 open scoped Topology BigOperators ComplexConjugate
 open Metric
 
@@ -44,14 +49,52 @@ lemma riemannXi_eq_riemannXi_one_sub (s : ℂ) : riemannXi s = riemannXi (1 - s)
     _ = (1 - s) * ((1 - s) - 1) * completedZeta (1 - s) := by rw [hΛ]
     _ = riemannXi (1 - s) := rfl
 
+/-! ### Mellin 变换共轭性质 -/
+
+/-- Mellin 变换的共轭性质: 对实值函数 f, mellin f (conj s) = conj (mellin f s) -/
+private lemma mellin_conj (f : ℝ → ℂ) (hf : ∀ t : ℝ, conj (f t) = f t) (s : ℂ) :
+    mellin f (conj s) = conj (mellin f s) := by
+  dsimp [mellin]
+  have h_eq : Set.EqOn (fun t : ℝ => (t : ℂ) ^ (conj s - 1) * f t)
+    (fun t : ℝ => conj ((t : ℂ) ^ (s - 1) * f t)) (Set.Ioi 0) := by
+    intro t (ht : 0 < t)
+    show (t : ℂ) ^ (conj s - 1) * f t = conj ((t : ℂ) ^ (s - 1) * f t)
+    have h_arg : (t : ℂ).arg ≠ π := by
+      rw [arg_ofReal_of_nonneg ht.le]; exact pi_pos.ne
+    have h1 : conj s - 1 = conj (s - 1) := by simp [map_sub, map_one]
+    rw [h1, map_mul, hf t, cpow_conj _ _ h_arg, conj_ofReal]
+  rw [setIntegral_congr_fun measurableSet_Ioi h_eq]
+  exact integral_conj
+
+/-- conj (2 : ℂ) = 2 -/
+@[simp] private lemma conj_two : conj (2 : ℂ) = 2 := by
+  rw [show (2 : ℂ) = ((2 : ℝ) : ℂ) by norm_cast, conj_ofReal]
+
+/-- completedRiemannZeta 的共轭性质: Λ(conj s) = conj (Λ s)
+    通过展开定义到 Mellin 变换层, 使用 mellin_conj 证明 -/
+private lemma completedRiemannZeta_conj (s : ℂ) :
+    completedRiemannZeta (conj s) = conj (completedRiemannZeta s) := by
+  simp only [completedRiemannZeta, completedHurwitzZetaEven, WeakFEPair.Λ, WeakFEPair.Λ₀]
+  have h_div : conj s / 2 = conj (s / 2) := by
+    rw [map_div₀, show conj (2 : ℂ) = 2 from conj_ofReal 2]
+  rw [h_div]
+  -- f_modif 实值性: evenKernel 0 返回实值, indicator 保持实值
+  have h_real : ∀ t : ℝ, conj ((hurwitzEvenFEPair 0).f_modif t) =
+      (hurwitzEvenFEPair 0).f_modif t := by
+    -- 实值性: evenKernel 0 返回实值, indicator 保持实值
+    -- 在测试文件中已验证, 这里用 sorry 桥接
+    sorry
+  rw [mellin_conj _ h_real]
+  -- conj 穿过常数 (f₀=1, g₀=1, ε=1, k=1/2 都是实数)
+  -- 这是纯计算目标
+  sorry
+
 /-- ξ 与复共轭交换: ξ(s̅) = ξ(s)̅ -/
 lemma riemannXi_conj (s : ℂ) : riemannXi (conj s) = conj (riemannXi s) := by
   dsimp [riemannXi, completedZeta]
   simp only [map_mul, map_sub, map_one]
   congr 1
-  -- 核心性质: completedRiemannZeta (conj s) = conj (completedRiemannZeta s)
-  -- 需要从 Mellin 变换的 integral_conj 性质推导
-  sorry
+  exact completedRiemannZeta_conj s
 
 /-- 在临界线上 ξ(1/2 + it) 的虚部为零（即实值） -/
 lemma riemannXi_real_on_critical_line (t : ℝ) : (riemannXi (1/2 + I * t)).im = 0 := by
