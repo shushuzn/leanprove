@@ -226,10 +226,10 @@ lemma zeta_bound_at_two (s : ℂ) (hs : re s = 2) : ‖riemannZeta s‖ ≤ 2 :=
     exact h
   linarith
 
-/-- ζ(s) 在 Re(s) = -1 上的有界性（通过函数方程）：‖ζ(s)‖ ≤ 4
-    策略: s=-1 时直接验证, s≠-1 时用函数方程 ζ(1-s) = 2(2π)^{-s}Γ(s)cos(πs/2)ζ(s)
-    + zeta_bound_at_two (因 re(1-s)=2) -/
-lemma zeta_bound_at_neg_one (s : ℂ) (hs : re s = -1) : ‖riemannZeta s‖ ≤ 4 := by
+/-- ζ(s) 在 Re(s) = -1 上的多项式有界性（通过函数方程）
+    由函数方程和 Stirling 公式, |ζ(-1+it)| 的增长阶为 O(|t|^{3/2}) -/
+lemma zeta_bound_at_neg_one (s : ℂ) (hs : re s = -1) :
+    ‖riemannZeta s‖ ≤ 4 * (1 + |s.im|) ^ (3 / 2 : ℝ) := by
   rcases eq_or_ne s (-1) with rfl | h_ne
   · rw [zeta_at_neg_one_val]; norm_num
   have hs_ne_nat : ∀ n : ℕ, s ≠ -↑n := by
@@ -242,8 +242,10 @@ lemma zeta_bound_at_neg_one (s : ℂ) (hs : re s = -1) : ‖riemannZeta s‖ ≤
   have h_fe := riemannZeta_one_sub hs_ne_nat hs_ne_one
   have h_bound_1s : ‖riemannZeta (1 - s)‖ ≤ 2 := by
     apply zeta_bound_at_two; rw [sub_re, one_re, hs]; norm_num
-  -- |ζ(1-s)| = |2(2π)^{-s}Γ(s)cos(πs/2)| * |ζ(s)|
-  -- 需要 bound 分母 |2(2π)^{-s}Γ(s)cos(πs/2)| ≥ 1/2
+  -- 由函数方程:
+  -- |ζ(-1+it)| = |ζ(2-it)| * |Γ(2-it)| * |cosh(πt/2)| / (2π²)
+  -- ≤ |Γ(2-it)| * |cosh(πt/2)| / π²
+  -- ≤ C * (1 + |t|)^{3/2}  (Stirling + cosh bound)
   sorry
 
 /-! ## 零点计数函数 N(T) -/
