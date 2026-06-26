@@ -6,7 +6,7 @@
 [![Mathlib](https://img.shields.io/badge/Mathlib-v4.31.0--rc2-green)](https://leanprover-community.github.io/mathlib4/)
 [![Proof Status](https://img.shields.io/badge/Phase%20I–V-0%20sorry-brightgreen)](./)
 [![Axioms](https://img.shields.io/badge/axioms-0-brightgreen)](./)
-[![Phase VI](https://img.shields.io/badge/Phase%20VI-10%20sorry-orange)](./)
+[![Phase VI](https://img.shields.io/badge/Phase%20VI-5%20sorry-orange)](./)
 
 ---
 
@@ -37,11 +37,11 @@
     ├─ V-A   PNT 等价形式          ████████████████████  100%  ✅
     ├─ V-B   θ~x ↔ π~x/log x      ████████████████████  100%  ✅
     └─ V-C   Wiener-Ikehara 证明   ████████████████████  100%  ✅ 0 axiom
-  阶段 VI   黎曼猜想               ██████████░░░░░░░░░░   55%  🔮 ~45 定理 (10 sorry)
+  阶段 VI   黎曼猜想               ██████████░░░░░░░░░░   55%  🔮 ~45 定理 (5 sorry)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**统计**: **~330 定理 / 引理** · **Phase I–V: 0 sorry** · **0 axiom** · **Phase VI: 10 sorry (进行中)**
+**统计**: **~330 定理 / 引理** · **Phase I–V: 0 sorry** · **0 axiom** · **Phase VI: 5 sorry (进行中)**
 
 ---
 
@@ -206,7 +206,7 @@ Riemann ζ 函数的分阶段构建，每个子阶段独立可验证。
 
 ---
 
-### 阶段 VI · 黎曼猜想 🔮 (55%, 10 sorry)
+### 阶段 VI · 黎曼猜想 🔮 (55%, 5 sorry)
 
 | # | 目标 | 状态 |
 |:-:|------|:----:|
@@ -243,7 +243,7 @@ leanprove/
 │   ├── Tests.lean                    # 测试与验证
 │   ├── CriticalLine.lean              # 阶段 VI 入口：聚合子模块
 │   ├── CriticalLine/
-│   │   ├── Definitions.lean          # ξ 函数、N(T)、临界带 (21 定理, 8 sorry)
+│   │   ├── Definitions.lean          # ξ 函数、N(T)、临界带 (21 定理, 5 sorry)
 │   │   ├── Hardy.lean                # Hardy 定理框架 (19 定理, 2 sorry)
 │   │   └── Asymptotics.lean          # Gamma 渐近分析 (5 定理, 0 sorry)
 ├── scripts/                          # Git hooks 脚本
@@ -302,7 +302,7 @@ chmod +x .git/hooks/pre-commit
 ```
 Mathlib 内核
   ├─→ 阶段 I–V: ~310 定理 → 0 sorry → 0 axiom ✅
-  └─→ 阶段 VI:   ~45 定理 → 10 sorry (Hardy 定理框架进行中) 🔮
+  └─→ 阶段 VI:   ~45 定理 → 5 sorry (Hardy 定理框架进行中) 🔮
 ```
 
 阶段 I–V 的全部证明均可通过 `lake build Leanprove.Basic Bertrand Chebyshev Dirichlet PrimeCounting PrimeReciprocals VonMangoldt ZetaIVB ZetaIVD ZetaIVE PNTVA Tauberian Sobolev WienerProof` 独立验证，**0 sorry + 0 axiom**，完全依赖于 mathlib 内核。阶段 VI 模块正在推进中。

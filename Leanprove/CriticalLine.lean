@@ -1,10 +1,9 @@
-/-
-Copyright (c) 2026. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: (project contributors)
--/
+import Leanprove.CriticalLine.Definitions
+import Leanprove.CriticalLine.Hardy
+import Leanprove.CriticalLine.Asymptotics
 
-/-! # CriticalLine
+/-!
+# CriticalLine
 
 Phase VI: Riemann Xi function and Hardy's theorem.
 
@@ -21,10 +20,6 @@ Phase VI: Riemann Xi function and Hardy's theorem.
 3. IVT + 无限变号 → 无限零点（Hardy）
 4. 均值积分 + Gamma 渐近 → 振荡性（Asymptotics）
 5. 振荡性 → 无限零点（Hardy） -/
-
-import Leanprove.CriticalLine.Definitions
-import Leanprove.CriticalLine.Hardy
-import Leanprove.CriticalLine.Asymptotics
 
 -- 导出所有子模块的内容
 export Leanprove.CriticalLine.Definitions

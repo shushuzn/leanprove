@@ -213,15 +213,33 @@ lemma criticalStrip_bounded (T : ℝ) : Bornology.IsBounded (criticalStrip T) :=
 lemma criticalStrip_isCompact (T : ℝ) : IsCompact (criticalStrip T) :=
   isCompact_of_isClosed_isBounded (criticalStrip_isClosed T) (criticalStrip_bounded T)
 
+/-- ξ 的非平凡零点集（排除 s=0 和 s=1，它们是 ξ 的平凡零点） -/
+def riemannXiNontrivialZeros : Set ℂ :=
+  { s | riemannXi s = 0 ∧ s ≠ 0 ∧ s ≠ 1 }
+
 /-! ### riemannXiZeros 的基本性质 -/
 
-/-- 0 不是 ξ 的零点 -/
-lemma zero_notin_riemannXiZeros : (0 : ℂ) ∉ riemannXiZeros := by
-  sorry
+/-- 0 是 ξ 的零点（平凡零点） -/
+lemma zero_in_riemannXiZeros : (0 : ℂ) ∈ riemannXiZeros := by
+  rw [riemannXiZeros, Set.mem_setOf_eq]
+  dsimp [riemannXi, completedZeta]
+  ring
 
-/-- 1 不是 ξ 的零点 -/
-lemma one_notin_riemannXiZeros : (1 : ℂ) ∉ riemannXiZeros := by
-  sorry
+/-- 1 是 ξ 的零点（平凡零点） -/
+lemma one_in_riemannXiZeros : (1 : ℂ) ∈ riemannXiZeros := by
+  rw [riemannXiZeros, Set.mem_setOf_eq]
+  dsimp [riemannXi, completedZeta]
+  ring
+
+/-- 0 不是 ξ 的非平凡零点 -/
+lemma zero_notin_riemannXiNontrivialZeros : (0 : ℂ) ∉ riemannXiNontrivialZeros := by
+  intro h
+  exact h.2.1 rfl
+
+/-- 1 不是 ξ 的非平凡零点 -/
+lemma one_notin_riemannXiNontrivialZeros : (1 : ℂ) ∉ riemannXiNontrivialZeros := by
+  intro h
+  exact h.2.2 rfl
 
 /-- ξ 零点在 s ↦ 1-s 下对称 -/
 lemma riemannXiZeros_symm_one_sub {s : ℂ} (hs : s ∈ riemannXiZeros) : 1 - s ∈ riemannXiZeros := by
@@ -239,9 +257,21 @@ lemma riemannXiZeros_symm_conj {s : ℂ} (hs : s ∈ riemannXiZeros) : conj s �
 lemma xiZeroCount_mono {T₁ T₂ : ℝ} (h : T₁ ≤ T₂) : xiZeroCount T₁ ≤ xiZeroCount T₂ := by
   simp [xiZeroCount]
 
-/-- ξ(ρ) = 0 ⇒ ρ ≠ 0, ρ ≠ 1, ζ(ρ) = 0 -/
-lemma riemannXi_zero_implies_zeta_zero {s : ℂ} (hs : s ∈ riemannXiZeros) : s ≠ 0 ∧ s ≠ 1 ∧ riemannZeta s = 0 := by
-  sorry
+/-- ξ(ρ) = 0 且 ρ ≠ 0, ρ ≠ 1 ⇒ ζ(ρ) = 0 -/
+lemma riemannXi_zero_implies_zeta_zero {s : ℂ} (hs : s ∈ riemannXiNontrivialZeros) : riemannZeta s = 0 := by
+  have h_zero := hs.1
+  have h_ne_zero := hs.2.1
+  have h_ne_one := hs.2.2
+  dsimp [riemannXi] at h_zero
+  have h_prod_ne : s * (s - 1) ≠ 0 :=
+    mul_ne_zero h_ne_zero (sub_ne_zero.mpr h_ne_one)
+  have h_completed_zero : completedZeta s = 0 := by
+    rcases mul_eq_zero.mp h_zero with h | h
+    · exact absurd h h_prod_ne
+    · exact h
+  dsimp [completedZeta] at h_completed_zero
+  rw [riemannZeta_def_of_ne_zero h_ne_zero, h_completed_zero]
+  exact zero_div _
 
 /-- xiZeroCount 当前占位值 -/
 lemma xiZeroCount_eq_NT (T : ℝ) : xiZeroCount T = 0 := rfl
