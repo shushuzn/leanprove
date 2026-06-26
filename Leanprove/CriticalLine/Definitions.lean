@@ -7,7 +7,11 @@ Authors: (project contributors)
 import Mathlib.NumberTheory.LSeries.RiemannZeta
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Analysis.Normed.Group.InfiniteSum
+import Mathlib.Analysis.PSeries
 import Leanprove.ZetaAnalyticContinuation
+import Leanprove.ZetaUpperBound
 
 open Complex Real
 open scoped Topology BigOperators ComplexConjugate
@@ -135,17 +139,43 @@ lemma zeta_at_neg_one_val : riemannZeta (-1) = -1 / 12 := by
 
 /-! ## 增长估计 -/
 
+/-- ‖(n : ℂ) ^ s‖ = (n : ℝ) ^ (re s) 当 n > 0 -/
+lemma norm_natCast_cpow (n : ℕ) (hn : n ≠ 0) (s : ℂ) :
+    ‖(n : ℂ) ^ s‖ = (n : ℝ) ^ s.re := by
+  rw [show (n : ℂ) = ((n : ℝ) : ℂ) by simp]
+  exact norm_cpow_eq_rpow_re_of_pos (by exact_mod_cast Nat.pos_of_ne_zero hn) s
+
+/-- ‖1/(n : ℂ)^s‖ = 1/(n : ℝ)^(re s) 当 n > 0 -/
+lemma norm_one_div_natCast_cpow (n : ℕ) (hn : n ≠ 0) (s : ℂ) :
+    ‖(1 : ℂ) / ↑n ^ s‖ = (1 : ℝ) / ↑n ^ s.re := by
+  rw [norm_div, norm_one, one_div, norm_natCast_cpow n hn, one_div]
+
 /-- ζ(s) 在 Re(s) = 2 上的有界性：‖ζ(s)‖ ≤ 2
-    证明策略: |ζ(s)| ≤ ζ(Re s) = ζ(2) = π²/6 < 2 -/
+    证明策略: ‖ζ(s)‖ ≤ ∑' ‖1/n^s‖ = ∑' 1/n^2 ≤ 2 -/
 lemma zeta_bound_at_two (s : ℂ) (hs : re s = 2) : ‖riemannZeta s‖ ≤ 2 := by
   have hs_gt : 1 < re s := by linarith
-  -- 步骤1: 展开 ζ(s) = ∑' n, 1/n^s
+  have hs_ne : s ≠ 0 := by
+    intro h; rw [h, zero_re] at hs; linarith
   rw [zeta_eq_tsum_one_div_nat_cpow hs_gt]
-  -- 步骤2: 用 norm_tsum_le_tsum_norm 逐项bound
-  -- 需要: Summable fun n => ‖1/n^s‖
-  -- 步骤3: ‖1/n^s‖ = 1/n^(Re s) = 1/n^2 (用 norm_cpow_eq_rpow_re_of_pos)
-  -- 步骤4: ∑' 1/n^2 = ζ(2) = π²/6 < 2
-  sorry
+  have h_summable : Summable (fun (n : ℕ) => ‖(1 : ℂ) / ↑n ^ s‖) := by
+    have : (fun (n : ℕ) => ‖(1 : ℂ) / ↑n ^ s‖) =
+        (fun (n : ℕ) => (1 : ℝ) / ((n : ℝ) ^ (2 : ℝ))) := by
+      funext n; rcases eq_or_ne n 0 with rfl | hn
+      · simp [zero_cpow hs_ne]
+      · rw [norm_one_div_natCast_cpow n hn, hs]
+    rw [this]
+    exact summable_one_div_nat_rpow.mpr (by norm_num)
+  have h1 : ‖∑' n : ℕ, (1 : ℂ) / ↑n ^ s‖ ≤ ∑' n : ℕ, ‖(1 : ℂ) / ↑n ^ s‖ :=
+    norm_tsum_le_tsum_norm h_summable
+  have h_eq : (∑' n : ℕ, ‖(1 : ℂ) / ↑n ^ s‖) = ∑' n : ℕ, (1 : ℝ) / ((n : ℝ) ^ (2 : ℝ)) := by
+    congr 1; funext n; rcases eq_or_ne n 0 with rfl | hn
+    · simp [zero_cpow hs_ne]
+    · rw [norm_one_div_natCast_cpow n hn, hs]
+  have h2 : ∑' n : ℕ, (1 : ℝ) / ((n : ℝ) ^ (2 : ℝ)) ≤ 2 := by
+    have h := zeta_upper_bound 2 (by norm_num : (1 : ℝ) < 2)
+    rw [show (1 : ℝ) + 1 / (2 - 1) = 2 by norm_num] at h
+    exact h
+  linarith
 
 /-- ζ(s) 在 Re(s) = -1 上的有界性（通过函数方程）：‖ζ(s)‖ ≤ 4 -/
 lemma zeta_bound_at_neg_one (s : ℂ) (hs : re s = -1) : ‖riemannZeta s‖ ≤ 4 := by
