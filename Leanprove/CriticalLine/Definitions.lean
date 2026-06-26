@@ -43,6 +43,10 @@ lemma riemannXi_eq_riemannXi_one_sub (s : ℂ) : riemannXi s = riemannXi (1 - s)
 /-- ξ 与复共轭交换: ξ(s̅) = ξ(s)̅ -/
 lemma riemannXi_conj (s : ℂ) : riemannXi (conj s) = conj (riemannXi s) := by
   dsimp [riemannXi, completedZeta]
+  simp only [map_mul, map_sub, map_one]
+  congr 1
+  -- 核心性质: completedRiemannZeta (conj s) = conj (completedRiemannZeta s)
+  -- 需要从 Mellin 变换的 integral_conj 性质推导
   sorry
 
 /-- 在临界线上 ξ(1/2 + it) 的虚部为零（即实值） -/
@@ -249,7 +253,8 @@ lemma riemannXiZeros_symm_one_sub {s : ℂ} (hs : s ∈ riemannXiZeros) : 1 - s 
 
 /-- ξ 零点在 s ↦ s̅ 下对称 -/
 lemma riemannXiZeros_symm_conj {s : ℂ} (hs : s ∈ riemannXiZeros) : conj s ∈ riemannXiZeros := by
-  sorry
+  rw [riemannXiZeros, Set.mem_setOf_eq] at hs ⊢
+  rw [riemannXi_conj, hs, map_zero]
 
 /-! ### xiZeroCount (N(T)) 的基本性质 -/
 

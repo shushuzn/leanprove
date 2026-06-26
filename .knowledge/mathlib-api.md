@@ -185,6 +185,55 @@
 
 ## 12. 关键 Pitfalls（跨文件）
 
+### ⚠️ riemannXi_conj 证明策略
+**Import**: `Leanprove.CriticalLine.Definitions`, `Mathlib.Analysis.MellinTransform`
+**核心性质**: `completedRiemannZeta (conj s) = conj (completedRiemannZeta s)`
+**证明链**: `completedRiemannZeta s = mellin (ofReal ∘ evenKernel 0) (s/2) / 2` → `mellin f (conj s) = conj (mellin f s)`（实值函数，用 `integral_conj`）→ `completedRiemannZeta (conj s) = conj (completedRiemannZeta s)` → `riemannXi_conj`
+**Pitfall**: `completedHurwitzZetaEven` 和 `evenKernel` 不在顶层命名空间，需要通过 `HurwitzZetaEven` 或直接展开定义访问。
+
+### ⚠️ riemannZeta_def_of_ne_zero 模式
+**Import**: `Mathlib.NumberTheory.LSeries.RiemannZeta`
+**签名**: `s ≠ 0 → riemannZeta s = completedRiemannZeta s / Gammaℝ s`
+**说明**: 用于从 `completedRiemannZeta s = 0` 推导 `riemannZeta s = 0`（结合 `zero_div`）
+**Pitfall**: 需要 `s ≠ 0` 条件；`Gammaℝ s` 可能为 0（当 s 是负偶数时），但 `0 / 0 = 0` 在 Lean 中成立。
+
+### ⚠️ mul_eq_zero + absurd 模式
+```lean
+-- 从 a * b = 0 且 a ≠ 0 推导 b = 0
+rcases mul_eq_zero.mp h_zero with h | h
+· exact absurd h h_prod_ne  -- a ≠ 0 矛盾
+· exact h                   -- b = 0
+```
+
+### ⚠️ pi_lt_d2 用于数值 bound
+**Import**: `Mathlib.Analysis.Real.Pi.Bounds`
+**签名**: `pi_lt_d2 : π < 3.15`
+**说明**: 用于证明 `π² < 12`（即 `π²/6 < 2`），结合 `nlinarith [pi_lt_d2, Real.pi_pos]`。
+
+### ⚠️ riemannZeta_two 用于 ζ(2) 值
+**Import**: `Mathlib.NumberTheory.LSeries.HurwitzZetaValues`
+**签名**: `riemannZeta_two : riemannZeta 2 = (π : ℂ) ^ 2 / 6`
+
+### ⚠️ riemannZeta_ne_zero_of_one_lt_re
+**Import**: `Mathlib.NumberTheory.LSeries.Dirichlet`
+**签名**: `1 < s.re → riemannZeta s ≠ 0`
+**说明**: ζ(s) 在 Re s > 1 时非零（Euler 乘积推论）。
+
+### ⚠️ Gamma_conj 用于 Γ 函数共轭
+**Import**: `Mathlib.Analysis.SpecialFunctions.Gamma.Basic`
+**签名**: `Complex.Gamma_conj : Gamma (conj s) = conj (Gamma s)`
+**说明**: 用于 Γ 函数的共轭性质。
+
+### ⚠️ integral_conj 用于积分共轭
+**Import**: `Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap`
+**签名**: `integral_conj : ∫ x, conj (f x) ∂μ = conj (∫ x, f x ∂μ)`
+**说明**: 用于证明 Mellin 变换的共轭性质。
+
+### ⚠️ Gammaℝ_ne_zero_of_re_pos
+**Import**: `Mathlib.Analysis.SpecialFunctions.Gamma.Deligne`
+**签名**: `0 < re s → Gammaℝ s ≠ 0`
+**说明**: Γℝ(s) = π^{-s/2} Γ(s/2) 在 Re s > 0 时非零。
+
 1. **`field_simp` 在 `show ... from by` 内部关闭目标**，后续 `ring_nf` 报 "No goals to be solved"。
 2. **`rw [← Real.norm_eq_abs]` 在 `have` 内部影响主目标**，应使用 `rw [Real.norm_eq_abs] at this`。
 3. **`linarith` 在 `filter_upwards` 内部可能看不到假设**，显式传递：`linarith [h1, h2]`。
