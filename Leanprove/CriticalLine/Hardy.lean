@@ -109,7 +109,7 @@ noncomputable def criticalLineZeroCount (T : ℝ) : ℕ :=
 
 /-- N₀(T) ≤ N(T)（ξ 零点计数）
     证明策略: criticalLine t = 1/2 + It 是从临界线零点到 ξ 零点的单射
-    需要 Finite 实例或 card_le_of_injective' 的集合版本 -/
+    需要 card_le_of_injective' + 无限性传递条件 -/
 lemma criticalLineZeroCount_le_xiZeroCount (T : ℝ) : criticalLineZeroCount T ≤ xiZeroCount T := by
   sorry
 
