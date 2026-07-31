@@ -183,7 +183,100 @@
 
 ---
 
-## 12. 关键 Pitfalls（跨文件）
+## 12. 可和性判别 (Summability)
+
+**Import**: `Mathlib.Analysis.PSeries`（已在 .lake 源码中逐条确认）
+
+| 引理 | 签名 | 说明 |
+|------|------|------|
+| `summable_condensed_iff_of_nonneg` | `(∀ n, 0 ≤ f n) → (∀ ⦃m n⦄, 0 < m → m ≤ n → f n ≤ f m) → ((Summable fun k : ℕ => 2^k * f (2^k)) ↔ Summable f)` | Cauchy 凝聚判别，`summable_inv_mul_log_sq` 的关键 |
+| `summable_condensed_iff` | 同上，`ℝ≥0` 版本 | |
+| `summable_one_div_nat_rpow` | `Summable (fun n : ℕ => 1 / (n : ℝ) ^ p) ↔ 1 < p` | 实数幂 |
+| `summable_one_div_nat_pow` | `Summable (fun n : ℕ => 1 / (n : ℝ) ^ p) ↔ 2 ≤ p`（p : ℕ） | 自然数幂 |
+| `summable_one_div_int_pow` | 整数版本 | |
+
+**⚠️ 重要**: Mathlib **没有** 现成的 `1/(n·(log n)²)` 可和引理（全库 grep `summable.*log` 无匹配）。
+证明 `summable_inv_mul_log_sq` 的路线：用 `summable_condensed_iff_of_nonneg` 凝聚化，
+`2^k · 1/(2^k·(k·log 2)²) = 1/(k²·(log 2)²)`，归结到 `summable_one_div_nat_pow`（p=2）× 常数。
+注意需先处理 n=0,1 的项（log 为 0，项为 ⊤⁻¹=0 或用 `Summable.congr_atTop`）。
+
+---
+
+## 13. 控制收敛定理 (Dominated Convergence)
+
+**Import**: `Mathlib.MeasureTheory.Integral.DominatedConvergence`
+
+| 引理 | 签名要点 | 说明 |
+|------|----------|------|
+| `MeasureTheory.tendsto_integral_of_dominated_convergence` | `(bound : α → ℝ) → (∀ n, AEStronglyMeasurable (F n) μ) → (∀ n, ∀ᵐ a ∂μ, ‖F n a‖ ≤ bound a) → Integrable bound μ → (∀ᵐ a ∂μ, Tendsto (fun n => F n a) atTop (𝓝 (f a))) → Tendsto (fun n => ∫ a, F n a ∂μ) atTop (𝓝 (∫ a, f a ∂μ))` | 序列版（ℕ 指标） |
+| `MeasureTheory.tendsto_integral_filter_of_dominated_convergence` | 同上，但指标是任意 `[l.IsCountablyGenerated]` 的 filter，且前两个条件是 `∀ᶠ n in l, ...` | **`𝓝[>] 1` 版本用这个**，适用 `limiting_fourier_lim1/lim2/lim3`（σ' → 1⁺） |
+
+**模式**（lim3 类型目标：σ' → 1⁺ 时积分收敛）：
+```lean
+apply tendsto_integral_filter_of_dominated_convergence bound
+· -- ∀ᶠ σ' in 𝓝[>] 1, AEStronglyMeasurable ...
+  filter_upwards [self_mem_nhdsWithin] with σ' hσ' ...
+· -- ‖G(σ'+tI)·ψ t·x^(tI)‖ ≤ bound t（用 ψ 紧支集 + G 局部一致界）
+· -- Integrable bound（紧支集连续函数）
+· -- 逐点收敛：G 连续性 + Tendsto.comp
+```
+
+---
+
+## 14. 解析函数零点离散性 (Isolated Zeros)
+
+**Import**: `Mathlib.Analysis.Analytic.IsolatedZeros`
+
+| 引理 | 签名 | 说明 |
+|------|------|------|
+| `AnalyticAt.eventually_eq_zero_or_eventually_ne_zero` | `AnalyticAt 𝕜 f z₀ → (∀ᶠ z in 𝓝 z₀, f z = 0) ∨ (∀ᶠ z in 𝓝[≠] z₀, f z ≠ 0)` | 零点要么局部恒零要么孤立 |
+| `AnalyticOnNhd.eqOn_zero_or_eventually_ne_zero_of_preconnected` | 连通开集上：恒零 ∨ 零点孤立 | 用于 `criticalLineZeros_isDiscrete`：ξ 不恒零（ξ(2)≠0）→ 零点孤立 → 离散 |
+| `AnalyticOnNhd.preimage_mem_codiscreteWithin` | 零点集余离散 | codiscrete 表述 |
+
+**DiscreteTopology 路线**: 孤立零点 → 每点有邻域仅含该零点 → `singletons_open_iff_discrete` / `discreteTopology_subtype_iff`。
+
+---
+
+## 15. 集合计数 (Nat.card / ENat.card / encard)
+
+**Import**: `Mathlib.Data.Set.Card`
+
+⚠️ **本项目实际用的是 `Nat.card` 与 `ENat.card`，不是 `Set.ncard`**（已核实 Definitions.lean）：
+- `criticalLineZeroCount T : ℕ = Nat.card {t : ℝ | ...}`
+- `xiZeroCount T : ℕ∞ = ENat.card {s : ℂ | ...}`
+
+| 引理 | 签名 | 说明 |
+|------|------|------|
+| `ENat.card_coe_set_eq` | `ENat.card s = s.encard`（rfl，@[simp]） | ENat.card ↔ encard 桥接 |
+| `Set.encard_le_encard` | `s ⊆ t → s.encard ≤ t.encard` | 子集单调（无需有限） |
+| `Set.encard_mono` | `Monotone (encard : Set α → ℕ∞)` | 单调性版 |
+| `Set.encard_le_encard_of_injOn` | `MapsTo f s t → InjOn f s → s.encard ≤ t.encard`（Card.lean:507） | **单射像计数，`criticalLineZeroCount_le_xiZeroCount` 首选** |
+| `Nat.card_le_card_of_injective` | `Injective f → Nat.card α ≤ Nat.card β`（需 β 有限） | 子型 Nat.card |
+
+**`criticalLineZeroCount_le_xiZeroCount` 路线**（注意两边类型不同：`↑(Nat.card ...) ≤ ENat.card ...`）：
+注入映射是 `criticalLine : ℝ → ℂ`（`t ↦ 1/2 + I·t`，显然单射）。先把 `Nat.card` 转为 `encard`
+（`Nat.card_eq_toNat_card` / `ENat.card_coe_set_eq` + 有限性），再用 `encard_le_encard_of_injOn`
+将临界线零点集嵌入 ξ 零点集。
+**Pitfall**: `Nat.card` 对无限集为 0；若右侧 `ENat.card` 为 ⊤（零点无限）不等式平凡成立。encard 路线自动处理无限情形，优于先假设有限。
+
+---
+
+## 16. Zeta/LSeries 可微性
+
+**Import**: `Mathlib.NumberTheory.LSeries.RiemannZeta`
+
+| 引理 | 签名 | 说明 |
+|------|------|------|
+| `differentiableAt_riemannZeta` | `s ≠ 1 → DifferentiableAt ℂ riemannZeta s` | ζ 在 s≠1 处可微（→ 连续） |
+| `differentiable_completedZeta₀` | `Differentiable ℂ completedRiemannZeta₀` | 完备 zeta 全局可微 |
+| `differentiableAt_completedZeta` | `s ≠ 0 → s ≠ 1 → DifferentiableAt ℂ completedRiemannZeta s` | |
+
+**⚠️ 缺失警告**: Mathlib 当前**没有** `norm_Gamma_le` / `abs_Gamma` 型垂直条带 Stirling 上界（全 Analysis 目录 grep 无匹配）。
+Definitions.lean L249（`≤ C·(1+|t|)^{3/2}` 型 Gamma bound）需自证或换路线，详见 `difficult-proofs.md`。
+
+---
+
+## 17. 关键 Pitfalls（跨文件）
 
 ### ⚠️ riemannXi_conj 证明策略
 **Import**: `Leanprove.CriticalLine.Definitions`, `Mathlib.Analysis.MellinTransform`

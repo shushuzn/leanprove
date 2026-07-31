@@ -1,26 +1,26 @@
 # Sorry 清单和进展
 
-## 当前状态 (2026-06-26)
+## 当前状态 (2026-07-31 审计校正，实测 grep `\bsorry\b`)
 
-**Definitions.lean sorry 数: 3**（riemannXi_conj, zeta_bound_at_two, zeta_bound_at_neg_one）
+**Definitions.lean sorry 数: 1**（仅 zeta_bound_at_neg_one；riemannXi_conj 与 zeta_bound_at_two 已证明）
 
 | 文件 | sorry 数 | 状态 |
 |------|----------|------|
-| Leanprove/CriticalLine/Definitions.lean | 3 | 🔄 riemannXi_conj 证明路径已清晰，mellin_conj 需深入 measure theory |
-| Leanprove/CriticalLine/Hardy.lean | 2 | 🔄 待证明 |
-| Leanprove/WienerIkehara.lean | 28 | 🔄 构建错误待修复 |
+| Leanprove/CriticalLine/Definitions.lean | 1 | 🔄 仅 zeta_bound_at_neg_one（L249，需 Γ Stirling 上界，Mathlib 缺失） |
+| Leanprove/CriticalLine/Hardy.lean | 2 | 🔄 criticalLineZeroCount_le_xiZeroCount（L114）+ criticalLineZeros_isDiscrete（L222） |
+| Leanprove/WienerIkehara.lean | 30 | 🔄 底层 Fourier/可积性辅助引理待证 |
+| **合计** | **33** | PrimeNumberTheorem.lean 0（L492 为注释非 sorry） |
 
-### riemannXi_conj 证明进展
+> ⚠️ 审计说明：本节计数于 2026-07-31 用 `grep \bsorry\b` 逐文件实测校正。此前版本（2026-06-26）声称 Definitions=3、WienerIkehara=28 已过时：riemannXi_conj、zeta_bound_at_two、xi_on_critical_line_continuous 均已证明完成。
+
+### riemannXi_conj 证明进展（✅ 已全部完成，2026-07-31 核实）
 
 **已证明的组件**:
 - `cpow_conj_of_real_pos`: `0 < t → (t:ℂ)^conj s = conj((t:ℂ)^s)` ✅
 - `mellin_conj`: `mellin f (conj s) = conj (mellin f s)` 当 `conj (f t) = f t` ✅
   - 关键: `setIntegral_congr_fun measurableSet_Ioi` + `integral_conj`
 - `conj_ofReal_comp`: `conj ((ofReal ∘ g) t) = (ofReal ∘ g) t` ✅
-
-**待证明的组件**:
-- `completedRiemannZeta_conj`: 需要将 `completedRiemannZeta` 展开为 `mellin` 形式，然后应用 `mellin_conj`
-- 从 `completedRiemannZeta_conj` 推导 `riemannXi_conj` 已在测试文件中完成
+- `completedRiemannZeta_conj` → `riemannXi_conj`（Definitions.lean L99）✅ 已落地主文件
 
 **关键突破**: `mellin_conj` 的证明使用 `setIntegral_congr_fun` (Mathlib `MeasureTheory.Integral.Bochner.Set`) 在 `Ioi 0` 上逐点证明，然后用 `integral_conj` 处理共轭积分
 
@@ -43,13 +43,13 @@
 7. ✅ `nnabla_mul_log_sq` — BigO 渐近分析
 8. ✅ `nnabla_bound_aux` — nnabla 序列差分的 BigO bound（部分完成，内部仍有一个 sorry 在 line 760）
 
-## CriticalLine/Definitions.lean（3 个）
+## CriticalLine/Definitions.lean（1 个）
 
 | 行号 | 引理/定理 | 目标简述 | 状态 |
 |------|-----------|----------|------|
-| 50 | `riemannXi_conj` | ξ 与复共轭交换 ξ(s̅) = ξ(s)̅ | 🔄 证明路径: cpow_conj ✅ → mellin_conj → completedRiemannZeta_conj → riemannXi_conj |
-| 140 | `zeta_bound_at_two` | Re(s)=2 时 ‖ζ(s)‖ ≤ 2 | 🔄 需要 norm_cpow_eq_rpow_re_of_pos + norm_tsum_le_tsum_norm |
-| 144 | `zeta_bound_at_neg_one` | Re(s)=-1 时 ‖ζ(s)‖ ≤ 4 | 🔄 依赖 zeta_bound_at_two |
+| 249 | `zeta_bound_at_neg_one` | Re(s)=-1 时 ‖ζ(s)‖ ≤ 4·(1+\|Im s\|)^{3/2} | 🔄 函数方程已接好，剩 \|Γ(2-it)\|·\|cosh(πt/2)\| ≤ C·(1+\|t\|)^{3/2}（Γ Stirling 上界，Mathlib 无现成引理，见 mathlib-api.md §16 缺失警告） |
+
+**已证明（2026-07-31 核实）**: `riemannXi_conj`（L99）✅、`zeta_bound_at_two`（L204）✅（用 `norm_natCast_cpow` + `norm_tsum_le_tsum_norm` + `riemannZeta_two` + `pi_lt_d2`）。
 
 ### 已证明的新定理（2026-06-26）
 
@@ -63,55 +63,57 @@
 | `riemannXiZeros_symm_conj` | 零点共轭对称（依赖 riemannXi_conj） |
 | `cpow_conj_of_real_pos`（测试文件） | 实数 t>0 时 (t:ℂ)^conj s = conj((t:ℂ)^s) |
 
-## CriticalLine/Hardy.lean（3 个）
+## CriticalLine/Hardy.lean（2 个）
 
 | 行号 | 引理/定理 | 目标简述 |
 |------|-----------|----------|
-| 110 | `criticalLineZeroCount_le_xiZeroCount` | N₀(T) ≤ N(T) |
-| 195 | `xi_on_critical_line_continuous` | ξ 在临界线上实值限制的连续性 |
-| 207 | `criticalLineZeros_isDiscrete` | 临界线零点集是离散的 |
+| 114 | `criticalLineZeroCount_le_xiZeroCount` | N₀(T) ≤ N(T)，Nat.card→encard + criticalLine 单射（见 mathlib-api.md §15） |
+| 222 | `criticalLineZeros_isDiscrete` | 临界线零点集离散，用 IsolatedZeros（见 mathlib-api.md §14） |
 
-## WienerIkehara.lean（28 个）
+**已证明（2026-07-31 核实）**: `xi_on_critical_line_continuous`（L200）✅、`criticalLineZeros_isClosed`（L214）✅。
+
+## WienerIkehara.lean（30 个）
 
 | 行号 | 引理/定理 | 目标简述 |
 |------|-----------|----------|
-| 760 | `nnabla_bound_aux` 内部 | 完成 `nlinarith [?]` 后的剩余目标 |
-| 790 | `summable_inv_mul_log_sq` | 1/(n(log n)²) 可和 |
-| 835 | `limiting_fourier_lim1_aux` | Fourier 极限辅助一的可和性 bound |
-| 856 | `limiting_fourier_lim1` 内部 | dominated convergence 的点态 bound |
-| 862 | `limiting_fourier_lim3` | G(σ'+tI) 积分的连续性极限 |
-| 872 | `limiting_fourier_lim2` | 指数衰减积分极限 |
-| 923 | `hf_coe1` | LSeries 项的 ENNReal 可和性 |
-| 929 | `second_fourier_integrable_aux1a` | 指数衰减函数在 Ici 上的可积性 |
-| 936 | `second_fourier_integrable_aux1` | 乘积测度上的可积性 |
-| 964 | `second_fourier` | 第二 Fourier 恒等式 |
-| 971 | `first_fourier` | 第一 Fourier 恒等式 |
-| 982 | `limit_of_lseries_zero` | LSeries 零点 ⇒ 极限为零 |
-| 993 | `limiting_fourier_aux` | Fourier 极限辅助等式 |
-| 997 | `fourier_surjection_on_schwartz` | Schwartz 空间 Fourier 满射性 |
-| 1042 | `limiting_cor` | 极限推论主定理 |
-| 1047 | `W21_norm_fourier_integral_le` | W21 Fourier 积分范数上界 |
-| 1055 | `continuous_LSeries_aux` | LSeries 沿 vertical line 连续 |
-| 1072 | `comp_exp_support0` | 支撑在 Ioi 0 的函数在 0 附近为零 |
-| 1077 | `comp_exp_support` | Ψ(exp x) 的紧支集性 |
-| 1151 | `wiener_ikehara_smooth` | Wiener-Ikehara 光滑主引理 |
-| 1162 | `limiting_cor_schwartz` | 极限推论 Schwartz 版本 |
-| 1170 | `smooth_urysohn_support_Ioo` | 光滑 Urysohn 型 bump 函数 |
-| 1178 | `interval_approx_inf` | 区间近似取下界 |
-| 1184 | `interval_approx_sup` | 区间近似取上界 |
-| 1259 | `residue_nonneg` 内部 (key) | S ψ 的极限等于 A·∫ψ |
-| 1263 | `residue_nonneg` 内部 (l4) | ∫ψ > 0 |
-| 1264 | `residue_nonneg` 内部 (exact) | 0 ≤ A 的最终推导 |
-| 1314 | `WienerIkeharaInterval` | Wiener-Ikehara 区间定理 |
+| 792, 793, 802 | `nnabla_bound_aux` 内部 | 3 处：nlinarith 剩余目标 + log_div 展开 |
+| 831 | `summable_inv_mul_log_sq` | 1/(n(log n)²) 可和（用 summable_condensed_iff，见 mathlib-api.md §12） |
+| 876 | `limiting_fourier_lim1_aux` | Fourier 极限辅助一的可和性 bound |
+| 897 | `limiting_fourier_lim1` 内部 | dominated convergence 的点态 bound |
+| 903 | `limiting_fourier_lim3` | G(σ'+tI) 积分的连续性极限（见 §13 控制收敛） |
+| 913 | `limiting_fourier_lim2` | 指数衰减积分极限 |
+| 964 | `hf_coe1` | LSeries 项的 ENNReal 可和性（见 integral-api.md ENNReal 桥接） |
+| 970 | `second_fourier_integrable_aux1a` | 指数衰减函数在 Ici 上可积（见 integral-api.md 指数衰减） |
+| 977 | `second_fourier_integrable_aux1` | 乘积测度上可积（见 integral-api.md integrable_prod_iff） |
+| 1005 | `second_fourier` | 第二 Fourier 恒等式 |
+| 1012 | `first_fourier` | 第一 Fourier 恒等式 |
+| 1023 | `limit_of_lseries_zero` | LSeries 零点 ⇒ 极限为零 |
+| 1034 | `limiting_fourier_aux` | Fourier 极限辅助等式 |
+| 1038 | `fourier_surjection_on_schwartz` | Schwartz 空间 Fourier 满射性 |
+| 1083 | `limiting_cor` | 极限推论主定理 |
+| 1088 | `W21_norm_fourier_integral_le` | W21 Fourier 积分范数上界 |
+| 1096 | `continuous_LSeries_aux` | LSeries 沿 vertical line 连续 |
+| 1113 | `comp_exp_support0` | 支撑在 Ioi 0 的函数在 0 附近为零 |
+| 1118 | `comp_exp_support` | Ψ(exp x) 的紧支集性 |
+| 1192 | `wiener_ikehara_smooth` | Wiener-Ikehara 光滑主引理 |
+| 1203 | `limiting_cor_schwartz` | 极限推论 Schwartz 版本 |
+| 1211 | `smooth_urysohn_support_Ioo` | 光滑 Urysohn 型 bump 函数 |
+| 1219 | `interval_approx_inf` | 区间近似取下界 |
+| 1225 | `interval_approx_sup` | 区间近似取上界 |
+| 1300, 1304, 1305 | `residue_nonneg` 内部 | 3 处：Sψ 极限 = A·∫ψ；∫ψ > 0；0 ≤ A 最终推导 |
+| 1355 | `WienerIkeharaInterval` | Wiener-Ikehara 区间定理 |
 
-## 推荐证明顺序
+> 行号于 2026-07-31 用 `grep -n \bsorry\b` 实测，共 30 处（含三处内职 3+3）。
 
-1. **riemannXi_conj** — 证明路径已清晰：`cpow_conj_of_real_pos` ✅ → `mellin_conj`（组合 cpow_conj + integral_conj）→ `completedRiemannZeta_conj`（从 mellin_conj 推导）→ `riemannXi_conj`。
-2. **riemannXiZeros_symm_conj** — ✅ 已证明（依赖 riemannXi_conj）。
-3. **zeta_bound_at_two** — 需要 `norm_cpow_eq_rpow_re_of_pos` + `norm_tsum_le_tsum_norm` + `riemannZeta_two`。
-4. **zeta_bound_at_neg_one** — 通过函数方程归约到 zeta_bound_at_two。
-5. **CriticalLine/Hardy.lean** — 依赖 Definitions 中的结果。
-6. **WienerIkehara.lean** — 底层辅助引理优先（`limiting_fourier_lim*`, `first_fourier`, `second_fourier` 等）。
+## 推荐证明顺序（2026-07-31 校正，仅列待证项）
+
+1. **WienerIkehara.lean 底层可积性/可和性引理优先**：`summable_inv_mul_log_sq`（§12 condensed）、`second_fourier_integrable_aux1a/aux1`（integral-api.md 指数衰减/乘积）、`hf_coe1`（ENNReal 桥接）—— 无依赖，先攻。
+2. **Fourier 恒等式与极限**：`first_fourier`/`second_fourier` → `limiting_fourier_lim1/2/3`（§13 控制收敛）→ `limiting_fourier_aux`/`limiting_cor`。
+3. **residue_nonneg / WienerIkeharaInterval** —— 依赖上述极限结果。
+4. **Hardy.lean**：`criticalLineZeroCount_le_xiZeroCount`（§15 encard 单射）、`criticalLineZeros_isDiscrete`（§14 IsolatedZeros）。
+5. **zeta_bound_at_neg_one**（Definitions.lean L249）—— 阻塞于 Γ Stirling 上界（Mathlib 缺失，需自证，优先级最低）。
+
+> ✅ 已证明（无需再做）：`riemannXi_conj`、`riemannXiZeros_symm_conj`、`zeta_bound_at_two`、`xi_on_critical_line_continuous`、`criticalLineZeros_isClosed`。
 
 ## 关键 API 发现
 

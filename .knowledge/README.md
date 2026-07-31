@@ -8,7 +8,8 @@
 
 | 文件 | 主题 | 行数 |
 |------|------|------|
-| `integral-api.md` | 积分相关 API（integral_mono, Integrable.*, AEStronglyMeasurable） | ~93 |
+| `mathlib-api.md` | **总索引**：Asymptotics/Summability/控制收敛/IsolatedZeros/ncard/Zeta 可微/跨文件 Pitfalls | ~340 |
+| `integral-api.md` | 积分相关 API（integral_mono, Integrable.*, 指数衰减/乘积测度/ENNReal 桥接） | ~140 |
 | `fourier-api.md` | Fourier 变换 API（fourier_deriv, fourierIntegral_continuous） | ~37 |
 | `contdiff-api.md` | 可微性/连续性 API（ContDiff, CS→W21, 三角不等式模式） | ~77 |
 | `bigo-api.md` | BigO/渐近分析 API（IsBigO.*, 项目自定义引理, 组合模式） | ~231 |
@@ -30,7 +31,7 @@
 | `fourier-transform.md` | 项目 Fourier 衰减定理（decay_bounds_key, decay_bounds_cor 等） | ~94 |
 | `project-structure.md` | 项目文件、依赖关系、构建命令 | ~76 |
 | `difficult-proofs.md` | 困难 proof 记录和分析 | ~39 |
-| `sorry-inventory.md` | 当前 sorry 清单和进展 | ~31 |
+| `sorry-inventory.md` | 当前 sorry 清单和进展（2026-07-31 实测：33 处待证） | ~138 |
 
 > 子任务分解文件（`F_add-subtasks.md`、`nnabla_bound_aux-subtasks.md`）已移至 `.tasks/` 目录。
 
