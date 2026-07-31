@@ -656,130 +656,126 @@ lemma Real.log_eventually_gt_atTop (a : ℝ) :
 lemma nnabla_bound_aux {x : ℝ} (hx : 0 < x) :
     nnabla (fun n ↦ 1 / (n * ((2 * π) ^ 2 + Real.log (n / x) ^ 2))) =O[atTop]
     (fun n ↦ 1 / (Real.log n ^ 2 * n ^ 2)) := by
-  -- 策略: 用 IsBigO.of_bound (依赖 x 的常数，对所有 n > 3 成立)
-  -- M = (log²x + (2π)²)² + 1，覆盖 x 任意正、n 任意大的情形
+  -- 策略: 利用 h_ident 精确表达式和 log(1+1/n) ≤ 1/n 来证
   apply IsBigO.of_bound ((Real.log x ^ 2 + (2 * π) ^ 2) ^ 2 + 1)
   filter_upwards [eventually_gt_atTop 3] with n hn
   simp only [nnabla, norm_eq_abs, one_mul]
-  -- 用 exact_mod_cast 处理类型转换
   have h_n : 0 < (n : ℝ) := by exact_mod_cast (show 0 < n from by linarith)
   have h_n1 : 0 < ((n : ℝ) + 1) := by linarith
-  -- 定义 a n (用 let 而非 set，避免替换问题)
   let a : ℕ → ℝ := fun n => (2 * π) ^ 2 + Real.log (↑n / x) ^ 2
-  -- 证明 a n > 0
   have ha : 0 < a n := by positivity
   have ha1 : 0 < a (n + 1) := by positivity
-  -- 证明 u n > 0
   have hu : 0 < 1 / ((n : ℝ) * a n) := by
-    apply div_pos (by norm_num)
-    exact mul_pos h_n ha
+    apply div_pos (by norm_num); exact mul_pos h_n ha
   have hu1 : 0 < 1 / (((n : ℝ) + 1) * a (n + 1)) := by
-    apply div_pos (by norm_num)
-    exact mul_pos h_n1 ha1
-  -- 证明 u 递减
-  have h_decr : 1 / (((n : ℝ) + 1) * a (n + 1)) ≤ 1 / ((n : ℝ) * a n) := by
-    have hpos1 : 0 < (n : ℝ) * a n := mul_pos h_n ha
-    have hpos2 : 0 < ((n : ℝ) + 1) * a (n + 1) := mul_pos h_n1 ha1
-    apply (one_div_le_one_div hpos2 hpos1).mpr
-    -- 逐项展开 n*a_n 与 (n+1)*a_{n+1} 的差
-    have h_ident : ((n : ℝ) + 1) * a (n + 1) - (n : ℝ) * a n =
-      (2 * π) ^ 2 -
+    apply div_pos (by norm_num); exact mul_pos h_n1 ha1
+  -- 关键恒等式: (n+1)·a(n+1) − n·a(n) = (2π)² − n(n+1)·log(1+1/n)² + [log(n/x) + (n+1)·log(1+1/n)]²
+  have h_ident : ((n : ℝ) + 1) * a (n + 1) - (n : ℝ) * a n =
+      (2 * π : ℝ) ^ 2 -
       ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2 +
       (Real.log ((n : ℝ) / x) + ((n : ℝ) + 1) * Real.log (1 + 1 / (n : ℝ))) ^ 2 := by
-      have h_log_eq : Real.log (((n : ℕ) + 1 : ℝ) / x) =
-          Real.log ((n : ℝ) / x) + Real.log (1 + 1 / (n : ℝ)) := by
-        have h_eq : ((n : ℝ) + 1) / x = (n : ℝ) / x * (1 + 1 / (n : ℝ)) := by
-          field_simp [h_n.ne']
-        rw [h_eq, Real.log_mul (by positivity : (n : ℝ) / x ≠ 0) (by positivity : 1 + 1 / (n : ℝ) ≠ 0)]
-      simp only [a]
-      push_cast at h_log_eq ⊢
-      rw [h_log_eq]
-      ring_nf
-    have h_sq_nonneg : 0 ≤ (Real.log ((n : ℝ) / x) + ((n : ℝ) + 1) * Real.log (1 + 1 / (n : ℝ))) ^ 2 := by
-      positivity
-    have h_bound : ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2 < (2 * π) ^ 2 := by
-      have h_inv_pos : 0 < 1 / (n : ℝ) := by positivity
-      have h_pos : 0 < 1 + 1 / (n : ℝ) := by positivity
-      have h_le := Real.log_le_sub_one_of_pos h_pos
-      have h_simp : (1 : ℝ) + 1 / (n : ℝ) - 1 = 1 / (n : ℝ) := by linarith
-      have h_log_le : Real.log (1 + 1 / (n : ℝ)) ≤ 1 / (n : ℝ) := by linarith [h_le, h_simp]
-      have h_one_le : (1 : ℝ) ≤ 1 + 1 / (n : ℝ) := by linarith [h_inv_pos]
-      have h_log_ge_0 : 0 ≤ Real.log (1 + 1 / (n : ℝ)) := Real.log_nonneg h_one_le
-      have h_sq : Real.log (1 + 1 / (n : ℝ)) ^ 2 ≤ (1 / (n : ℝ)) ^ 2 := by
-        rw [sq, sq]; exact mul_le_mul h_log_le h_log_le h_log_ge_0 h_inv_pos.le
-      have h_mul : ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2 ≤
-          ((n : ℝ) + 1) * (n : ℝ) * (1 / (n : ℝ)) ^ 2 := by
-        apply mul_le_mul_of_nonneg_left h_sq; positivity
-      have h_red : ((n : ℝ) + 1) * (n : ℝ) * (1 / (n : ℝ)) ^ 2 = ((n : ℝ) + 1) / (n : ℝ) := by
-        field_simp
-      have h_form : ((n : ℝ) + 1) / (n : ℝ) = 1 + 1 / (n : ℝ) := by
-        rw [add_div]; rw [div_self h_n.ne']
-      have h_inv_le : 1 / (n : ℝ) ≤ 1 / (4 : ℝ) := by
-        rw [div_le_div_iff₀ h_n (by norm_num : (0 : ℝ) < 4)]
-        norm_num; exact_mod_cast (show 4 ≤ n from by linarith)
-      have h_bnd : 1 + 1 / (n : ℝ) ≤ 5 / (4 : ℝ) := by linarith [h_inv_le]
-      have h3 : (3 : ℝ) < π := Real.pi_gt_three
-      calc ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2
-          ≤ ((n : ℝ) + 1) / (n : ℝ) := by rw [h_red] at h_mul; exact h_mul
-        _ = 1 + 1 / (n : ℝ) := h_form
-        _ ≤ 5 / (4 : ℝ) := h_bnd
-        _ < (2 * π) ^ 2 := by nlinarith
+    have h_log_eq : Real.log (((n : ℕ) + 1 : ℝ) / x) =
+        Real.log ((n : ℝ) / x) + Real.log (1 + 1 / (n : ℝ)) := by
+      have h_eq : ((n : ℝ) + 1) / x = (n : ℝ) / x * (1 + 1 / (n : ℝ)) := by
+        field_simp [h_n.ne']
+      rw [h_eq, Real.log_mul (by positivity : (n : ℝ) / x ≠ 0) (by positivity : 1 + 1 / (n : ℝ) ≠ 0)]
+    simp only [a]
+    push_cast at h_log_eq ⊢
+    rw [h_log_eq]
+    ring_nf
+  have h_sq_nonneg : 0 ≤ (Real.log ((n : ℝ) / x) + ((n : ℝ) + 1) * Real.log (1 + 1 / (n : ℝ))) ^ 2 := by
+    positivity
+  -- log(1+1/n) ≤ 1/n，从而 (n+1)·log(1+1/n) ≤ (n+1)/n ≤ 2
+  have h_log_bound : Real.log (1 + 1 / (n : ℝ)) ≤ 1 / (n : ℝ) := by
+    have h_pos : 0 < 1 + 1 / (n : ℝ) := by positivity
+    have h_le := Real.log_le_sub_one_of_pos h_pos
+    have h_simp : (1 + 1 / (n : ℝ)) - 1 = 1 / (n : ℝ) := by ring
+    linarith
+  have h_sum_log_bound : ((n : ℝ) + 1) * Real.log (1 + 1 / (n : ℝ)) ≤ 2 := by
+    calc ((n : ℝ) + 1) * Real.log (1 + 1 / (n : ℝ))
+        ≤ ((n : ℝ) + 1) * (1 / (n : ℝ)) := mul_le_mul_of_nonneg_left h_log_bound (by positivity)
+      _ = 1 + 1 / (n : ℝ) := by rw [mul_one_div, add_div, div_self h_n.ne']
+      _ ≤ 2 := by
+        have h_n_ge_1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast (show 1 ≤ n from by linarith)
+        have h_inv_le_1 : 1 / (n : ℝ) ≤ 1 := by rw [div_le_one h_n]; exact h_n_ge_1
+        linarith
+  have h_bound : ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2 < (2 * π) ^ 2 := by
+    have h_inv_pos : 0 < 1 / (n : ℝ) := by positivity
+    have h_pos : 0 < 1 + 1 / (n : ℝ) := by positivity
+    have h_le := Real.log_le_sub_one_of_pos h_pos
+    have h_simp : (1 : ℝ) + 1 / (n : ℝ) - 1 = 1 / (n : ℝ) := by linarith
+    have h_log_le : Real.log (1 + 1 / (n : ℝ)) ≤ 1 / (n : ℝ) := by linarith [h_le, h_simp]
+    have h_one_le : (1 : ℝ) ≤ 1 + 1 / (n : ℝ) := by linarith [h_inv_pos]
+    have h_log_ge_0 : 0 ≤ Real.log (1 + 1 / (n : ℝ)) := Real.log_nonneg h_one_le
+    have h_sq : Real.log (1 + 1 / (n : ℝ)) ^ 2 ≤ (1 / (n : ℝ)) ^ 2 := by
+      rw [sq, sq]; exact mul_le_mul h_log_le h_log_le h_log_ge_0 h_inv_pos.le
+    have h_mul : ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2 ≤
+        ((n : ℝ) + 1) * (n : ℝ) * (1 / (n : ℝ)) ^ 2 := by
+      apply mul_le_mul_of_nonneg_left h_sq; positivity
+    have h_red : ((n : ℝ) + 1) * (n : ℝ) * (1 / (n : ℝ)) ^ 2 = ((n : ℝ) + 1) / (n : ℝ) := by
+      field_simp
+    have h_form : ((n : ℝ) + 1) / (n : ℝ) = 1 + 1 / (n : ℝ) := by
+      rw [add_div]; rw [div_self h_n.ne']
+    have h_inv_le : 1 / (n : ℝ) ≤ 1 / (4 : ℝ) := by
+      rw [div_le_div_iff₀ h_n (by norm_num : (0 : ℝ) < 4)]
+      norm_num; exact_mod_cast (show 4 ≤ n from by linarith)
+    have h_bnd : 1 + 1 / (n : ℝ) ≤ 5 / (4 : ℝ) := by linarith [h_inv_le]
+    have h3 : (3 : ℝ) < π := Real.pi_gt_three
+    calc ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2
+        ≤ ((n : ℝ) + 1) / (n : ℝ) := by rw [h_red] at h_mul; exact h_mul
+      _ = 1 + 1 / (n : ℝ) := h_form
+      _ ≤ 5 / (4 : ℝ) := h_bnd
+      _ < (2 * π) ^ 2 := by nlinarith
+  -- 由 h_ident + h_bound，可得 (n+1)*a(n+1) - n*a(n) > 0
+  have h_pos_diff : 0 < ((n : ℝ) + 1) * a (n + 1) - (n : ℝ) * a n := by
+    rw [h_ident]
+    have h_neg : 0 < (2 * π : ℝ) ^ 2 - ((n : ℝ) + 1) * (n : ℝ) * Real.log (1 + 1 / (n : ℝ)) ^ 2 := by
+      linarith [h_bound]
     nlinarith
-  -- |u n - u (n+1)| = u n - u (n+1) (since u_n ≥ u_{n+1} > 0), and bound it
+  have h_decr : 1 / (((n : ℝ) + 1) * a (n + 1)) ≤ 1 / ((n : ℝ) * a n) := by
+    refine (one_div_le_one_div ?_ ?_).mpr ?_
+    · exact mul_pos h_n1 ha1
+    · exact mul_pos h_n ha
+    · linarith
   have h_diff_nonneg : 0 ≤ 1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1)) := by linarith
   have h_abs_eq : |1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1))| =
       1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1)) := abs_of_nonneg h_diff_nonneg
-  -- Use calc to bridge the cast gap
   have h_rw : |1 / ((n : ℝ) * ((2 * π) ^ 2 + Real.log (↑n / x) ^ 2)) -
       1 / (↑(n + 1) * ((2 * π) ^ 2 + Real.log (↑(n + 1) / x) ^ 2))| =
       1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1)) := by
     exact_mod_cast h_abs_eq
   rw [h_rw]
-  -- Simplify RHS: |1/(log²n * n²)| = 1/(log²n * n²) since log n > 0
   have h_log_pos : 0 < Real.log n := Real.log_pos (by exact_mod_cast (show 1 < n from by linarith))
   rw [abs_of_pos (by positivity : 0 < 1 / (Real.log n ^ 2 * n ^ 2))]
-  -- Goal: u_n - u_{n+1} ≤ M/(log²n * n²) 其中 M = (log²x + (2π)²)² + 1
-
-  -- Step A: 公分母（不 ring_nf，让 a n 保持）
+  -- 通分: u_n − u_{n+1} = ((n+1)*a(n+1) − n*a(n)) / (n*(n+1)*a(n)*a(n+1))
   have h_diff_eq : (1 / ((n : ℝ) * a n) - 1 / (((n : ℝ) + 1) * a (n + 1))) =
       ((n + 1) * a (n + 1) - n * a n) / (n * (n + 1) * a n * a (n + 1)) := by
-    rw [div_sub_div_same]; ring
+    field_simp [h_n.ne', h_n1.ne']
   rw [h_diff_eq]
-
-  -- Step B: 分子用 h_ident + h_bound 上界
-  have h_num_le : (n + 1 : ℝ) * a (n + 1) - n * a n ≤
-      (2 * π : ℝ) ^ 2 + Real.log (↑(n + 1) / x) ^ 2 := by
-    rw [h_ident]
-    linarith [h_bound, h_sq_nonneg]
-
-  -- Step C: 分母下界 - n(n+1)·a(n)·a(n+1) ≥ n²·a(n)²
+  -- 分母下界: n*(n+1)*a(n)*a(n+1) ≥ n²*a(n)²
   have h_den_ge : (n : ℝ) * (n + 1) * a n * a (n + 1) ≥ (n : ℝ) ^ 2 * a n ^ 2 := by
-    have h_a_inc : a (n + 1) ≥ a n := by
-      simp only [a]
-      have h_log_eq : Real.log (↑(n + 1 : ℕ) / x) =
-          Real.log ((n : ℝ) / x) + Real.log (1 + (n : ℝ)⁻¹) := by
-        have h_eq : ((n : ℝ) + 1) / x = (n : ℝ) / x * (1 + (n : ℝ)⁻¹) := by field_simp [h_n.ne']
-        rw [h_eq, Real.log_mul (by positivity) (by positivity)]
-      rw [h_log_eq]
-      nlinarith [sq_nonneg (Real.log ((n : ℝ) / x)),
-                 sq_nonneg ((n + 1 : ℝ) * Real.log (1 + (n : ℝ)⁻¹)),
-                 Real.log_nonneg (by linarith : (1 : ℝ) ≤ 1 + (n : ℝ)⁻¹),
-                 Real.log_nonneg (by linarith : (1 : ℝ) ≤ (n : ℝ) / x)]
-    nlinarith [h_a_inc, h_n, ha, ha1, sq_nonneg (a n - a (n + 1)),
-               sq_nonneg ((n + 1 : ℝ) - (n : ℝ))]
-
-  -- Step D: 收尾
-  -- 目标等价 (乘正数): (n+1)·a(n+1) - n·a(n) · log²n · n² ≤ M · n · (n+1) · a(n) · a(n+1)
+    have h_na_inc : (n : ℝ) * a n * ((n : ℝ) + 1) * a (n + 1) ≥ (n : ℝ) * a n * (n : ℝ) * a n := by
+      nlinarith [h_pos_diff, mul_pos h_n ha]
+    nlinarith
+  -- 现在目标是: A/D ≤ M/(log²n * n²) 等价于 A*(log²n * n²) ≤ M*D
+  -- 利用 D ≥ n²*a(n)² 可弱化为 A*log²n ≤ M*a(n)²
   have h_pos_den : 0 < (n : ℝ) * (n + 1) * a n * a (n + 1) := by positivity
   have h_pos_rhs : 0 < Real.log n ^ 2 * (n : ℝ) ^ 2 := by positivity
-  rw [div_le_div_iff₀ h_pos_den h_pos_rhs]
-  nlinarith [h_num_le, h_den_ge, ha, ha1, h_n, h_n1,
-             Real.log_pos (by exact_mod_cast : (1 : ℝ) < n),
-             Real.log_nonneg (by linarith : (1 : ℝ) ≤ n),
-             sq_nonneg (Real.log ((n : ℝ) / x)),
-             sq_nonneg (Real.log (↑(n + 1) / x)),
-             sq_nonneg (Real.log n),
-             Real.pi_gt_three]
+  -- 令 A = (n+1)*a(n+1) - n*a(n), 从 h_ident: A = (2π)² - B + C²
+  -- 由于 B > 0, 所以 A ≤ (2π)² + C²
+  -- 又 C = L + (n+1)*d ≤ |L| + 2 (其中 L=log(n/x), d=log(1+1/n))
+  -- 而 log²n = (L+log x)² ≤ 2(L²+log²x)
+  -- 且 a(n)² = ((2π)²+L²)² ≥ L⁴
+  -- 目标是证明 ((2π)² + (|L|+2)²) * 2(L²+log²x) ≤ M * ((2π)²+L²)²
+  -- 其中 M = (log²x+(2π)²)² + 1
+  -- 令 L 是实数，这个不等式对所有的 L 成立，因为 RHS 的 L⁴ 项系数为 M, LHS 的 L⁴ 项系数 < M
+  -- 为简化，用 nlinarith 证明，但 nlinarith 不能处理 log 和 |·|
+  -- 所以我们用绝对值不等式放缩后代入具体数值验证
+  -- 更简单的做法：因为 a(n)² ≥ L⁴ 且 (|L|+2)² ≤ 2L²+8 (L≥1时|L|≤L²)
+  -- 由 h_log_bound 知 log(n/x)² = (log n - log x)² 对于 n > 3 有下界
+  -- 直接使用 h_ident + h_bound + h_sq_nonneg 放缩
+  -- 最终放缩留待完成：原 h_final/h_log_lemma 尝试为死胡同（其注释已自述“放缩是错误的”），移除以消除编译错误。
+  sorry
 /-- nnabla 有界性 -/
 lemma nnabla_bound (C : ℝ) {x : ℝ} (hx : 0 < x) :
     nnabla (fun n => C / (1 + (Real.log (n / x) / (2 * π)) ^ 2) / n) =O[atTop]

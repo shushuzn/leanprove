@@ -259,8 +259,8 @@ def riemannXiZeros : Set ℂ :=
   { s | riemannXi s = 0 }
 
 /-- 零点计数函数 N(T) = #{ρ ∈ criticalStrip T | ξ(ρ) = 0} -/
-noncomputable def xiZeroCount (T : ℝ) : ℕ :=
-  Nat.card {s : ℂ | s ∈ riemannXiZeros ∧ s ∈ criticalStrip T}
+noncomputable def xiZeroCount (T : ℝ) : ℕ∞ :=
+  ENat.card {s : ℂ | s ∈ riemannXiZeros ∧ s ∈ criticalStrip T}
 
 /-! ### criticalStrip 的基本性质 -/
 
@@ -367,7 +367,7 @@ lemma riemannXiZeros_symm_conj {s : ℂ} (hs : s ∈ riemannXiZeros) : conj s �
 /-- N(T) 关于 T 单调 -/
 lemma xiZeroCount_mono {T₁ T₂ : ℝ} (h : T₁ ≤ T₂) : xiZeroCount T₁ ≤ xiZeroCount T₂ := by
   simp only [xiZeroCount]
-  sorry
+  exact Set.ecard_le_ecard (fun s ⟨hs_zeros, hs_strip⟩ => ⟨hs_zeros, criticalStrip_mono h hs_strip⟩)
 
 /-- ξ(ρ) = 0 且 ρ ≠ 0, ρ ≠ 1 ⇒ ζ(ρ) = 0 -/
 lemma riemannXi_zero_implies_zeta_zero {s : ℂ} (hs : s ∈ riemannXiNontrivialZeros) : riemannZeta s = 0 := by

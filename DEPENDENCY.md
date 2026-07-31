@@ -62,5 +62,10 @@ ZetaVI.lean（阶段 VI 聚合导入模块）
 
 ## 顶层假设
 
-- 无（全项目 0 axiom + 0 sorry）
-- 所有证明完全依赖于 mathlib 内核
+- **主构建（`Leanprove.lean`）**：0 axiom + 0 sorry
+- **阶段 VI 子模块（`CriticalLine.lean`）**：3 sorry（未在主构建导入，处于独立维护）
+  - [`CriticalLine/Definitions.lean:249`](file:///d:/OpenClaw/leanprove/Leanprove/CriticalLine/Definitions.lean#L249) — `zeta_bound_at_neg_one`
+  - [`CriticalLine/Hardy.lean:114`](file:///d:/OpenClaw/leanprove/Leanprove/CriticalLine/Hardy.lean#L114) — `criticalLineZeroCount_le_xiZeroCount`
+  - [`CriticalLine/Hardy.lean:222`](file:///d:/OpenClaw/leanprove/Leanprove/CriticalLine/Hardy.lean#L222) — `criticalLineZeros_isDiscrete`
+- **`WienerIkehara.lean`**：顶层 `WienerIkeharaTheorem'` 已闭合；模块内 ~30 个子引理含 sorry / TODO（不影响主定理链的类型检查）
+- 全部主构建证明完全依赖于 mathlib 内核

@@ -10,6 +10,8 @@ build_now.txt
 tmp_fix.py
 tmp/
 .mimocode/
+.qoder/
+query_db.py
 
 # Task decomposition files
 .tasks/

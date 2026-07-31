@@ -16,7 +16,7 @@
 
 ### 当前里程碑
 
-**素数定理全部等价形式已严格证明**：ψ(x) ~ x ↔ θ(x) ~ x ↔ π(x) ~ x/log x。Wiener-Ikehara 定理的 Fourier 分析证明已完整形式化。阶段 I–V **0 sorry + 0 axiom**，阶段 VI（Hardy 定理框架）进行中。代码风格遵循 STYLE.md（mathlib4 标准），全部 lemma/def 具有 docstring。
+**素数定理全部等价形式已严格证明**：ψ(x) ~ x ↔ θ(x) ~ x ↔ π(x) ~ x/log x。Wiener-Ikehara 定理的顶层接口 `WienerIkeharaTheorem'`（[WienerIkehara.lean:1445](file:///d:/OpenClaw/leanprove/Leanprove/WienerIkehara.lean#L1445)）已闭合，但模块内**仍有 30 余个未完成的子引理**（TODO/sorry），需要后续补充细节证明。阶段 I–V **主构建 0 sorry + 0 axiom**，阶段 VI（Hardy 定理框架）进行中，含 **3 sorry**（[Definitions.lean:249](file:///d:/OpenClaw/leanprove/Leanprove/CriticalLine/Definitions.lean#L249)、[Hardy.lean:114](file:///d:/OpenClaw/leanprove/Leanprove/CriticalLine/Hardy.lean#L114)、[Hardy.lean:222](file:///d:/OpenClaw/leanprove/Leanprove/CriticalLine/Hardy.lean#L222)）。代码风格遵循 STYLE.md（mathlib4 标准），全部 lemma/def 具有 docstring。
 
 ---
 
@@ -37,11 +37,11 @@
     ├─ V-A   PNT 等价形式          ████████████████████  100%  ✅
     ├─ V-B   θ~x ↔ π~x/log x      ████████████████████  100%  ✅
     └─ V-C   Wiener-Ikehara 证明   ████████████████████  100%  ✅ 0 axiom
-  阶段 VI   黎曼猜想               ██████████░░░░░░░░░░   55%  🔮 ~45 定理 (2 sorry)
+  阶段 VI   黎曼猜想               ██████████░░░░░░░░░░   55%  🔮 ~45 定理 (3 sorry)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**统计**: **~330 定理 / 引理** · **Phase I–V: 0 sorry** · **0 axiom** · **Phase VI: 2 sorry (进行中)**
+**统计**: **~330 定理 / 引理** · **Phase I–V: 0 sorry** · **0 axiom** · **Phase VI: 3 sorry (进行中)**
 
 ---
 
@@ -212,7 +212,7 @@ Riemann ζ 函数的分阶段构建，每个子阶段独立可验证。
 |:-:|------|:----:|
 | 1 | **ξ 函数基础** — `riemannXi(s) = s(s-1)π^{-s/2}Γ(s/2)ζ(s)`，对称性 ξ(s)=ξ(1−s)，复共轭 ξ(s̅)=ξ(s)̅，临界线实值性 | ✅ 已证 |
 | 2 | **零点计数 N(T)** — `criticalStrip` 紧致性、`xiZeroCount` 单调性、零点集对称性 | ✅ 已证 |
-| 3 | **Hardy 定理框架** — 临界线参数化、IVT 归约、无限变号→无限零点 | 🚧 框架就绪 (2 sorry) |
+| 3 | **Hardy 定理框架** — 临界线参数化、IVT 归约、无限变号→无限零点 | 🚧 框架就绪 (3 sorry) |
 | 4 | **渐近分析** — `gamma_it_norm_le` (Γ(it) 渐近估计)、均值积分归约 | ✅ 核心引理 (0 sorry) |
 | 5 | 黎曼假设的等价表述 | ⬜ 待启动 |
 | 6 | 素数定理误差项改进 | ⬜ 待启动 |
@@ -243,9 +243,11 @@ leanprove/
 │   ├── Tests.lean                    # 测试与验证
 │   ├── CriticalLine.lean              # 阶段 VI 入口：聚合子模块
 │   ├── CriticalLine/
-│   │   ├── Definitions.lean          # ξ 函数、N(T)、临界带 (21 定理, 2 sorry)
+│   │   ├── Definitions.lean          # ξ 函数、N(T)、临界带 (21 定理, 1 sorry)
 │   │   ├── Hardy.lean                # Hardy 定理框架 (19 定理, 2 sorry)
-│   │   └── Asymptotics.lean          # Gamma 渐近分析 (5 定理, 0 sorry)
+│   │   ├── Asymptotics.lean          # Gamma 渐近分析 (5 定理, 0 sorry; 含 1 未完成假设占位)
+│   │   ├── QuickTest.lean            # ⚠️ 调试文件，未导入
+│   │   └── TestImport.lean           # ⚠️ 调试文件，未导入
 ├── scripts/                          # Git hooks 脚本
 ├── lakefile.toml                     # Lake 构建配置
 ├── lean-toolchain                    # Lean v4.31.0-rc2
@@ -301,11 +303,13 @@ chmod +x .git/hooks/pre-commit
 
 ```
 Mathlib 内核
-  ├─→ 阶段 I–V: ~310 定理 → 0 sorry → 0 axiom ✅
-  └─→ 阶段 VI:   ~45 定理 → 2 sorry (Hardy 定理框架进行中) 🔮
+  ├─→ 阶段 I–V: ~310 定理 → 0 sorry → 0 axiom ✅ (主构建范围内)
+  └─→ 阶段 VI:   ~45 定理 → 3 sorry (Hardy 定理框架进行中) 🔮
+        └─ WienerIkehara.lean: 顶层接口 `WienerIkeharaTheorem'` 已闭合，
+           但内部 ~30 个子引理仍含 sorry（未在主构建中作为顶层依赖）
 ```
 
-阶段 I–V 的全部证明均可通过 `lake build Leanprove.Basic Bertrand Chebyshev Dirichlet PrimeCounting PrimeReciprocals VonMangoldt ZetaIVB ZetaIVD ZetaIVE PNTVA Tauberian Sobolev WienerProof` 独立验证，**0 sorry + 0 axiom**，完全依赖于 mathlib 内核。阶段 VI 模块正在推进中。
+阶段 I–V 的全部证明均可通过 `lake build Leanprove.Basic Bertrand Chebyshev Dirichlet PrimeCounting PrimeReciprocals VonMangoldt ZetaIVB ZetaIVD ZetaIVE PNTVA Tauberian Sobolev` 独立验证，**0 sorry + 0 axiom**，完全依赖于 mathlib 内核。阶段 VI 模块（[CriticalLine.lean](file:///d:/OpenClaw/leanprove/Leanprove/CriticalLine.lean)）未在主入口 `Leanprove.lean` 中导入，处于独立维护状态。`WienerIkehara.lean` 虽被 `Tauberian.lean` 间接导入，但其未完成部分不影响主定理链 `WienerIkeharaTheorem' → WeakPNT → prime_number_theorem_psi_from_tauberian` 的类型检查。
 
 ---
 

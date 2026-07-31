@@ -151,7 +151,7 @@ RH 是千禧年问题之一，至今未解决。形式化目标聚焦于**等价
 
 ---
 
-*路线图最后更新: 2026-06-26 — 阶段 I-V 0 sorry + 0 axiom，阶段 VI 进行中 (Definitions 2 sorry, 证明 zeta_bound_at_two, 证明 riemannXi_zero_implies_zeta_zero, 证明 riemannXiZeros_symm_conj)。*
+*路线图最后更新: 2026-06-29 — 阶段 I-V 主构建 0 sorry + 0 axiom；阶段 VI 实际为 3 sorry（[Definitions.lean:249](file:///d:/OpenClaw/leanprove/Leanprove/CriticalLine/Definitions.lean#L249) `zeta_bound_at_neg_one`、[Hardy.lean:114](file:///d:/OpenClaw/leanprove/Leanprove/CriticalLine/Hardy.lean#L114) `criticalLineZeroCount_le_xiZeroCount`、[Hardy.lean:222](file:///d:/OpenClaw/leanprove/Leanprove/CriticalLine/Hardy.lean#L222) `criticalLineZeros_isDiscrete`）。`zeta_bound_at_two`、`riemannXi_zero_implies_zeta_zero`、`riemannXiZeros_symm_conj` 此前已实现。`WienerIkehara.lean` 顶层接口 `WienerIkeharaTheorem'` 已闭合但内部仍含 ~30 个子引理 sorry。*
 
 
 

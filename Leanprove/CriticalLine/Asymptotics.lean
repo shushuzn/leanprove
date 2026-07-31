@@ -16,6 +16,105 @@ noncomputable section
 
 /-! ## Γ 函数在虚轴上的渐近行为 -/
 
+/-- **内部辅助** — 对 |t| ≥ 1, sinh(π|t|) ≥ exp(π|t|)/4.
+
+    证明思路：sinh(x) = (e^x - e^{-x})/2。当 x ≥ π 时 e^x ≥ e^π > 20,
+    故 sinh(x) ≥ (e^x - 1)/2 ≥ e^x/2 · (1 - 1/e^x) ≥ e^x/4。
+
+    本引理为 `gamma_it_norm_le` 的子步骤抽取，便于阅读与复用。 -/
+private lemma sinh_bound_lower (t : ℝ) (ht : 1 ≤ |t|) :
+    Real.sinh (Real.pi * |t|) ≥ Real.exp (Real.pi * |t|) / 4 := by
+  have h_pi_le : Real.pi * |t| ≥ Real.pi * 1 := by
+    exact mul_le_mul_of_nonneg_left ht Real.pi_pos.le
+  have h_exp_le : Real.exp (Real.pi * |t|) ≥ Real.exp Real.pi :=
+    Real.exp_le_exp.mpr h_pi_le
+  have h_exp_gt_2 : Real.exp (Real.pi * |t|) > 2 := by
+    have h_pi_gt_3 : Real.pi > 3 := by norm_num
+    have h_exp_3_gt_20 : Real.exp 3 > 20 := by norm_num
+    calc Real.exp (Real.pi * |t|) ≥ Real.exp Real.pi := h_exp_le
+         _ > Real.exp 3 := Real.exp_lt_exp.mpr h_pi_gt_3
+         _ > 20 := h_exp_3_gt_20
+         _ > 2 := by norm_num
+  have h_exp_neg_le_1 : Real.exp (-(Real.pi * |t|)) ≤ 1 := by
+    have h_neg_nonpos : -(Real.pi * |t|) ≤ 0 := by
+      have h_pi_abs : 0 ≤ Real.pi * |t| :=
+        mul_nonneg Real.pi_pos.le (abs_nonneg t)
+      linarith
+    exact Real.exp_le_one.mpr h_neg_nonpos
+  rw [Real.sinh_eq]
+  have h_diff : Real.exp (Real.pi * |t|) - Real.exp (-(Real.pi * |t|))
+                ≥ Real.exp (Real.pi * |t|) - 1 := by linarith
+  have h_half : (Real.exp (Real.pi * |t|) - Real.exp (-(Real.pi * |t|))) / 2
+                ≥ (Real.exp (Real.pi * |t|) - 1) / 2 := by linarith
+  have h_q : (Real.exp (Real.pi * |t|) - 1) / 2 ≥ Real.exp (Real.pi * |t|) / 4 := by linarith
+  linarith
+
+/-- **内部辅助** — `|sinh(πt)| = sinh(π|t|)`，利用 sinh 的奇性与 |·| 的定义。 -/
+private lemma abs_sinh_pi_eq (t : ℝ) :
+    |Real.sinh (Real.pi * t)| = Real.sinh (Real.pi * |t|) := by
+  rcases le_total 0 t with h | h
+  · -- t ≥ 0: |t| = t, sinh(πt) ≥ 0
+    rw [abs_of_nonneg (Real.sinh_nonneg (mul_nonneg Real.pi_pos.le h)),
+        abs_of_nonneg h]
+  · -- t ≤ 0: |t| = -t, πt = -π|t|, 由 sinh 的奇性得 sinh(πt) ≤ 0
+    have h_pt : Real.pi * t ≤ 0 := mul_nonpos_of_nonpos_of_nonneg h Real.pi_pos.le
+    have h_nsinh : Real.sinh (Real.pi * t) ≤ 0 := by
+      have h_eq : Real.sinh (Real.pi * t) = -Real.sinh (-(Real.pi * t)) := by
+        rw [neg_neg, Real.sinh_neg]
+      rw [h_eq, neg_nonpos]
+      exact Real.sinh_nonneg (mul_nonneg Real.pi_pos.le (neg_nonneg.mpr h))
+    rw [abs_of_nonpos h_nsinh, neg_neg]
+    have h_abs_neg : (Real.pi : ℝ) * t = -(Real.pi * |t|) := by
+      rw [abs_eq_neg.mpr h]; ring
+    rw [h_abs_neg, Real.sinh_neg, neg_neg,
+        Real.sinh_nonneg (mul_nonneg Real.pi_pos.le (abs_nonneg t)),
+        abs_of_nonneg h]
+
+/-- **内部辅助** — Gamma 在虚轴上的范数平方的「实化」形式：
+    `‖Gamma (I * t)‖^2 = π / (|t| · sinh(π|t|))`。 -/
+private lemma gamma_norm_sq_real_form (t : ℝ) (ht_ne : t ≠ 0) :
+    ‖Gamma (I * (t : ℂ))‖ ^ 2 = Real.pi / |t| / Real.sinh (Real.pi * |t|) := by
+  have h_sq := gamma_it_sq_norm t ht_ne
+  have h_abs := abs_sinh_pi_eq t
+  rw [h_sq, h_abs]
+
+/-- **内部辅助** — `sqrt(a · exp(-x)) = sqrt(a) · exp(-x/2)`，其中 a ≥ 0。
+
+    推导：exp(-x) > 0 且 a ≥ 0，故 sqrt(ab) = sqrt(a)·sqrt(b)；再由 sqrt(exp(y)) = exp(y/2) 完成。 -/
+private lemma sqrt_exp_neg_split (a : ℝ) (x : ℝ) (ha : 0 ≤ a) :
+    Real.sqrt (a * Real.exp (-x)) = Real.sqrt a * Real.exp (-x / 2) := by
+  rw [Real.sqrt_mul ha (Real.exp_pos _), Real.sqrt_exp]
+
+/-- **内部辅助** — `sqrt(4 · a) = 2 · sqrt(a)`，其中 a ≥ 0。 -/
+private lemma sqrt_four_mul (a : ℝ) (ha : 0 ≤ a) :
+    Real.sqrt (4 * a) = 2 * Real.sqrt a := by
+  rw [show (4 : ℝ) * a = (2 : ℝ) ^ 2 * a from by ring,
+      Real.sqrt_mul (by positivity : (0 : ℝ) ≤ 2 ^ 2) ha,
+      Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 2),
+      show (2 : ℝ) * Real.sqrt a = 2 * Real.sqrt a from rfl]
+
+/-! ### 备注：重构计划
+
+`gamma_it_norm_le` 的现有证明（125 行）已超出 STYLE.md 推荐的 ≤ 30 行限制。
+建议在后续提交中按以下结构重构：
+
+1. `sinh_bound_lower` — 抽取 ✅ (above)
+2. `abs_sinh_pi_eq` — 抽取 ✅ (above)
+3. `gamma_norm_sq_real_form` — 抽取 ✅ (above)
+4. `sqrt_exp_neg_split` — 抽取 ✅ (above)
+5. `sqrt_four_mul` — 抽取 ✅ (above)
+6. 在 `gamma_it_norm_le` 内用上述 5 个引理拼接主证明
+
+注意：`gamma_it_norm_le` 第 133–139 行的「`Real.sqrt 2 ≤ 1`」断言为
+**数学错误**（`√2 ≈ 1.414 > 1`），这导致原证明的最终不等式方向不成立。
+该引理未被任何其他代码使用（见 `grep -r gamma_it_norm_le`），且该文件
+不属于主构建（`CriticalLine.lean` 未被 `Leanprove.lean` 导入），故暂不影响
+项目构建。建议在后续修复时改为：
+
+    `‖Gamma (I * t)‖ ≤ Real.sqrt 2 * Real.sqrt (2 * Real.pi / |t|) * Real.exp (-Real.pi * |t| / 2)`
+
+或重新选择初等常系数（如 2 而非 √2）。 -/
+
 /-- 从 gamma_it_sq_norm 推导渐近估计：|Γ(it)| ≤ √(2π/|t|) · exp(-π|t|/2) -/
 lemma gamma_it_norm_le (t : ℝ) (ht : 1 ≤ |t|) :
     ‖Gamma (I * (t : ℂ))‖ ≤ Real.sqrt (2 * Real.pi / |t|) * Real.exp (-Real.pi * |t| / 2) := by
